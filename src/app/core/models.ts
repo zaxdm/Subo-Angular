@@ -395,6 +395,59 @@ export function premiumAccountFromJson(json: Json): PremiumAccount {
   };
 }
 
+/** Un plan de Premium: cuántos días da y cuánto cuesta, en soles. */
+export interface PaymentPlan {
+  days: number;
+  price: number;
+}
+
+/** A qué QR de Yape se paga Premium y cuánto cuesta. */
+export interface PaymentConfig {
+  /** La imagen del QR; `null` mientras no se haya subido. */
+  qrUrl: string | null;
+
+  /** A nombre de quién sale el Yape. */
+  holder: string;
+  plans: PaymentPlan[];
+}
+
+export function paymentConfigFromJson(json: Json): PaymentConfig {
+  const plans = Array.isArray(json['plans']) ? (json['plans'] as Json[]) : [];
+  return {
+    qrUrl: typeof json['qrUrl'] === 'string' ? json['qrUrl'] : null,
+    holder: text(json['holder']),
+    plans: plans.map((plan) => ({ days: Number(plan['days']), price: Number(plan['price']) })),
+  };
+}
+
+/** El comprobante de un pago de Premium que alguien subió desde la app. */
+export interface PremiumPayment {
+  id: string;
+  days: number;
+  amount: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  note: string;
+  createdAt: Date;
+  imageUrl: string;
+  userName: string;
+  userEmail: string;
+}
+
+export function premiumPaymentFromJson(json: Json): PremiumPayment {
+  const status = text(json['status']);
+  return {
+    id: text(json['id']),
+    days: Number(json['days'] ?? 0),
+    amount: Number(json['amount'] ?? 0),
+    status: status === 'APPROVED' || status === 'REJECTED' ? status : 'PENDING',
+    note: text(json['note']),
+    createdAt: new Date(Number(json['createdAt'] ?? 0)),
+    imageUrl: text(json['imageUrl']),
+    userName: text(json['userName']),
+    userEmail: text(json['userEmail']),
+  };
+}
+
 /** "10/10/2026", en la hora de quien mira el panel. */
 export function formatDate(date: Date): string {
   const two = (value: number) => String(value).padStart(2, '0');

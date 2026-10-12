@@ -16,6 +16,10 @@ import {
   adminFromJson,
   PremiumAccount,
   premiumAccountFromJson,
+  PaymentConfig,
+  PremiumPayment,
+  paymentConfigFromJson,
+  premiumPaymentFromJson,
   alertFromJson,
   moderationAlertFromJson,
   routeFromJson,
@@ -251,6 +255,30 @@ export class Api {
   /** Quita Premium: la cuenta vuelve a ser gratuita. */
   async removePremium(id: string): Promise<void> {
     await this.send('DELETE', `/api/admin/premium/${encodeURIComponent(id)}`);
+  }
+
+  /** A qué QR de Yape se paga Premium y cuánto cuesta cada plan. */
+  async paymentConfig(): Promise<PaymentConfig> {
+    return paymentConfigFromJson(await this.send('GET', '/api/premium/payment'));
+  }
+
+  /** Guarda el QR, a nombre de quién está y los precios. Devuelve lo que quedó guardado. */
+  async savePaymentConfig(config: PaymentConfig): Promise<PaymentConfig> {
+    return paymentConfigFromJson(
+      await this.send('PUT', '/api/admin/premium/payment-config', { body: { ...config } }),
+    );
+  }
+
+  /** Los comprobantes de pago: los que esperan confirmación, primero. */
+  async premiumPayments(): Promise<PremiumPayment[]> {
+    return items((await this.send('GET', '/api/admin/premium/payments'))['payments']).map(premiumPaymentFromJson);
+  }
+
+  /** Confirma el pago (y activa Premium) o lo rechaza, con una nota para quien lo subió. */
+  async reviewPayment(id: string, approved: boolean, note = ''): Promise<void> {
+    await this.send('POST', `/api/admin/premium/payments/${encodeURIComponent(id)}/review`, {
+      body: { approved, note },
+    });
   }
 
   /** Sube la foto de una ruta y devuelve su dirección pública. */
