@@ -1,0 +1,54 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card {
+  margin-bottom: 14px;
+  padding: 18px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top .small {
+  flex: 1;
+}
+
+.top .mi {
+  font-size: 20px;
+  color: var(--danger);
+}
+
+.message {
+  margin: 8px 0 12px;
+  white-space: pre-wrap;
+}
+
+.reply {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  white-space: pre-wrap;
+}
+
+.card .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin-top: 12px;
+}
+
+.card select {
+  width: 170px;
+}
+
+.dialog {
+  max-width: 508px;
+}

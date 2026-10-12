@@ -1,0 +1,218 @@
+<header>
+  <div>
+    <button type="button" class="btn text back" [disabled]="locked()" (click)="back()">
+      <span class="mi">arrow_back</span>
+      Volver al catálogo
+    </button>
+    <h1 class="h-large">{{ isNew() ? 'Nueva ruta' : 'Editar ruta' }}</h1>
+  </div>
+  <button type="button" class="btn small-btn" [disabled]="locked()" (click)="save()">
+    @if (busy()) {
+      <span class="spinner"></span>
+    } @else {
+      <span class="mi">check</span>
+    }
+    {{ busy() ? 'Guardando…' : 'Guardar ruta' }}
+  </button>
+</header>
+
+<div class="layout">
+  <div class="details">
+    <section class="card panel">
+      <h2><span class="step">1</span> Datos del micro</h2>
+      @for (row of rows; track $index) {
+        <div class="row">
+          @for (field of row; track field.key) {
+            <label class="field" [style.flex]="field.flex ?? 1">
+              <span>{{ field.label }}</span>
+              @if (field.multiline) {
+                <textarea
+                  class="input"
+                  rows="3"
+                  [attr.maxlength]="field.maxLength"
+                  [placeholder]="field.hint ?? ''"
+                  [disabled]="locked()"
+                  [value]="values()[field.key]"
+                  (input)="setValue(field, $any($event.target))"
+                ></textarea>
+              } @else {
+                <input
+                  class="input"
+                  [attr.maxlength]="field.maxLength"
+                  [attr.inputmode]="field.only === 'digits' ? 'numeric' : field.only === 'decimal' ? 'decimal' : null"
+                  [placeholder]="field.hint ?? ''"
+                  [class.invalid]="checked() && problems()[field.key]"
+                  [disabled]="locked()"
+                  [value]="values()[field.key]"
+                  (input)="setValue(field, $any($event.target))"
+                />
+              }
+              @if (checked() && problems()[field.key]; as problem) {
+                <small class="problem">{{ problem }}</small>
+              }
+            </label>
+          }
+        </div>
+      }
+      <label class="field">
+        <span>Estado</span>
+        <select class="input" [disabled]="locked()" [value]="status()" (change)="setStatus($any($event.target).value)">
+          @for (item of statuses; track item.code) {
+            <option [value]="item.code" [selected]="item.code === status()">{{ item.label }}</option>
+          }
+        </select>
+      </label>
+      <label class="check">
+        <input
+          type="checkbox"
+          [checked]="bidirectional()"
+          [disabled]="locked()"
+          (change)="setBidirectional($any($event.target).checked)"
+        />
+        <span>
+          Circula en ambos sentidos por el mismo recorrido
+          <small>Si la vuelta usa otras calles, crea una ruta de regreso aparte.</small>
+        </span>
+      </label>
+    </section>
+
+    <section class="card panel">
+      <h2><span class="step">2</span> Foto del micro</h2>
+      <div class="preview">
+        <app-route-photo
+          [url]="photoUrl()"
+          [letter]="values().letter"
+          emptyHint="Una foto ayuda a reconocer el micro"
+        />
+      </div>
+      <div class="buttons">
+        <button type="button" class="btn outline" [disabled]="locked()" (click)="file.click()">
+          @if (uploading()) {
+            <span class="spinner"></span>
+          } @else {
+            <span class="mi">upload</span>
+          }
+          {{ uploading() ? 'Subiendo…' : 'Subir foto' }}
+        </button>
+        <input #file type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="pickImage(file)" />
+        @if (values().imageUrl) {
+          <button type="button" class="btn text" [disabled]="locked()" (click)="setImageUrl('')">Quitar foto</button>
+        }
+      </div>
+      <label class="field">
+        <span>O pega la dirección de una imagen</span>
+        <input
+          class="input"
+          type="url"
+          placeholder="https://…"
+          [class.invalid]="checked() && problems().imageUrl"
+          [disabled]="locked()"
+          [value]="values().imageUrl"
+          (input)="setValue({ key: 'imageUrl' }, $any($event.target))"
+        />
+        @if (checked() && problems().imageUrl; as problem) {
+          <small class="problem">{{ problem }}</small>
+        }
+      </label>
+      <p class="small">JPG, PNG o WebP de hasta 5 MB.</p>
+    </section>
+
+    @if (!isNew()) {
+      <button type="button" class="btn outline block delete" [disabled]="locked()" (click)="delete()">
+        <span class="mi">delete</span>
+        Eliminar ruta
+      </button>
+    }
+  </div>
+
+  <section class="card panel">
+    <h2><span class="step">3</span> Puntos de referencia y recorrido</h2>
+    <p class="small">
+      @if (mode() === 'stops') {
+        Haz clic en el mapa para añadir puntos de referencia en el orden del recorrido. Arrástralos para corregirlos.
+        Con «Trazar por las calles» el recorrido se dibuja solo entre ellos.
+      } @else {
+        Marca las esquinas y calles en el orden de circulación. Sin trazado, la app lo estima entre puntos de
+        referencia.
+      }
+    </p>
+    <div class="buttons">
+      <div class="modes">
+        @for (item of modes; track item.id) {
+          <button type="button" [class.active]="mode() === item.id" (click)="mode.set(item.id)">{{ item.label }}</button>
+        }
+      </div>
+      <button type="button" class="btn tonal" [disabled]="locked() || stops().length < 2" (click)="traceStreets()">
+        @if (tracing()) {
+          <span class="spinner"></span>
+        } @else {
+          <span class="mi">route</span>
+        }
+        {{ tracing() ? 'Trazando…' : 'Trazar por las calles' }}
+      </button>
+      <button type="button" class="btn outline" [disabled]="locked()" (click)="undo()">Deshacer último punto</button>
+      @if (path().length > 0) {
+        <button type="button" class="btn outline" [disabled]="locked()" (click)="clearPath()">Borrar trazado</button>
+      }
+    </div>
+
+    <div class="map-box">
+      <div #map class="map"></div>
+      <!-- La licencia de OpenStreetMap exige la atribución a la vista. -->
+      <span class="credit">© OpenStreetMap contributors</span>
+    </div>
+
+    <div class="stops-head">
+      <strong class="title">Puntos de referencia</strong>
+      <span class="small">{{ stops().length }} puntos de referencia</span>
+    </div>
+    @if (stops().length < 2) {
+      <p class="small">Añade al menos dos puntos de referencia en el mapa.</p>
+    }
+    <!-- Por identidad: al reordenar, cada campo sigue a su punto de referencia. -->
+    @for (stop of stops(); track stop) {
+      <div class="stop">
+        <span class="number">{{ $index + 1 }}</span>
+        <div class="stop-name">
+          <input
+            class="input"
+            maxlength="120"
+            [placeholder]="'Nombre del punto de referencia ' + ($index + 1)"
+            [class.invalid]="checked() && !stop.name.trim()"
+            [disabled]="locked()"
+            [value]="stop.name"
+            (input)="rename(stop, $any($event.target).value)"
+          />
+          <small>{{ stop.latitude.toFixed(5) }}, {{ stop.longitude.toFixed(5) }}</small>
+        </div>
+        <button
+          type="button"
+          class="icon-btn"
+          title="Subir punto de referencia"
+          [disabled]="locked() || $first"
+          (click)="swapStops($index, $index - 1)"
+        >
+          <span class="mi">arrow_upward</span>
+        </button>
+        <button
+          type="button"
+          class="icon-btn"
+          title="Bajar punto de referencia"
+          [disabled]="locked() || $last"
+          (click)="swapStops($index, $index + 1)"
+        >
+          <span class="mi">arrow_downward</span>
+        </button>
+        <button
+          type="button"
+          class="icon-btn"
+          title="Quitar punto de referencia"
+          [disabled]="locked()"
+          (click)="removeStop(stop)"
+        >
+          <span class="mi">close</span>
+        </button>
+      </div>
+    }
+  </section>
+</div>

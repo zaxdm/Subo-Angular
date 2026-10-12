@@ -1,0 +1,43 @@
+<aside class="sidebar">
+  <div class="brand">
+    <app-subo-mark [size]="43" />
+    <div>
+      <strong>Subo</strong>
+      <span>ADMINISTRACIÓN</span>
+    </div>
+  </div>
+
+  <p class="motto">TU CIUDAD, CONECTADA</p>
+  <!-- Una ruta a medio editar se queda esperando al volver de otra sección. -->
+  <nav>
+    @for (section of sections(); track section.path) {
+      <a
+        [routerLink]="section.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <span class="mi">{{ section.icon }}</span>
+        <span class="ellipsis">{{ section.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <div class="foot">
+    <p class="city"><i></i> Trujillo, La Libertad</p>
+    <p class="slogan">Un buen viaje empieza<br />con una buena ruta.</p>
+  </div>
+</aside>
+
+<div class="content">
+  <header>
+    <span class="kicker ellipsis">Centro de control</span>
+    <span class="account ellipsis">{{ store.session()?.name }}</span>
+    <!-- Sale del panel a la web de los pasajeros, sin cerrar sesión. -->
+    <a class="btn text" routerLink="/mapa">Ver la web</a>
+    <button type="button" class="btn text" (click)="store.signOut()">Cerrar sesión</button>
+  </header>
+  <hr class="divider" />
+  <main>
+    <router-outlet />
+  </main>
+</div>

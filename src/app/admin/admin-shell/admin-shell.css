@@ -1,0 +1,175 @@
+:host {
+  display: flex;
+  min-height: 100dvh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 230px;
+  height: 100dvh;
+  padding: 36px 20px 32px;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand strong {
+  display: block;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.brand span {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.motto {
+  margin: 60px 0 16px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Una sección en la navegación; la activa es una pastilla amarilla. */
+nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+nav a:hover {
+  background: var(--chip);
+}
+
+nav a.active {
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+nav .mi {
+  font-size: 17px;
+}
+
+.foot {
+  margin-top: auto;
+}
+
+.city {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.city i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.slogan {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 44px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  height: 88px;
+}
+
+header .kicker {
+  flex: 1;
+}
+
+/* La cuenta va pegada a la derecha y, si el nombre es largo, se recorta. */
+.account {
+  max-width: 260px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sin barra lateral, la marca y las secciones van en una franja arriba. */
+@media (max-width: 899px) {
+  :host {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 14px 20px 12px;
+    border-right: 0;
+  }
+
+  .motto,
+  .foot,
+  .account {
+    display: none;
+  }
+
+  /* Son varias: en una pantalla estrecha se deslizan de lado. */
+  nav {
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 14px;
+    overflow-x: auto;
+  }
+
+  nav a {
+    flex: none;
+  }
+
+  .content {
+    padding: 0 20px;
+  }
+
+  header {
+    height: 60px;
+  }
+}

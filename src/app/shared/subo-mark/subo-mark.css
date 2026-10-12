@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--field-line);
+  background: var(--paper);
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

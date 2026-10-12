@@ -1,0 +1,65 @@
+<app-page-frame
+  label="Buzón"
+  title="Sugerencias"
+  subtitle="Lo que los pasajeros escriben desde Soporte en la app."
+  [loading]="loading()"
+  [ready]="items() !== null"
+  [emptyMessage]="items()?.length === 0 ? 'El buzón está vacío.' : null"
+  (refresh)="load()"
+>
+  @for (item of items(); track item) {
+    <article class="card">
+      <div class="top">
+        <span class="pill">{{ item.subject }}</span>
+        <span class="small ellipsis">{{ formatDateTime(item.createdAt) }}</span>
+        <button type="button" class="icon-btn" title="Eliminar sugerencia" (click)="delete(item)">
+          <span class="mi">delete</span>
+        </button>
+      </div>
+      <p class="message">{{ item.message }}</p>
+      <p class="small">{{ authorOf(item) }}</p>
+      @if (originOf(item); as origin) {
+        <p class="small">{{ origin }}</p>
+      }
+      @if (item.reply) {
+        <p class="reply">Respuesta: {{ item.reply }}</p>
+      }
+      <div class="actions">
+        <select
+          class="input"
+          aria-label="Estado"
+          (change)="review(item, $any($event.target).value, item.reply)"
+        >
+          @for (status of statuses; track status.code) {
+            <option [value]="status.code" [selected]="status.code === item.status">{{ status.label }}</option>
+          }
+        </select>
+        <button type="button" class="btn outline" (click)="openReply(item)">
+          <span class="mi">reply</span>
+          {{ item.reply ? 'Cambiar respuesta' : 'Responder' }}
+        </button>
+      </div>
+    </article>
+  }
+</app-page-frame>
+
+@if (replying()) {
+  <div class="overlay" (click)="replying.set(null)">
+    <form class="dialog" (click)="$event.stopPropagation()" (ngSubmit)="saveReply()">
+      <h2>Responder</h2>
+      <textarea
+        class="input"
+        name="reply"
+        rows="5"
+        maxlength="1000"
+        autofocus
+        placeholder="Lo verá en la app quien escribió la sugerencia"
+        [(ngModel)]="reply"
+      ></textarea>
+      <div class="actions">
+        <button type="button" class="btn text" (click)="replying.set(null)">Cancelar</button>
+        <button type="submit" class="btn small-btn">Guardar</button>
+      </div>
+    </form>
+  </div>
+}

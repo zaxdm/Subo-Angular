@@ -1,0 +1,30 @@
+:host {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--accent-soft), #fbf6e3);
+  overflow: hidden;
+}
+
+.hint {
+  color: #8f8565;
+  font-size: 12px;
+  text-align: center;
+}
+
+.letter {
+  color: var(--accent-text);
+  font-size: 46px;
+  font-weight: 700;
+}
+
+img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

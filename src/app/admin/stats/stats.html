@@ -1,0 +1,65 @@
+<app-page-frame
+  label="Resumen"
+  title="Estadísticas"
+  subtitle="Cómo se está usando la app."
+  [loading]="loading()"
+  [ready]="stats() !== null || failed()"
+  [emptyMessage]="stats() === null && failed() ? 'No se pudieron cargar las estadísticas.' : null"
+  (refresh)="load()"
+>
+  <section class="metrics">
+    @for (metric of metrics(); track metric.label) {
+      <div class="card">
+        <span class="small ellipsis">{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+        <!-- El hueco se guarda aunque no haya nota, para que las tarjetas midan lo mismo. -->
+        <span class="small note">{{ metric.note }}</span>
+      </div>
+    }
+  </section>
+
+  <section class="card block">
+    <h2 class="title">Rutas más consultadas</h2>
+    <p class="small">Veces que se abrió su ficha en los últimos 30 días.</p>
+    @for (bar of topRoutes(); track $index) {
+      <div class="bar">
+        <span class="ellipsis">{{ bar.label }}</span>
+        <span class="track"><i [style.width.%]="bar.percent"></i></span>
+        <strong>{{ bar.value }}</strong>
+      </div>
+    } @empty {
+      <p class="muted">Todavía nadie ha abierto la ficha de una ruta.</p>
+    }
+  </section>
+
+  <section class="card block">
+    <h2 class="title">Alertas de la semana, por tipo</h2>
+    @for (bar of byType(); track bar.label) {
+      <div class="bar">
+        <span class="ellipsis">{{ bar.label }}</span>
+        <span class="track"><i [style.width.%]="bar.percent"></i></span>
+        <strong>{{ bar.value }}</strong>
+      </div>
+    } @empty {
+      <p class="muted">No se publicó ninguna alerta esta semana.</p>
+    }
+  </section>
+
+  <section class="card block">
+    <h2 class="title">A qué hora se reporta</h2>
+    <p class="small">Alertas de los últimos 30 días, por hora del día.</p>
+    @if (anyHour()) {
+      <div class="hours">
+        @for (hour of hours(); track $index) {
+          <div [title]="$index + ':00 · ' + hour.value + ' alertas'">
+            <i [style.height.px]="hour.percent"></i>
+            <!-- Una de cada tres, para que quepan. -->
+            <span>{{ $index % 3 === 0 ? $index : '' }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="muted">Aún no hay alertas que contar.</p>
+    }
+  </section>
+</app-page-frame>

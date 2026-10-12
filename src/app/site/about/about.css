@@ -1,0 +1,420 @@
+:host {
+  display: block;
+  flex: 1;
+}
+
+.hero {
+  gap: 40px;
+  padding: 56px 48px 0;
+  border-radius: 32px;
+  background: var(--accent);
+  overflow: hidden;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-bottom: 56px;
+}
+
+.tag {
+  padding: 7px 14px;
+  border-radius: 30px;
+  background: var(--surface);
+  font-weight: 500;
+}
+
+.intro h1 {
+  margin: 20px 0;
+  font-size: 58px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  line-height: 1.04;
+}
+
+.intro p {
+  max-width: 480px;
+  margin-bottom: 24px;
+  color: var(--accent-text);
+  font-size: 19px;
+  line-height: 1.6;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn.borderless {
+  padding: 14px 24px;
+  border-color: transparent;
+  font-size: 15px;
+}
+
+/* --- El teléfono de la portada --- */
+
+.mock {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 420px;
+}
+
+/* La pista, con sus rayas. */
+.road {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 90px;
+  border-radius: 20px 20px 0 0;
+  background: var(--ink-soft);
+}
+
+.road span {
+  width: 44px;
+  height: 6px;
+  border-radius: 3px;
+  background: #ffe27a;
+}
+
+.phone {
+  position: relative;
+  width: 250px;
+  height: 410px;
+  padding: 12px 12px 0;
+  border-radius: 36px 36px 0 0;
+  background: var(--ink);
+}
+
+/* Lo que no cabe se queda bajo el borde, como en una pantalla de verdad. */
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 18px 14px 0;
+  border-radius: 26px 26px 0 0;
+  background: var(--surface);
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.phone-field {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f5f2e8;
+}
+
+.phone-field small,
+.serve {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.serve {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.phone-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #ede8d8;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.phone-letter {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--accent);
+  font-weight: 900;
+}
+
+.phone-letter.second {
+  background: #ffe89a;
+}
+
+.phone-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--faint);
+}
+
+.phone-text strong {
+  color: var(--ink);
+}
+
+.phone-alert {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--accent-wash);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* --- Cifras --- */
+
+.stats {
+  gap: 16px;
+  margin: 40px 0 96px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.stat .mi {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+  font-size: 26px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.stat span:not(.mi) {
+  color: var(--muted);
+}
+
+/* --- Las tres tarjetas grandes: un ejemplo arriba y, abajo, qué resuelve. --- */
+
+.know {
+  max-width: 620px;
+  margin-bottom: 40px;
+  font-size: 40px;
+}
+
+.showcase {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 230px;
+  padding: 28px;
+  border-radius: 26px;
+}
+
+.showcase.wash {
+  background: var(--accent-wash);
+}
+
+.showcase.bordered {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.showcase h3 {
+  margin-bottom: 8px;
+  font-size: 21px;
+}
+
+.showcase p {
+  color: var(--accent-text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Sobre el negro, el texto va claro. */
+.showcase.dark {
+  background: var(--ink);
+  color: #fff;
+}
+
+.showcase.dark p {
+  color: #cfc9b6;
+}
+
+.route-line {
+  display: flex;
+  align-items: center;
+}
+
+.route-line i {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  background: var(--accent-wash);
+}
+
+.route-line i.last {
+  background: var(--accent);
+}
+
+.route-line b {
+  flex: 1;
+  height: 5px;
+  margin: 0 6px;
+  border-radius: 3px;
+  background: var(--ink);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tags span {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.fare-tag {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.time-tag {
+  background: var(--ink-soft);
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--accent-wash);
+}
+
+.notice .mi {
+  font-size: 20px;
+}
+
+/* --- Fotos y equipo --- */
+
+.section-title {
+  padding: 56px 0 20px;
+}
+
+.section-title h2 {
+  margin-top: 8px;
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+
+.team {
+  gap: 40px;
+}
+
+.photo.wide {
+  aspect-ratio: 16 / 10;
+}
+
+.team-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* --- El compromiso --- */
+
+.promises {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr;
+  gap: 28px;
+  margin-top: 60px;
+  padding: 48px;
+  border-radius: 32px;
+  background: var(--accent-wash);
+}
+
+.promises h2 {
+  padding-right: 12px;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1.08;
+}
+
+.promise .mi {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: var(--accent);
+  font-size: 20px;
+}
+
+.promise h3 {
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.promise p {
+  line-height: 1.6;
+}
+
+@media (max-width: 899px) {
+  .promises {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .promises h2 {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 719px) {
+  .hero {
+    padding: 28px 24px 0;
+  }
+
+  .intro {
+    padding-bottom: 8px;
+  }
+
+  .intro h1 {
+    font-size: 40px;
+  }
+
+  .intro p {
+    font-size: 16px;
+  }
+
+  .stats {
+    margin: 24px 0 56px;
+  }
+
+  .know {
+    font-size: 30px;
+  }
+
+  .promises {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+}

@@ -1,0 +1,154 @@
+<div class="page">
+  <!-- La portada: un bloque del amarillo de la marca, con la app asomando por abajo sobre la pista. -->
+  <section class="hero cols">
+    <div class="intro">
+      <span class="tag">Hecho en Trujillo</span>
+      <h1>¿Este micro me lleva?</h1>
+      <p>
+        Subo nació de esa pregunta. Queremos que la respuesta esté en tu celular o en tu computadora, antes de salir de
+        casa.
+      </p>
+      <div class="buttons">
+        <a class="btn" routerLink="/mapa">Ver el mapa</a>
+        <!-- Sobre el amarillo, el botón blanco no necesita borde. -->
+        <a class="btn outline borderless" routerLink="/descargar">Descargar la app</a>
+      </div>
+    </div>
+
+    <!-- La app en un teléfono, con dos líneas de verdad del catálogo. -->
+    <div class="mock" aria-hidden="true">
+      <div class="road">
+        @for (stripe of [1, 2, 3, 4]; track stripe) {
+          <span></span>
+        }
+      </div>
+      <div class="phone">
+        <div class="screen">
+          <div class="phone-field">
+            <small>Desde</small>
+            Mi ubicación
+          </div>
+          <div class="phone-field">
+            <small>Hasta</small>
+            {{ sample()?.destination ?? 'Tu destino' }}
+          </div>
+          <p class="serve">Te sirven</p>
+          @for (route of phoneLines(); track route.id) {
+            <div class="phone-line">
+              <span class="phone-letter" [class.second]="!$first">{{ route.letter }}</span>
+              <span class="phone-text">
+                <strong class="ellipsis">{{ route.name }}</strong>
+                <span class="ellipsis">S/ {{ route.fare.toFixed(2) }} · {{ route.origin }}</span>
+              </span>
+            </div>
+          }
+          <div class="phone-alert">Aviso de la calle: desvío reportado</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats cols">
+    <div class="card stat">
+      <span class="mi">directions_bus</span>
+      <div>
+        <strong>{{ routes().length }}</strong>
+        <span>líneas en el mapa</span>
+      </div>
+    </div>
+    <div class="card stat">
+      <span class="mi">place</span>
+      <div>
+        <strong>{{ stops() }}</strong>
+        <span>puntos de referencia</span>
+      </div>
+    </div>
+    <div class="card stat">
+      <span class="mi">sell</span>
+      <div>
+        <strong>S/ 0</strong>
+        <span>lo que cuesta usar Subo</span>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="h-large know">Todo lo que necesitas saber antes de subir</h2>
+  <section class="cols">
+    <article class="showcase wash">
+      <!-- El dibujo de un recorrido: tres paraderos unidos, el último en amarillo. -->
+      <div class="route-line"><i></i><b></b><i></i><b></b><i class="last"></i></div>
+      <div>
+        <h3>Recorrido y paraderos</h3>
+        <p>Por dónde pasa cada línea y dónde te puedes subir o bajar.</p>
+      </div>
+    </article>
+    <article class="showcase dark">
+      <div class="tags">
+        <span class="fare-tag">S/ {{ (sample()?.fare ?? 2).toFixed(2) }}</span>
+        <span class="time-tag">{{ sample()?.schedule || '05:00 – 22:00' }}</span>
+      </div>
+      <div>
+        <h3>Pasaje y horario</h3>
+        <p>Cuánto cuesta y en qué horario pasa, antes de esperar en la esquina.</p>
+      </div>
+    </article>
+    <article class="showcase bordered">
+      <div class="notice">
+        <span class="mi">warning_amber</span>
+        Tráfico, obras o desvíos, contados por pasajeros
+      </div>
+      <div>
+        <h3>Avisos de la calle</h3>
+        <p>Desvíos y cambios que reporta la gente. Si ves algo distinto, cuéntanos y lo corregimos.</p>
+      </div>
+    </article>
+  </section>
+
+  <header class="section-title">
+    <p class="kicker">Subo por dentro</p>
+    <h2>Así se ve Subo</h2>
+  </header>
+  <section class="cols">
+    @for (number of gallery; track number) {
+      <figure class="photo">
+        <span class="mi">photo_camera</span>
+        Foto {{ number }}
+        <img [src]="'nosotros/galeria-' + number + '.jpg'" alt="" loading="lazy" (error)="$any($event.target).hidden = true" />
+      </figure>
+    }
+  </section>
+
+  <header class="section-title">
+    <p class="kicker">El equipo</p>
+    <h2>Quiénes estamos detrás</h2>
+  </header>
+  <section class="cols team">
+    <figure class="photo wide">
+      <span class="mi">photo_camera</span>
+      Foto del equipo
+      <img src="nosotros/equipo.jpg" alt="" loading="lazy" (error)="$any($event.target).hidden = true" />
+    </figure>
+    <div class="team-text">
+      <p>
+        Somos un equipo de Trujillo que usa el micro todos los días. Cargamos y revisamos las rutas, con ayuda de
+        colaboradores que recorren la ciudad.
+      </p>
+      <p>
+        El transporte cambia seguido, así que puede haber diferencias con lo que ves en la calle: si encuentras una,
+        cuéntanoslo y la corregimos.
+      </p>
+    </div>
+  </section>
+
+  <!-- El compromiso: una franja del amarillo suave, con el título a un lado. -->
+  <section class="promises">
+    <h2>Lo que no va a cambiar</h2>
+    @for (promise of promises; track promise.title) {
+      <div class="promise">
+        <span class="mi">{{ promise.icon }}</span>
+        <h3>{{ promise.title }}</h3>
+        <p>{{ promise.body }}</p>
+      </div>
+    }
+  </section>
+</div>

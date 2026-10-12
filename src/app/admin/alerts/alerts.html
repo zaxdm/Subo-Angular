@@ -1,0 +1,46 @@
+<app-page-frame
+  label="Moderación"
+  title="Alertas"
+  subtitle="Lo que la gente tiene publicado ahora mismo en el mapa."
+  [loading]="loading()"
+  [ready]="alerts() !== null"
+  [emptyMessage]="alerts()?.length === 0 ? 'No hay alertas vigentes.' : null"
+  (refresh)="load()"
+>
+  @for (item of alerts(); track item.alert.id) {
+    <article class="card">
+      <div class="tags">
+        <span class="pill">{{ item.alert.label }}</span>
+        @if (item.reputation === 'TRUSTED') {
+          <span class="pill success">Suele acertar</span>
+        }
+        @if (item.reputation === 'UNRELIABLE') {
+          <span class="pill warning">Suele fallar</span>
+        }
+        @if (item.authorBlocked) {
+          <span class="pill danger">Cuenta bloqueada</span>
+        }
+        <span class="small">{{ formatDateTime(item.createdAt) }}</span>
+      </div>
+      <h2 class="title">{{ item.alert.placeName ?? 'Lugar sin nombre' }}</h2>
+      @if (item.alert.comment) {
+        <p>{{ item.alert.comment }}</p>
+      }
+      @if (safeUrl(item.imageUrl); as photo) {
+        <img [src]="photo" alt="" loading="lazy" (error)="$any($event.target).hidden = true" />
+      }
+      <p class="small author">{{ authorOf(item) }}</p>
+      <p class="small">Sigue ahí: {{ item.alert.confirmations }} · Ya no está: {{ item.dismissals }}</p>
+      <div class="actions">
+        <button type="button" class="btn outline" (click)="delete(item)">
+          <span class="mi danger">delete</span>
+          Eliminar alerta
+        </button>
+        <button type="button" class="btn outline" (click)="toggleBlock(item)">
+          <span class="mi">{{ item.authorBlocked ? 'lock_open' : 'block' }}</span>
+          {{ item.authorBlocked ? 'Desbloquear cuenta' : 'Bloquear cuenta' }}
+        </button>
+      </div>
+    </article>
+  }
+</app-page-frame>

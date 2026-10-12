@@ -1,0 +1,37 @@
+<router-outlet />
+
+<!-- El acceso es una ventana sobre la página: al cerrarla se sigue donde se estaba. -->
+@if (store.loginOpen()) {
+  <div class="overlay">
+    <app-login />
+  </div>
+}
+
+@if (ui.confirmation(); as question) {
+  <div class="overlay" (click)="ui.resolve(false)">
+    <div class="dialog" role="alertdialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <h2>{{ question.title }}</h2>
+      <p>{{ question.message }}</p>
+      <div class="actions">
+        <button type="button" class="btn text" (click)="ui.resolve(false)">Cancelar</button>
+        <button
+          type="button"
+          class="btn small-btn"
+          [class.danger]="question.destructive"
+          (click)="ui.resolve(true)"
+        >
+          {{ question.action }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (ui.toast(); as toast) {
+  <div class="toast" [class.error]="toast.kind === 'error'" [class.plain]="toast.kind === 'plain'" role="status">
+    <p>{{ toast.message }}</p>
+    <button type="button" class="icon-btn" aria-label="Cerrar" (click)="ui.dismissToast()">
+      <span class="mi">close</span>
+    </button>
+  </div>
+}

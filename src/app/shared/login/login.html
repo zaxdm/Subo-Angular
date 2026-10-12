@@ -1,0 +1,144 @@
+@if (confirming(); as address) {
+  <!-- El paso de escribir el código que llegó al correo. -->
+  <form class="card" (ngSubmit)="confirm()">
+    <div class="top">
+      <span class="tag">Confirma tu correo</span>
+      <button type="button" class="close" aria-label="Cerrar" [disabled]="busy()" (click)="store.closeLogin()">
+        <span class="mi">close</span>
+      </button>
+    </div>
+    <h2>Escribe el código</h2>
+    <p class="hint">Te enviamos un código de 6 dígitos a {{ address }}. Vale 15 minutos.</p>
+
+    <label class="field">
+      <span>Código</span>
+      <input
+        class="input code"
+        name="code"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="one-time-code"
+        autofocus
+        [disabled]="busy()"
+        [(ngModel)]="code"
+      />
+    </label>
+
+    @if (error(); as problem) {
+      <p class="error">{{ problem }}</p>
+    }
+    @if (notice(); as message) {
+      <p class="notice">{{ message }}</p>
+    }
+    <button type="submit" class="btn block main" [disabled]="busy()">
+      {{ busy() ? 'Un momento…' : 'Confirmar y entrar' }}
+    </button>
+    <div class="links">
+      <button type="button" class="btn text" [disabled]="busy()" (click)="resend()">Enviar otro código</button>
+      <button type="button" class="btn text" [disabled]="busy()" (click)="changeEmail()">Cambiar el correo</button>
+    </div>
+  </form>
+} @else {
+  <form class="card" novalidate (ngSubmit)="submit()">
+    <div class="top">
+      <!-- Al entrar, la marca; al crear la cuenta, que es gratis. -->
+      @if (registering()) {
+        <span class="tag">Gratis, para web y app</span>
+      } @else {
+        <app-subo-mark [size]="40" />
+      }
+      <button type="button" class="close" aria-label="Cerrar" [disabled]="busy()" (click)="store.closeLogin()">
+        <span class="mi">close</span>
+      </button>
+    </div>
+    <h2>{{ registering() ? 'Crea tu cuenta' : 'Hola de nuevo' }}</h2>
+    <p class="hint">
+      @if (registering()) {
+        Te sirve también en la app del celular.
+      } @else if (store.wantedLine()) {
+        Entra para ver el recorrido de la línea.
+      } @else {
+        Entra con la misma cuenta de la app.
+      }
+    </p>
+
+    <app-google-button (token)="withGoogle($event)" />
+
+    @if (registering()) {
+      <label class="field">
+        <span>Tu nombre</span>
+        <input
+          class="input"
+          name="name"
+          autocomplete="name"
+          [class.invalid]="problems().name"
+          [disabled]="busy()"
+          [(ngModel)]="name"
+        />
+        @if (problems().name; as problem) {
+          <small class="problem">{{ problem }}</small>
+        }
+      </label>
+    }
+
+    <label class="field">
+      <span>Correo</span>
+      <input
+        class="input"
+        name="email"
+        type="email"
+        autocomplete="username"
+        placeholder="tucorreo@gmail.com"
+        [class.invalid]="problems().email"
+        [disabled]="busy()"
+        [(ngModel)]="email"
+      />
+      @if (problems().email; as problem) {
+        <small class="problem">{{ problem }}</small>
+      }
+    </label>
+
+    <label class="field">
+      <span>Contraseña</span>
+      <span class="password">
+        <input
+          class="input"
+          name="password"
+          [type]="showPassword() ? 'text' : 'password'"
+          [autocomplete]="registering() ? 'new-password' : 'current-password'"
+          [class.invalid]="problems().password"
+          [disabled]="busy()"
+          [(ngModel)]="password"
+        />
+        <button
+          type="button"
+          class="icon-btn"
+          [title]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          (click)="showPassword.set(!showPassword())"
+        >
+          <span class="mi">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+        </button>
+      </span>
+      @if (problems().password; as problem) {
+        <small class="problem">{{ problem }}</small>
+      } @else if (registering()) {
+        <small>Al menos {{ passwordMinLength }} caracteres</small>
+      }
+    </label>
+
+    @if (error(); as problem) {
+      <p class="error">{{ problem }}</p>
+    }
+
+    <!-- Entrar va en negro; crear la cuenta, en el amarillo de la marca. -->
+    <button type="submit" class="btn block main" [class.accent]="registering()" [disabled]="busy()">
+      {{ busy() ? 'Un momento…' : registering() ? 'Crear mi cuenta' : 'Entrar' }}
+    </button>
+    <p class="switch">
+      {{ registering() ? '¿Ya tienes cuenta?' : '¿Primera vez en Subo?' }}
+      <button type="button" class="btn text" [disabled]="busy()" (click)="toggleMode()">
+        {{ registering() ? 'Inicia sesión' : 'Crea tu cuenta' }}
+      </button>
+    </p>
+  </form>
+}

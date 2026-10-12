@@ -1,0 +1,50 @@
+<app-page-frame
+  label="Equipo"
+  title="Administradores"
+  subtitle="Entran a este panel y graban rutas desde la app, que salen publicadas."
+  [loading]="loading()"
+  [ready]="people() !== null"
+  (refresh)="load()"
+>
+  <form class="card add" (ngSubmit)="add()">
+    <h2 class="title">Añadir administrador</h2>
+    <p class="small">Tiene que tener ya una cuenta en la app.</p>
+    <div class="row">
+      <label class="field">
+        <input
+          class="input"
+          name="email"
+          type="email"
+          placeholder="Correo de su cuenta"
+          aria-label="Correo de su cuenta"
+          [class.invalid]="emailProblem()"
+          [(ngModel)]="email"
+        />
+        @if (emailProblem(); as problem) {
+          <small class="problem">{{ problem }}</small>
+        }
+      </label>
+      <button type="submit" class="btn small-btn" [disabled]="adding()">
+        <span class="mi">person_add_alt</span>
+        Añadir
+      </button>
+    </div>
+  </form>
+
+  @for (person of people(); track person.id) {
+    <div class="card person">
+      <div>
+        <strong>{{ person.name || person.email }}</strong>
+        <span class="muted">{{ person.email }}</span>
+      </div>
+      <!-- Al principal no se le quita el acceso: el panel no se queda sin dueño. -->
+      @if (person.isPrincipal) {
+        <span class="small">Principal</span>
+      } @else {
+        <button type="button" class="btn text" (click)="remove(person)">Quitar</button>
+      }
+    </div>
+  } @empty {
+    <p class="muted">Todavía no hay administradores.</p>
+  }
+</app-page-frame>

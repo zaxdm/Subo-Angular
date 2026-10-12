@@ -1,0 +1,9 @@
+@if (hint(); as text) {
+  <span class="hint">{{ text }}</span>
+} @else {
+  <span class="letter">{{ letter() || 'RN' }}</span>
+}
+<!-- La foto va encima: el fondo se ve mientras carga y si no existe. -->
+@if (url() && !failed()) {
+  <img [src]="url()" alt="" loading="lazy" (error)="failed.set(true)" />
+}

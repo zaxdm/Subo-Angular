@@ -1,0 +1,124 @@
+:host {
+  display: block;
+  flex: 1;
+}
+
+.page {
+  max-width: 1050px;
+}
+
+.switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.switch .btn {
+  font-weight: 400;
+}
+
+.lead {
+  max-width: 640px;
+  margin: 12px 0 44px;
+  color: var(--body);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.body {
+  display: flex;
+  align-items: flex-start;
+  gap: 56px;
+}
+
+.index {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 240px;
+  border-left: 2px solid var(--line);
+}
+
+.index span {
+  padding: 0 16px 8px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.index button {
+  /* La marca amarilla tapa la línea gris del índice. */
+  margin-left: -2px;
+  padding: 8px 16px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.index button.current {
+  border-left-color: var(--accent);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+article {
+  flex: 1;
+  max-width: 680px;
+}
+
+.summary {
+  margin-bottom: 36px;
+  padding: 22px 24px 14px;
+  border-radius: 18px;
+  background: var(--accent-wash);
+}
+
+.summary strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.summary p {
+  margin-bottom: 8px;
+  color: var(--accent-text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+article h2 {
+  margin-bottom: 10px;
+  font-size: 21px;
+  /* Al saltar desde el índice, el título no queda bajo la barra de arriba. */
+  scroll-margin-top: 88px;
+}
+
+article h2 + p {
+  margin-bottom: 36px;
+  color: #3a3528;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.doubt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-top: 24px;
+  color: var(--body);
+  font-size: 15px;
+}
+
+@media (max-width: 719px) {
+  .index {
+    display: none;
+  }
+}

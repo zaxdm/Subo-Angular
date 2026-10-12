@@ -1,0 +1,22 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.peru.expresdm",
+      "sha256_cert_fingerprints": [
+        "23:2A:87:EE:92:D4:DC:9D:B5:A6:0A:88:07:F7:62:4C:3F:6D:39:56:8C:A9:35:A2:F7:ED:2E:A4:DA:40:A2:91"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.peru.expresdm.debug",
+      "sha256_cert_fingerprints": [
+        "00:D2:B3:8E:E1:44:C6:9D:BF:F5:60:74:83:0F:86:90:8F:1B:C5:F4:02:4E:B8:56:44:E3:3D:34:D2:7C:56:06"
+      ]
+    }
+  }
+]

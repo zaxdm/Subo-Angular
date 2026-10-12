@@ -1,0 +1,33 @@
+/* Hasta que Google pinta su botón no se ve nada, ni el separador. */
+:host {
+  display: block;
+  height: 0;
+  overflow: hidden;
+}
+
+:host(.ready) {
+  height: auto;
+}
+
+.holder {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.or::before,
+.or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}

@@ -1,0 +1,36 @@
+<div class="inner">
+  <div class="columns">
+    <div class="about">
+      <div class="brand">
+        <app-subo-mark />
+        <span>Subo</span>
+      </div>
+      <p>Las líneas de micro de Trujillo en un solo mapa: recorrido, pasaje, horario y avisos de la calle.</p>
+    </div>
+
+    <nav>
+      <h3>El sitio</h3>
+      <a routerLink="/">Inicio</a>
+      <a routerLink="/mapa">Mapa</a>
+      <a routerLink="/descargar">Descargar app</a>
+      <a routerLink="/contacto">Contacto</a>
+    </nav>
+
+    <nav>
+      <h3>Legal</h3>
+      <a routerLink="/privacidad">Privacidad</a>
+      <a routerLink="/terminos">Términos</a>
+    </nav>
+
+    <nav>
+      <h3>Escríbenos</h3>
+      @for (channel of channels; track channel.label) {
+        <a [href]="channel.link" target="_blank" rel="noopener">{{ channel.label }}: {{ channel.value }}</a>
+      }
+      <a routerLink="/contacto">Formulario de contacto</a>
+    </nav>
+  </div>
+
+  <hr class="divider" />
+  <p class="copyright">© 2026 Subo · Hecho en Trujillo, Perú</p>
+</div>

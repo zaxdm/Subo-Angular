@@ -1,0 +1,14 @@
+// Publica la web ya compilada en Cloudflare como sitio estático.
+// En Cloudflare (Workers & Pages):
+//   Directorio raíz:        web
+//   Comando de compilación: npm ci && npm run build
+//   Comando de despliegue:  npx wrangler deploy
+{
+  "name": "subo",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist/subo-web/browser",
+    // Las direcciones como /mapa o /ruta/<id> las atiende la propia web.
+    "not_found_handling": "single-page-application"
+  }
+}

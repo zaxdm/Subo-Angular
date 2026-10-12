@@ -1,0 +1,207 @@
+:host {
+  display: block;
+  padding: 24px 0 48px;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.back {
+  margin-left: -12px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Sección numerada del editor. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+.panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 17px;
+}
+
+.step {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: #7a5a00;
+  font-size: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--ink);
+}
+
+.check small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.preview {
+  height: 170px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.delete {
+  border-color: #dec2bc;
+  color: var(--danger);
+}
+
+.modes {
+  display: flex;
+  border: 1px solid var(--field-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.modes button {
+  padding: 11px 16px;
+  border: 0;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modes button + button {
+  border-left: 1px solid var(--field-line);
+}
+
+.modes button.active {
+  background: var(--accent-soft);
+}
+
+.map-box {
+  position: relative;
+  height: 420px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.map {
+  position: absolute;
+  inset: 0;
+  /* El mapa no tapa los avisos ni las ventanas. */
+  z-index: 0;
+}
+
+.credit {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  z-index: 1;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgb(255 255 255 / 85%);
+  font-size: 10px;
+}
+
+.stops-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stop {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 8px 4px 0 0;
+  border-radius: 50%;
+  background: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stop-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.stop-name .input {
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
+.stop-name small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+@media (max-width: 999px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 519px) {
+  .row {
+    flex-direction: column;
+  }
+
+  .row .field {
+    width: 100%;
+  }
+}

@@ -1,0 +1,35 @@
+{
+    "name": "Subo · Micros de Trujillo",
+    "short_name": "Subo",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FBF8EE",
+    "theme_color": "#F5B800",
+    "description": "Las líneas de micro de Trujillo: recorrido, paraderos, pasaje y horario.",
+    "orientation": "any",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

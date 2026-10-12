@@ -1,0 +1,95 @@
+<div class="page">
+  <h1 class="h-large">Escríbenos</h1>
+  <p class="lead">¿Una ruta cambió, falta una línea o tienes una idea? Cuéntanos y lo revisamos.</p>
+
+  <div class="layout">
+    <section class="card form">
+      @if (sent()) {
+        <p class="sent">
+          <span class="mi">check_circle</span>
+          Mensaje enviado. Gracias por ayudarnos a mejorar.
+        </p>
+        <button type="button" class="btn outline" (click)="sent.set(false)">Escribir otro mensaje</button>
+      } @else {
+        <form (ngSubmit)="send()">
+          <h2>¿Sobre qué es?</h2>
+          <!-- El asunto se elige tocando una pastilla: la elegida va en negro. -->
+          <div class="subjects">
+            @for (option of subjects; track option) {
+              <button
+                type="button"
+                class="btn small-btn"
+                [class.outline]="option !== subject()"
+                [disabled]="busy()"
+                (click)="subject.set(option)"
+              >
+                {{ option }}
+              </button>
+            }
+          </div>
+
+          <label class="field">
+            <span class="field-title">Tu mensaje</span>
+            <textarea
+              class="input"
+              name="message"
+              rows="6"
+              maxlength="1000"
+              placeholder="Por ejemplo: la línea B ya no entra por la avenida…"
+              [class.invalid]="missing()"
+              [disabled]="busy()"
+              [(ngModel)]="message"
+            ></textarea>
+            <small [class.problem]="missing()">
+              {{ missing() ? 'Escribe tu mensaje' : message().length + '/1000' }}
+            </small>
+          </label>
+
+          <div class="submit">
+            <button type="submit" class="btn" [disabled]="busy()">{{ busy() ? 'Enviando…' : 'Enviar mensaje' }}</button>
+            @if (!store.session()) {
+              <span class="muted">Te pediremos entrar con tu cuenta para enviarlo.</span>
+            }
+          </div>
+        </form>
+      }
+    </section>
+
+    <aside>
+      <!-- A quién le llega el mensaje, en una tarjeta del amarillo de la marca. -->
+      <section class="team">
+        <h2>Llega directo al equipo</h2>
+        <p>
+          Tu mensaje lo lee el administrador de Subo. Si es una ruta, mientras más detalle (calle, hora, línea), más
+          rápido la corregimos.
+        </p>
+      </section>
+
+      <section class="card channels">
+        @if (ready.length > 0) {
+          <h2>También por aquí</h2>
+          @for (channel of ready; track channel.label) {
+            <a class="channel" [href]="channel.link" target="_blank" rel="noopener">
+              <span class="mi round">{{ channel.icon }}</span>
+              <span class="channel-text">
+                <strong>{{ channel.label }}</strong>
+                <span class="ellipsis">{{ channel.value }}</span>
+              </span>
+              <span class="mi muted">open_in_new</span>
+            </a>
+          }
+        }
+        @if (soon.length > 0) {
+          <h2>Pronto también en</h2>
+          <div class="soon">
+            @for (channel of soon; track channel.label) {
+              <span>{{ channel.label }}</span>
+            }
+          </div>
+        }
+        <hr class="divider" />
+        <p class="place"><span class="mi">place</span> Trujillo, La Libertad, Perú</p>
+      </section>
+    </aside>
+  </div>
+</div>

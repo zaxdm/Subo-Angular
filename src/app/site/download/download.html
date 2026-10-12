@@ -1,0 +1,72 @@
+<div class="page">
+  <section class="cols top">
+    <div class="intro">
+      <h1>Lleva Subo en tu celular</h1>
+      <p>
+        La app tiene todo lo de la web y además te ubica en el mapa, te dice cómo llegar y te avisa cuando te toca
+        bajar.
+      </p>
+      <div class="get">
+        @if (apkUrl) {
+          <a class="btn" [href]="apkUrl" download>
+            <span class="mi">download</span>
+            Descargar para Android
+          </a>
+          <span class="muted">{{ details }}</span>
+        } @else {
+          <button type="button" class="btn" disabled>
+            <span class="mi">download</span>
+            Disponible pronto
+          </button>
+        }
+      </div>
+      @if (!apkUrl) {
+        <p class="soon">Estamos preparando la descarga. Mientras tanto puedes usar Subo desde esta web.</p>
+      }
+    </div>
+    <figure class="photo">
+      <span class="mi">photo_camera</span>
+      Captura de la app
+      <img src="nosotros/app.jpg" alt="" (error)="$any($event.target).hidden = true" />
+    </figure>
+  </section>
+
+  <!-- Lo que solo tiene la app, en una franja blanca. -->
+  <section class="gains card">
+    <h2 class="h-medium">Lo que ganas al instalarla</h2>
+    <div class="cols">
+      @for (gain of gains; track gain.title) {
+        <div class="gain">
+          <span class="mi">{{ gain.icon }}</span>
+          <div>
+            <h3>{{ gain.title }}</h3>
+            <p>{{ gain.body }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <h2 class="h-medium">Cómo instalarla</h2>
+  <p class="lead">Toma menos de un minuto.</p>
+  <!-- Cada paso lleva su número en un círculo negro montado sobre la línea amarilla que une los tres. -->
+  <ol class="cols steps">
+    @for (step of steps; track step.title) {
+      <li>
+        <span class="number">{{ $index + 1 }}</span>
+        <h3>{{ step.title }}</h3>
+        <p>{{ step.body }}</p>
+      </li>
+    }
+  </ol>
+
+  <!-- El cierre: la misma descarga, en negro. -->
+  <section class="closing">
+    <strong>¿Listo? Descárgala y prueba hoy tu ruta.</strong>
+    @if (apkUrl) {
+      <a class="btn accent" [href]="apkUrl" download>Descargar para Android</a>
+    } @else {
+      <button type="button" class="btn accent" disabled>Descargar para Android</button>
+    }
+  </section>
+</div>

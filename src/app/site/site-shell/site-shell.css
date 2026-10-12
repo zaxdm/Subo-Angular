@@ -1,0 +1,161 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* El mapa ocupa lo que queda de pantalla: la página no se desliza. */
+:host(.on-map) {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 64px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.links {
+  display: flex;
+  margin-left: 28px;
+}
+
+.links a {
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.links a:hover {
+  background: rgb(28 26 20 / 5%);
+}
+
+.links a.current {
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.account {
+  max-width: 200px;
+  margin-right: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.menu {
+  position: relative;
+  display: none;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+}
+
+.menu-items {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 8px 0;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.menu-items a {
+  padding: 12px 18px;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.menu-items a:hover {
+  background: var(--chip);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  padding: 8px 28px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bar nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bar a {
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.bar a:hover {
+  background: rgb(28 26 20 / 5%);
+}
+
+@media (max-width: 759px) {
+  .navbar {
+    padding: 0 14px;
+  }
+
+  .links,
+  .account,
+  .wide-only,
+  .copyright {
+    display: none;
+  }
+
+  .menu {
+    display: block;
+  }
+
+  .bar {
+    justify-content: center;
+    padding: 8px;
+  }
+}

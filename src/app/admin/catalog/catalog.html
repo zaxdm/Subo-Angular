@@ -1,0 +1,122 @@
+@if (store.editing(); as route) {
+  <app-editor [route]="route" />
+} @else {
+  <header>
+    <div>
+      <p class="kicker">Catálogo</p>
+      <h1 class="h-large">Rutas y micros</h1>
+      <p class="muted">Lo que publiques aquí es lo que ven los pasajeros en la app.</p>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn outline" [disabled]="refreshing()" (click)="refresh()">
+        @if (refreshing()) {
+          <span class="spinner"></span>
+        } @else {
+          <span class="mi">refresh</span>
+        }
+        Actualizar
+      </button>
+      <button type="button" class="btn small-btn" (click)="create()">
+        <span class="mi">add</span>
+        Nueva ruta
+      </button>
+    </div>
+  </header>
+
+  <section class="metrics">
+    <div class="card">
+      <span class="small ellipsis">Rutas en total</span>
+      <strong>{{ store.routes().length }}</strong>
+    </div>
+    <div class="card">
+      <span class="small ellipsis">Publicadas</span>
+      <strong>{{ published() }}</strong>
+    </div>
+    <div class="card">
+      <span class="small ellipsis">Con foto</span>
+      <strong>{{ withPhoto() }}</strong>
+    </div>
+  </section>
+
+  <section class="filters">
+    <label class="search">
+      <span class="mi">search</span>
+      <input
+        type="search"
+        class="input"
+        placeholder="Buscar por nombre, micro, origen o destino"
+        [(ngModel)]="search"
+      />
+    </label>
+    <select class="input status" aria-label="Estado" [(ngModel)]="status">
+      <option value="">Todos los estados</option>
+      @for (item of statuses; track item.code) {
+        <option [value]="item.code">{{ item.label }}</option>
+      }
+    </select>
+  </section>
+
+  @if (visible().length === 0) {
+    <p class="empty muted">
+      {{
+        store.routes().length === 0
+          ? 'Todavía no hay rutas. Crea la primera con «Nueva ruta».'
+          : 'Ninguna ruta coincide con la búsqueda.'
+      }}
+    </p>
+  } @else {
+    <section class="grid">
+      @for (route of visible(); track route.id) {
+        <article class="card route">
+          <div class="photo-box">
+            <app-route-photo [url]="safeUrl(route.imageUrl)" [letter]="route.letter" />
+          </div>
+          <div class="route-body">
+            <!-- El color del estado tiene significado propio: verde publicada, ámbar pendiente, rojo oculta. -->
+            <span
+              class="pill"
+              [class.success]="route.status === 'APPROVED'"
+              [class.warning]="route.status === 'PENDING'"
+              [class.hidden]="route.status === 'REJECTED'"
+            >
+              {{ statusLabel(route.status) }}
+            </span>
+            <h2 class="ellipsis">{{ route.name }}</h2>
+            <p class="small ellipsis">
+              {{ route.origin }} <span class="mi arrow">arrow_forward</span> {{ route.destination }}
+            </p>
+            <hr class="divider" />
+            <p class="numbers">
+              <strong>S/ {{ route.fare.toFixed(2) }}</strong>
+              <span>{{ route.durationMinutes }} min</span>
+              <span class="ellipsis">{{ route.stops.length }} puntos de referencia</span>
+            </p>
+            <div class="route-actions">
+              <button type="button" class="btn outline" (click)="edit(route)">
+                <span class="mi">edit</span>
+                Editar ruta
+              </button>
+              <div class="copy">
+                <button
+                  type="button"
+                  class="icon-btn"
+                  title="Crear otra ruta a partir de esta"
+                  (click)="copying.set(copying() === route ? null : route)"
+                >
+                  <span class="mi">content_copy</span>
+                </button>
+                @if (copying() === route) {
+                  <div class="backdrop" (click)="copying.set(null)"></div>
+                  <div class="copy-menu">
+                    <button type="button" (click)="duplicate(route, false)">Duplicar</button>
+                    <button type="button" (click)="duplicate(route, true)">Crear la vuelta</button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </article>
+      }
+    </section>
+  }
+}

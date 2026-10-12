@@ -1,0 +1,59 @@
+<header class="navbar">
+  <a class="brand" routerLink="/">
+    <app-subo-mark />
+    <span>Subo</span>
+  </a>
+
+  <nav class="links">
+    @for (page of navPages(); track page.path) {
+      <!-- La página en la que se está va marcada con el amarillo suave. -->
+      <a [routerLink]="page.path" [class.current]="isCurrent(page)">{{ page.label }}</a>
+    }
+  </nav>
+
+  <span class="spacer"></span>
+
+  @if (store.session(); as session) {
+    <span class="account ellipsis">{{ session.name }}</span>
+    @if (store.isAdmin()) {
+      <a class="btn text" routerLink="/panel">Panel</a>
+    }
+    <!-- En una pantalla estrecha no caben los dos: el administrador sale desde Mi perfil. -->
+    <button type="button" class="btn text" [class.wide-only]="store.isAdmin()" (click)="store.signOut()">
+      Cerrar sesión
+    </button>
+  } @else {
+    <button type="button" class="btn small-btn" (click)="store.openLogin()">Iniciar sesión</button>
+  }
+
+  <div class="menu">
+    <button type="button" class="icon-btn" aria-label="Menú" (click)="menuOpen.set(!menuOpen())">
+      <span class="mi" style="font-size: 24px">menu</span>
+    </button>
+    @if (menuOpen()) {
+      <div class="menu-backdrop" (click)="menuOpen.set(false)"></div>
+      <nav class="menu-items" (click)="menuOpen.set(false)">
+        @for (page of navPages(); track page.path) {
+          <a [routerLink]="page.path">{{ page.label }}</a>
+        }
+      </nav>
+    }
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+
+@if (onMap()) {
+  <footer class="bar">
+    <span class="copyright">© 2026 Subo · Hecho en Trujillo, Perú</span>
+    <nav>
+      @for (page of barPages; track page.path) {
+        <a [routerLink]="page.path">{{ page.label }}</a>
+      }
+    </nav>
+  </footer>
+} @else if (!onProfile()) {
+  <app-site-footer />
+}

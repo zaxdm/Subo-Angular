@@ -1,0 +1,47 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card {
+  margin-bottom: 14px;
+  padding: 18px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.card > p:not(.small) {
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+img {
+  display: block;
+  height: 180px;
+  max-width: 100%;
+  margin-top: 12px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.author {
+  margin-top: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mi.danger {
+  color: var(--danger);
+}
