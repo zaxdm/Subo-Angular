@@ -1,6 +1,6 @@
 // Publica la web ya compilada en Cloudflare como sitio estático.
 // En Cloudflare (Workers & Pages):
-//   Directorio raíz:        web
+//   Repositorio:            zaxdm/Subo-Angular (rama main, directorio raíz /)
 //   Comando de compilación: npm ci && npm run build
 //   Comando de despliegue:  npx wrangler deploy
 {
