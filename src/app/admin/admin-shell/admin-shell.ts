@@ -33,7 +33,10 @@ export class AdminShell {
     { label: 'Estadísticas', icon: 'insights', path: '/panel/estadisticas' },
     // Quién más es administrador lo decide solo el principal.
     ...(this.store.session()?.isSuperAdmin
-      ? [{ label: 'Administradores', icon: 'admin_panel_settings', path: '/panel/administradores' }]
+      ? [
+          { label: 'Administradores', icon: 'admin_panel_settings', path: '/panel/administradores' },
+          { label: 'Premium', icon: 'workspace_premium', path: '/panel/premium' },
+        ]
       : []),
     { label: 'Mi perfil', icon: 'person', path: '/panel/perfil' },
   ]);

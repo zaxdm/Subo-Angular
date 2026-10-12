@@ -1,0 +1,50 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.add {
+  margin-bottom: 16px;
+  padding: 18px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.row .field {
+  flex: 0 1 320px;
+}
+
+.row .btn {
+  margin-top: 3px;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 14px 18px;
+}
+
+.person div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.person strong {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.row .time {
+  flex: 0 0 140px;
+}

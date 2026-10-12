@@ -348,6 +348,29 @@ export function adminFromJson(json: Json): Admin {
   };
 }
 
+/** Una cuenta con Subo Premium y hasta cuándo lo tiene. */
+export interface PremiumAccount {
+  id: string;
+  name: string;
+  email: string;
+  until: Date;
+}
+
+export function premiumAccountFromJson(json: Json): PremiumAccount {
+  return {
+    id: text(json['id']),
+    name: text(json['displayName']),
+    email: text(json['email']),
+    until: new Date(Number(json['premiumUntil'] ?? 0)),
+  };
+}
+
+/** "10/10/2026", en la hora de quien mira el panel. */
+export function formatDate(date: Date): string {
+  const two = (value: number) => String(value).padStart(2, '0');
+  return `${two(date.getDate())}/${two(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
+
 /** "10/10/2026 16:05", en la hora de quien mira el panel. */
 export function formatDateTime(date: Date): string {
   const two = (value: number) => String(value).padStart(2, '0');

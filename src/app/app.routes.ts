@@ -62,6 +62,11 @@ export const routes: Routes = [
         canActivate: [principalOnly],
         loadComponent: () => import('./admin/team/team').then((m) => m.Team),
       },
+      {
+        path: 'premium',
+        canActivate: [principalOnly],
+        loadComponent: () => import('./admin/premium/premium').then((m) => m.Premium),
+      },
       { path: 'perfil', loadComponent: () => import('./shared/profile/profile').then((m) => m.Profile) },
     ],
   },

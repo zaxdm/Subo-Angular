@@ -12,6 +12,8 @@ import {
   Suggestion,
   SuggestionStatus,
   adminFromJson,
+  PremiumAccount,
+  premiumAccountFromJson,
   alertFromJson,
   moderationAlertFromJson,
   routeFromJson,
@@ -217,6 +219,23 @@ export class Api {
   /** Quita el acceso: la cuenta sigue ahí, como la de cualquier pasajero. */
   async removeAdmin(id: string): Promise<void> {
     await this.send('DELETE', `/api/admin/admins/${encodeURIComponent(id)}`);
+  }
+
+  /** Las cuentas con Premium vigente, la que antes vence primero. Solo las ve el principal. */
+  async premiumAccounts(): Promise<PremiumAccount[]> {
+    return items((await this.send('GET', '/api/admin/premium'))['accounts']).map(premiumAccountFromJson);
+  }
+
+  /** Suma días de Premium a la cuenta de ese correo. */
+  async addPremium(email: string, days: number): Promise<PremiumAccount> {
+    return premiumAccountFromJson(
+      await this.send('POST', '/api/admin/premium', { body: { email: email.trim(), days } }),
+    );
+  }
+
+  /** Quita Premium: la cuenta vuelve a ser gratuita. */
+  async removePremium(id: string): Promise<void> {
+    await this.send('DELETE', `/api/admin/premium/${encodeURIComponent(id)}`);
   }
 
   /** Sube la foto de una ruta y devuelve su dirección pública. */

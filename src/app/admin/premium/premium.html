@@ -1,0 +1,50 @@
+<app-page-frame
+  label="Suscripciones"
+  title="Subo Premium"
+  subtitle="Las cuentas con las funciones de pago. Actívalo cuando la persona ya haya pagado."
+  [loading]="loading()"
+  [ready]="accounts() !== null"
+  (refresh)="load()"
+>
+  <form class="card add" (ngSubmit)="add()">
+    <h2 class="title">Activar o renovar</h2>
+    <p class="small">Tiene que tener ya una cuenta en la app. Si ya era Premium, el tiempo se suma al que le queda.</p>
+    <div class="row">
+      <label class="field">
+        <input
+          class="input"
+          name="email"
+          type="email"
+          placeholder="Correo de su cuenta"
+          aria-label="Correo de su cuenta"
+          [class.invalid]="emailProblem()"
+          [(ngModel)]="email"
+        />
+        @if (emailProblem(); as problem) {
+          <small class="problem">{{ problem }}</small>
+        }
+      </label>
+      <select class="input time" name="days" aria-label="Cuánto tiempo" [(ngModel)]="days">
+        @for (plan of plans; track plan.days) {
+          <option [ngValue]="plan.days">{{ plan.label }}</option>
+        }
+      </select>
+      <button type="submit" class="btn small-btn" [disabled]="adding()">
+        <span class="mi">workspace_premium</span>
+        Activar
+      </button>
+    </div>
+  </form>
+
+  @for (account of accounts(); track account.id) {
+    <div class="card person">
+      <div>
+        <strong>{{ account.name || account.email }}</strong>
+        <span class="muted">{{ account.email }} · hasta el {{ formatDate(account.until) }}</span>
+      </div>
+      <button type="button" class="btn text" (click)="remove(account)">Quitar</button>
+    </div>
+  } @empty {
+    <p class="muted">Todavía no hay cuentas Premium.</p>
+  }
+</app-page-frame>
