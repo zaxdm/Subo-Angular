@@ -344,6 +344,8 @@ button.chip-main:not(:disabled) {
 
 .line {
   display: flex;
+  /* La foto del micro, si la hay, ocupa una fila entera encima. */
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -353,6 +355,29 @@ button.chip-main:not(:disabled) {
   background: none;
   text-align: left;
   cursor: pointer;
+}
+
+.line-photo,
+.detail-photo {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--chip);
+}
+
+.line-photo {
+  flex: none;
+  height: 140px;
+}
+
+.detail-photo {
+  height: 190px;
+  margin-bottom: 14px;
+}
+
+.line-photo[hidden],
+.detail-photo[hidden] {
+  display: none;
 }
 
 .line:hover {

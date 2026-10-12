@@ -35,6 +35,7 @@ import {
   GeoPoint,
   messageOf,
   routeTitle,
+  safeUrl,
 } from '../../core/models';
 import { metersToLine } from '../../core/nearby';
 import { Store } from '../../core/store';
@@ -156,6 +157,7 @@ export class Home implements OnDestroy {
   protected readonly routeTitle = routeTitle;
   protected readonly favoriteLabel = favoriteLabel;
   protected readonly walk = walk;
+  protected readonly safeUrl = safeUrl;
 
   protected readonly tab = signal<Tab>('lines');
   protected readonly search = signal('');
@@ -245,6 +247,12 @@ export class Home implements OnDestroy {
       .filter((entry) => entry.meters <= NEAR_METERS)
       .sort((a, b) => a.meters - b.meters)
       .map((entry) => entry.route);
+  });
+
+  protected readonly pinIsDestination = computed(() => {
+    const pin = this.pin();
+    const place = this.destination();
+    return pin !== null && place !== null && place.latitude === pin.latitude && place.longitude === pin.longitude;
   });
 
   protected readonly pinIsFavorite = computed(() => {
@@ -377,6 +385,11 @@ export class Home implements OnDestroy {
     } catch {
       // Las alertas son un extra: sin ellas el mapa sigue sirviendo.
     }
+  }
+
+  /** Quita de la vista una foto que no se pudo cargar. */
+  protected hide(event: Event): void {
+    (event.target as HTMLElement).hidden = true;
   }
 
   protected colorOf(route: BusRoute): string {

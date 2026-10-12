@@ -39,7 +39,8 @@
   </button>
 
   <!-- Las líneas que pasan cerca del sitio marcado, para abrirlas desde ahí. -->
-  @if (pin()) {
+  <!-- Si la marca es el sitio buscado, sus líneas ya están en la lista. -->
+  @if (pin() && !pinIsDestination()) {
     <div class="nearby">
       <p class="small">
         @switch (near().length) {
@@ -132,6 +133,9 @@
             <span class="mi">arrow_back</span>
             Todas las líneas
           </button>
+          @if (safeUrl(route.imageUrl); as photo) {
+            <img class="detail-photo" [src]="photo" alt="" (error)="hide($event)" />
+          }
           <div class="detail-title">
             @if (route.letter) {
               <span class="letter" [style.background]="colorOf(route)">{{ route.letter }}</span>
@@ -232,6 +236,10 @@
               </p>
               @for (item of reaching(); track item.route.id) {
                 <button type="button" class="line" (click)="store.selectLine(item.route.id)">
+                  @if (safeUrl(item.route.imageUrl); as photo) {
+                    <!-- La foto del micro, como en la app; si no carga, la fila queda como las demás. -->
+                    <img class="line-photo" [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                  }
                   <span class="letter" [style.background]="colorOf(item.route)">{{ item.route.letter || '·' }}</span>
                   <span class="line-text">
                     <strong class="ellipsis">{{ item.route.name }}</strong>
@@ -261,6 +269,10 @@
             }
             @for (route of visible(); track route.id) {
               <button type="button" class="line" (click)="store.selectLine(route.id)">
+                @if (safeUrl(route.imageUrl); as photo) {
+                  <!-- La foto del micro, como en la app; si no carga, la fila queda como las demás. -->
+                  <img class="line-photo" [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                }
                 <span class="letter" [style.background]="colorOf(route)">{{ route.letter || '·' }}</span>
                 <span class="line-text">
                   <strong class="ellipsis">{{ route.name }}</strong>
