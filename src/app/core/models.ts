@@ -66,7 +66,10 @@ export interface RouteStop extends GeoPoint {
   name: string;
 }
 
-const pointOf = (json: Json): GeoPoint => ({ latitude: number(json['latitude']), longitude: number(json['longitude']) });
+const pointOf = (json: Json): GeoPoint => ({
+  latitude: number(json['latitude']),
+  longitude: number(json['longitude']),
+});
 
 /** Estados de una ruta en el catálogo, con el código que guarda el servidor. */
 export type RouteStatus = 'APPROVED' | 'PENDING' | 'REJECTED';
@@ -149,7 +152,11 @@ export function routeToJson(route: BusRoute): Json {
     imageUrl: route.imageUrl,
     bidirectional: route.bidirectional,
     status: route.status,
-    stops: route.stops.map((stop) => ({ name: stop.name.trim(), latitude: stop.latitude, longitude: stop.longitude })),
+    stops: route.stops.map((stop) => ({
+      name: stop.name.trim(),
+      latitude: stop.latitude,
+      longitude: stop.longitude,
+    })),
     // Un trazado necesita al menos dos puntos; si no, la app lo estima.
     path: route.path.length >= 2 ? route.path.map(({ latitude, longitude }) => ({ latitude, longitude })) : null,
     pathSnapped: false,
@@ -214,10 +221,10 @@ export function alertFromJson(json: Json): CityAlert {
   };
 }
 
-/** Lo que contesta el asistente y, si recomienda una línea, cuál. */
+/** Lo que contesta el asistente y las líneas que recomienda, la mejor primero. */
 export interface AssistantAnswer {
   text: string;
-  routeId: string | null;
+  routeIds: string[];
 }
 
 /** En qué va una sugerencia del buzón, con el código que guarda el servidor. */

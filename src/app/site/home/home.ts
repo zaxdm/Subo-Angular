@@ -38,8 +38,11 @@ interface Message {
   text: string;
   mine: boolean;
 
-  /** La línea que recomienda, para abrirla con un toque. */
-  route: BusRoute | null;
+  /** Las líneas que recomienda, la mejor primero, para abrirlas con un toque. */
+  routes: BusRoute[];
+
+  /** Es el aviso de un fallo, no parte de la conversación. */
+  failed?: boolean;
 }
 
 /** El fondo del mapa: calles o foto desde el aire. Ninguno pide clave. */
@@ -186,19 +189,21 @@ export class Home implements OnDestroy {
 
   protected readonly visible = computed(() => {
     const query = this.search().trim().toLowerCase();
-    return this.store.lines().filter((route) =>
-      [
-        route.name,
-        route.vehicleName,
-        route.origin,
-        route.destination,
-        route.letter,
-        ...route.stops.map((stop) => stop.name),
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(query),
-    );
+    return this.store
+      .lines()
+      .filter((route) =>
+        [
+          route.name,
+          route.vehicleName,
+          route.origin,
+          route.destination,
+          route.letter,
+          ...route.stops.map((stop) => stop.name),
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(query),
+      );
   });
 
   /** Las líneas que pasan cerca del sitio marcado, la más cercana primero. */
@@ -241,6 +246,10 @@ export class Home implements OnDestroy {
   private readonly markerLayer = L.layerGroup();
   private framed = false;
 
+  /** La línea que se está abriendo viene del asistente: la pestaña no cambia. */
+  private keepChat = false;
+  private locationAsked = false;
+
   constructor() {
     void this.loadAlerts();
 
@@ -269,7 +278,10 @@ export class Home implements OnDestroy {
       const base = this.base();
       // Al cambiar de fondo no se aprovecha nada del anterior.
       this.tiles?.remove();
-      this.tiles = L.tileLayer(base.url, { maxNativeZoom: base.maxNativeZoom, maxZoom: MAX_ZOOM }).addTo(this.map!);
+      this.tiles = L.tileLayer(base.url, {
+        maxNativeZoom: base.maxNativeZoom,
+        maxZoom: MAX_ZOOM,
+      }).addTo(this.map!);
       this.tiles.bringToBack();
     });
 
@@ -286,9 +298,16 @@ export class Home implements OnDestroy {
       this.id();
       this.store.lines();
       if (!this.ready()) return;
+      untracked(() => this.frame(this.framed));
+    });
+
+    // Abrir una línea enseña su ficha, salvo desde el asistente: ahí la
+    // conversación sigue a la vista y la línea se ve en el mapa.
+    effect(() => {
+      if (this.id() === undefined) return;
       untracked(() => {
-        if (this.selected() !== null) this.tab.set('lines');
-        this.frame(this.framed);
+        if (!this.keepChat) this.tab.set('lines');
+        this.keepChat = false;
       });
     });
 
@@ -332,7 +351,12 @@ export class Home implements OnDestroy {
       if (open) L.polyline(points, { weight: 9, color: INK, opacity: 1, interactive: false }).addTo(this.lineLayer);
       const line = L.polyline(points, style).addTo(this.lineLayer);
       // Sobre una línea sale su nombre, y se resalta para distinguirla de las de al lado.
-      line.bindTooltip(routeTitle(route), { sticky: true, className: 'line-tip', direction: 'right', offset: [12, 12] });
+      line.bindTooltip(routeTitle(route), {
+        sticky: true,
+        className: 'line-tip',
+        direction: 'right',
+        offset: [12, 12],
+      });
       if (!open) {
         line.on('mouseover', () => line.setStyle({ weight: 6, color }).bringToFront());
         line.on('mouseout', () => line.setStyle(style));
@@ -433,10 +457,7 @@ export class Home implements OnDestroy {
     const fix = await currentLocation();
     this.locating.set(false);
     if (fix === null) {
-      this.ui.notify(
-        'No se pudo saber dónde estás. Revisa que el navegador tenga permiso de ubicación.',
-        'plain',
-      );
+      this.ui.notify('No se pudo saber dónde estás. Revisa que el navegador tenga permiso de ubicación.', 'plain');
       return;
     }
     this.me.set(fix);
@@ -493,19 +514,50 @@ export class Home implements OnDestroy {
   protected async ask(preset?: string): Promise<void> {
     const question = (preset ?? this.question()).trim();
     if (question === '' || this.asking()) return;
-    this.say({ text: question, mine: true, route: null });
+    const history = this.messages()
+      .filter((message) => !message.failed)
+      .map(({ mine, text }) => ({ mine, text }));
+    this.say({ text: question, mine: true, routes: [] });
     this.question.set('');
     this.asking.set(true);
     try {
-      const answer = await this.api.ask(question);
-      const route = this.store.lines().find((candidate) => candidate.id === answer.routeId) ?? null;
-      this.say({ text: answer.text, mine: false, route });
+      const answer = await this.api.ask(question, await this.whereAmI(), history);
+      const routes = answer.routeIds.flatMap((id) => this.store.lines().find((candidate) => candidate.id === id) ?? []);
+      this.say({ text: answer.text, mine: false, routes });
     } catch (error) {
-      this.say({ text: messageOf(error, 'El asistente no respondió. Inténtalo de nuevo.'), mine: false, route: null });
+      this.say({
+        text: messageOf(error, 'El asistente no respondió. Inténtalo de nuevo.'),
+        mine: false,
+        routes: [],
+        failed: true,
+      });
       if (error instanceof ApiError && error.unauthorized) this.store.onError(error);
     } finally {
       this.asking.set(false);
     }
+  }
+
+  /**
+   * Dónde está quien pregunta, para que el asistente parta de ahí. Al navegador
+   * se le pregunta una vez: si no lo dice, no se insiste en cada pregunta.
+   */
+  private async whereAmI(): Promise<Fix | null> {
+    if (this.me() !== null || this.locationAsked) return this.me();
+    this.locationAsked = true;
+    const fix = await currentLocation();
+    if (fix !== null) this.me.set(fix);
+    return fix;
+  }
+
+  /** Abre en el mapa la línea que recomendó el asistente, sin dejar la conversación. */
+  protected showFromChat(route: BusRoute): void {
+    if (this.selected() === route) {
+      this.tab.set('lines');
+      return;
+    }
+    // Sin sesión no se abre nada, y la marca no puede quedarse puesta.
+    this.keepChat = this.store.session() !== null;
+    this.store.selectLine(route.id);
   }
 
   private say(message: Message): void {

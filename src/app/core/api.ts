@@ -6,6 +6,7 @@ import {
   AssistantAnswer,
   BusRoute,
   CityAlert,
+  GeoPoint,
   ModerationAlert,
   Session,
   Stats,
@@ -51,7 +52,13 @@ export class Api {
     this.token = token;
     try {
       const user = await this.send('GET', '/api/me');
-      return sessionOf(user, { name: 'Tu cuenta', isAdmin: false, isSuperAdmin: false, email: '', avatarUrl: null });
+      return sessionOf(user, {
+        name: 'Tu cuenta',
+        isAdmin: false,
+        isSuperAdmin: false,
+        email: '',
+        avatarUrl: null,
+      });
     } catch (error) {
       if (!(error instanceof ApiError)) throw error;
       // Caducada ya se borró al recibir el 401; si solo falló la conexión, se
@@ -131,7 +138,10 @@ export class Api {
       });
       let session: Session;
       try {
-        session = sessionOf(await this.send('GET', '/api/admin/me'), { ...passenger, isAdmin: true });
+        session = sessionOf(await this.send('GET', '/api/admin/me'), {
+          ...passenger,
+          isAdmin: true,
+        });
       } catch (error) {
         // Que no sea administrador no es un fallo: es un pasajero.
         if (!(error instanceof ApiError && error.forbidden)) throw error;
@@ -185,7 +195,9 @@ export class Api {
 
   /** Cambia el estado de una sugerencia y, si se quiere, la contesta. */
   async reviewFeedback(id: string, status: SuggestionStatus, reply: string | null): Promise<void> {
-    await this.send('PUT', `/api/admin/feedback/${encodeURIComponent(id)}`, { body: { status, reply } });
+    await this.send('PUT', `/api/admin/feedback/${encodeURIComponent(id)}`, {
+      body: { status, reply },
+    });
   }
 
   /** Las alertas vigentes, también las de cuentas bloqueadas. */
@@ -199,7 +211,9 @@ export class Api {
 
   /** Bloquea o desbloquea una cuenta: bloqueada no publica y lo suyo deja de verse. */
   async blockUser(id: string, blocked: boolean): Promise<void> {
-    await this.send('POST', `/api/admin/users/${encodeURIComponent(id)}/block`, { body: { blocked } });
+    await this.send('POST', `/api/admin/users/${encodeURIComponent(id)}/block`, {
+      body: { blocked },
+    });
   }
 
   async stats(): Promise<Stats> {
@@ -272,19 +286,36 @@ export class Api {
     return items(data['alerts']).map(alertFromJson);
   }
 
-  /** Le pregunta al asistente. Pide sesión. */
-  async ask(question: string): Promise<AssistantAnswer> {
-    const data = await this.send('POST', '/api/assistant', { body: { question: question.trim(), language: 'es' } });
-    const routeId = data['routeId'];
+  /**
+   * Le pregunta al asistente. Pide sesión. Con [here], dónde está quien
+   * pregunta, el asistente parte de ahí; [history] es lo ya hablado.
+   */
+  async ask(
+    question: string,
+    here: GeoPoint | null = null,
+    history: { mine: boolean; text: string }[] = [],
+  ): Promise<AssistantAnswer> {
+    const data = await this.send('POST', '/api/assistant', {
+      body: {
+        question: question.trim(),
+        language: 'es',
+        history,
+        ...(here ? { latitude: here.latitude, longitude: here.longitude } : {}),
+      },
+    });
+    // Un servidor sin actualizar manda solo `routeId`, la única línea que recomendaba.
+    const routeIds = data['routeIds'] ?? [data['routeId']];
     return {
       text: typeof data['answer'] === 'string' ? data['answer'] : '',
-      routeId: typeof routeId === 'string' ? routeId : null,
+      routeIds: Array.isArray(routeIds) ? routeIds.filter((id) => typeof id === 'string') : [],
     };
   }
 
   /** Manda un mensaje al buzón del equipo. Pide sesión. */
   async sendFeedback(subject: string, message: string): Promise<void> {
-    await this.send('POST', '/api/feedback', { body: { subject, message: message.trim(), appVersion: 'web' } });
+    await this.send('POST', '/api/feedback', {
+      body: { subject, message: message.trim(), appVersion: 'web' },
+    });
   }
 
   private async send(

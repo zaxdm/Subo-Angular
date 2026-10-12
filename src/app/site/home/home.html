@@ -103,7 +103,9 @@
     <div class="zoom">
       <button type="button" title="Acercar" (click)="zoom(1)"><span class="mi">add</span></button>
       <hr />
-      <button type="button" title="Alejar" (click)="zoom(-1)"><span class="mi">remove</span></button>
+      <button type="button" title="Alejar" (click)="zoom(-1)">
+        <span class="mi">remove</span>
+      </button>
     </div>
   </div>
 
@@ -112,218 +114,214 @@
 </section>
 
 <aside class="panel">
-  @if (selected(); as route) {
-    <div class="detail">
-      <button type="button" class="btn text back" (click)="store.selectLine(null)">
-        <span class="mi">arrow_back</span>
-        Todas las líneas
+  <!-- Las tres pestañas van en una sola pieza: la elegida es la blanca. -->
+  <div class="tabs">
+    @for (item of tabs; track item.id) {
+      <button type="button" [class.active]="tab() === item.id" (click)="tab.set(item.id)">
+        {{ item.label }}
       </button>
-      <div class="detail-title">
-        @if (route.letter) {
-          <span class="letter" [style.background]="colorOf(route)">{{ route.letter }}</span>
-        }
-        <h2>{{ route.name }}</h2>
-      </div>
-      <p class="muted">{{ route.origin }} – {{ route.destination }}</p>
+    }
+  </div>
 
-      <div class="facts">
-        <div>
-          <span>Pasaje</span>
-          <strong>S/ {{ route.fare.toFixed(2) }}</strong>
-        </div>
-        <div>
-          <span>Demora</span>
-          <strong>{{ route.durationMinutes > 0 ? route.durationMinutes + ' min' : '—' }}</strong>
-        </div>
-        <div>
-          <span>Puntos de referencia</span>
-          <strong>{{ route.stops.length }}</strong>
-        </div>
-      </div>
-
-      @if (route.schedule) {
-        <p class="fact-line"><span class="mi">schedule</span> Horario: {{ route.schedule }}</p>
-      }
-      @if (route.vehicleName) {
-        <p class="fact-line"><span class="mi">directions_bus</span> {{ route.vehicleName }}</p>
-      }
-      @if (route.description) {
-        <p class="description">{{ route.description }}</p>
-      }
-
-      <h3 class="kicker">Paraderos</h3>
-      <p class="small">
-        {{
-          route.bidirectional
-            ? 'El micro hace este recorrido de ida y de vuelta.'
-            : 'El micro va solo en este sentido.'
-        }}
-      </p>
-      <div class="stops">
-        @for (stop of route.stops; track $index) {
-          <!-- Tocar un paradero lleva el mapa hasta él. -->
-          <button type="button" (click)="glideTo(stop, 17)">
-            <span class="stop-dot" [class.end]="$first || $last"></span>
-            {{ stop.name }}
+  @switch (tab()) {
+    @case ('lines') {
+      <!-- Con una línea abierta, su ficha ocupa el sitio de la lista. -->
+      @if (selected(); as route) {
+        <div class="detail">
+          <button type="button" class="btn text back" (click)="store.selectLine(null)">
+            <span class="mi">arrow_back</span>
+            Todas las líneas
           </button>
-        }
-      </div>
-    </div>
-  } @else {
-    <!-- Las tres pestañas van en una sola pieza: la elegida es la blanca. -->
-    <div class="tabs">
-      @for (item of tabs; track item.id) {
-        <button type="button" [class.active]="tab() === item.id" (click)="tab.set(item.id)">{{ item.label }}</button>
-      }
-    </div>
-
-    @switch (tab()) {
-      @case ('lines') {
-        @if (store.loadingLines()) {
-          <div class="empty"><span class="spinner big"></span></div>
-        } @else if (store.linesError(); as problem) {
-          <div class="empty">
-            <span class="mi">cloud_off</span>
-            <p>{{ problem }}</p>
-            <button type="button" class="btn outline" (click)="store.loadLines()">Reintentar</button>
-          </div>
-        } @else {
-          <div class="lines-head">
-            <h2>{{ greeting() }}</h2>
-            <label class="search">
-              <span class="mi">search</span>
-              <input
-                type="search"
-                class="input"
-                placeholder="Línea, zona o punto de referencia"
-                [(ngModel)]="search"
-              />
-            </label>
-            <!-- Sin cuenta se ve la lista, pero el recorrido pide entrar. -->
-            @if (!store.session()) {
-              <div class="sign-in-note">
-                <p>Entra para ver el recorrido completo de cada línea.</p>
-                <button type="button" class="btn small-btn" (click)="store.openLogin()">Entrar</button>
-              </div>
+          <div class="detail-title">
+            @if (route.letter) {
+              <span class="letter" [style.background]="colorOf(route)">{{ route.letter }}</span>
             }
-            <div class="columns-head">
-              <span class="ellipsis">Línea y sentido</span>
-              <span>Pasaje · tiempo</span>
+            <h2>{{ route.name }}</h2>
+          </div>
+          <p class="muted">{{ route.origin }} – {{ route.destination }}</p>
+
+          <div class="facts">
+            <div>
+              <span>Pasaje</span>
+              <strong>S/ {{ route.fare.toFixed(2) }}</strong>
+            </div>
+            <div>
+              <span>Demora</span>
+              <strong>{{ route.durationMinutes > 0 ? route.durationMinutes + ' min' : '—' }}</strong>
+            </div>
+            <div>
+              <span>Puntos de referencia</span>
+              <strong>{{ route.stops.length }}</strong>
             </div>
           </div>
 
-          @if (visible().length === 0) {
-            <div class="empty">
-              <span class="mi">search_off</span>
-              <p>
-                {{
-                  store.lines().length === 0
-                    ? 'Todavía no hay líneas publicadas. Vuelve pronto.'
-                    : 'Ninguna línea coincide con lo que buscas.'
-                }}
-              </p>
-            </div>
-          } @else {
-            <div class="lines">
-              @for (route of visible(); track route.id) {
-                <button type="button" class="line" (click)="store.selectLine(route.id)">
-                  <span class="letter" [style.background]="colorOf(route)">{{ route.letter || '·' }}</span>
-                  <span class="line-text">
-                    <strong class="ellipsis">{{ route.name }}</strong>
-                    <span class="ellipsis">
-                      {{ route.origin }} <span class="mi arrow">arrow_forward</span> {{ route.destination }}
-                    </span>
-                  </span>
-                  <span class="line-fare">
-                    <strong>S/ {{ route.fare.toFixed(2) }}</strong>
-                    @if (route.durationMinutes > 0) {
-                      <span>{{ route.durationMinutes }} min</span>
-                    }
-                  </span>
-                </button>
-              }
+          @if (route.schedule) {
+            <p class="fact-line"><span class="mi">schedule</span> Horario: {{ route.schedule }}</p>
+          }
+          @if (route.vehicleName) {
+            <p class="fact-line"><span class="mi">directions_bus</span> {{ route.vehicleName }}</p>
+          }
+          @if (route.description) {
+            <p class="description">{{ route.description }}</p>
+          }
+
+          <h3 class="kicker">Paraderos</h3>
+          <p class="small">
+            {{
+              route.bidirectional
+                ? 'El micro hace este recorrido de ida y de vuelta.'
+                : 'El micro va solo en este sentido.'
+            }}
+          </p>
+          <div class="stops">
+            @for (stop of route.stops; track $index) {
+              <!-- Tocar un paradero lleva el mapa hasta él. -->
+              <button type="button" (click)="glideTo(stop, 17)">
+                <span class="stop-dot" [class.end]="$first || $last"></span>
+                {{ stop.name }}
+              </button>
+            }
+          </div>
+        </div>
+      } @else if (store.loadingLines()) {
+        <div class="empty"><span class="spinner big"></span></div>
+      } @else if (store.linesError(); as problem) {
+        <div class="empty">
+          <span class="mi">cloud_off</span>
+          <p>{{ problem }}</p>
+          <button type="button" class="btn outline" (click)="store.loadLines()">Reintentar</button>
+        </div>
+      } @else {
+        <div class="lines-head">
+          <h2>{{ greeting() }}</h2>
+          <label class="search">
+            <span class="mi">search</span>
+            <input type="search" class="input" placeholder="Línea, zona o punto de referencia" [(ngModel)]="search" />
+          </label>
+          <!-- Sin cuenta se ve la lista, pero el recorrido pide entrar. -->
+          @if (!store.session()) {
+            <div class="sign-in-note">
+              <p>Entra para ver el recorrido completo de cada línea.</p>
+              <button type="button" class="btn small-btn" (click)="store.openLogin()">Entrar</button>
             </div>
           }
-        }
-      }
-
-      @case ('assistant') {
-        @if (!store.session()) {
-          <div class="empty">
-            <span class="mi">auto_awesome</span>
-            <p>Pregúntale al asistente qué micro te lleva a donde vas. Para usarlo, entra con tu cuenta.</p>
-            <button type="button" class="btn" (click)="store.openLogin()">Entrar para preguntar</button>
+          <div class="columns-head">
+            <span class="ellipsis">Línea y sentido</span>
+            <span>Pasaje · tiempo</span>
           </div>
-        } @else {
-          <div class="chat">
-            @if (messages().length === 0) {
-              <p class="muted">Pregunta como le preguntarías a alguien en el punto de referencia.</p>
-              @for (idea of ideas; track idea) {
-                <button type="button" class="btn outline idea" (click)="ask(idea)">{{ idea }}</button>
-              }
-            } @else {
-              @for (message of messages(); track $index) {
-                <div class="bubble" [class.mine]="message.mine">
-                  <p>{{ message.text }}</p>
-                  @if (message.route; as route) {
-                    <button type="button" class="btn text" (click)="store.selectLine(route.id)">
-                      <span class="mi">alt_route</span>
-                      Ver {{ route.name }} en el mapa
-                    </button>
-                  }
-                </div>
-              }
-              @if (asking()) {
-                <span class="spinner"></span>
-              }
-            }
-          </div>
-          <form class="ask" (ngSubmit)="ask()">
-            <input
-              class="input"
-              name="question"
-              maxlength="500"
-              placeholder="Escribe tu pregunta"
-              autocomplete="off"
-              [disabled]="asking()"
-              [(ngModel)]="question"
-            />
-            <button type="submit" class="send" title="Preguntar" [disabled]="asking()">
-              <span class="mi">arrow_upward</span>
-            </button>
-          </form>
-        }
-      }
+        </div>
 
-      @case ('alerts') {
-        @if (alerts().length === 0) {
+        @if (visible().length === 0) {
           <div class="empty">
-            <span class="mi">check_circle</span>
+            <span class="mi">search_off</span>
             <p>
-              No hay alertas ahora mismo. Los avisos de tráfico, obras o accidentes se envían desde la app.
+              {{
+                store.lines().length === 0
+                  ? 'Todavía no hay líneas publicadas. Vuelve pronto.'
+                  : 'Ninguna línea coincide con lo que buscas.'
+              }}
             </p>
           </div>
         } @else {
-          <div class="alerts">
-            @for (alert of alerts(); track alert.id) {
-              <button type="button" (click)="glideTo(alert, 16)">
-                <span class="mi">warning_amber</span>
-                <span>
-                  <strong>{{ alert.label }}</strong>
-                  @if (alert.placeName) {
-                    <span class="small">{{ alert.placeName }}</span>
-                  }
-                  @if (alert.comment) {
-                    <span class="comment">{{ alert.comment }}</span>
-                  }
-                  @if (alert.confirmations > 0) {
-                    <span class="small">{{ alert.confirmations }} dicen que sigue ahí</span>
+          <div class="lines">
+            @for (route of visible(); track route.id) {
+              <button type="button" class="line" (click)="store.selectLine(route.id)">
+                <span class="letter" [style.background]="colorOf(route)">{{ route.letter || '·' }}</span>
+                <span class="line-text">
+                  <strong class="ellipsis">{{ route.name }}</strong>
+                  <span class="ellipsis">
+                    {{ route.origin }} <span class="mi arrow">arrow_forward</span>
+                    {{ route.destination }}
+                  </span>
+                </span>
+                <span class="line-fare">
+                  <strong>S/ {{ route.fare.toFixed(2) }}</strong>
+                  @if (route.durationMinutes > 0) {
+                    <span>{{ route.durationMinutes }} min</span>
                   }
                 </span>
               </button>
             }
           </div>
         }
+      }
+    }
+
+    @case ('assistant') {
+      @if (!store.session()) {
+        <div class="empty">
+          <span class="mi">auto_awesome</span>
+          <p>Pregúntale al asistente qué micro te lleva a donde vas. Para usarlo, entra con tu cuenta.</p>
+          <button type="button" class="btn" (click)="store.openLogin()">Entrar para preguntar</button>
+        </div>
+      } @else {
+        <div class="chat">
+          @if (messages().length === 0) {
+            <p class="muted">Pregunta como le preguntarías a alguien en el punto de referencia.</p>
+            @for (idea of ideas; track idea) {
+              <button type="button" class="btn outline idea" (click)="ask(idea)">{{ idea }}</button>
+            }
+          } @else {
+            @for (message of messages(); track $index) {
+              <div class="bubble" [class.mine]="message.mine">
+                <p>{{ message.text }}</p>
+                <!-- Cada línea se abre en el mapa sin dejar la conversación. -->
+                @for (route of message.routes; track route.id) {
+                  <button type="button" class="btn text" (click)="showFromChat(route)">
+                    <span class="mi">{{ selected() === route ? 'list' : 'alt_route' }}</span>
+                    {{ selected() === route ? 'Ver paraderos y detalles' : 'Ver ' + route.name + ' en el mapa' }}
+                  </button>
+                }
+              </div>
+            }
+            @if (asking()) {
+              <span class="spinner"></span>
+            }
+          }
+        </div>
+        <form class="ask" (ngSubmit)="ask()">
+          <input
+            class="input"
+            name="question"
+            maxlength="500"
+            placeholder="Escribe tu pregunta"
+            autocomplete="off"
+            [disabled]="asking()"
+            [(ngModel)]="question"
+          />
+          <button type="submit" class="send" title="Preguntar" [disabled]="asking()">
+            <span class="mi">arrow_upward</span>
+          </button>
+        </form>
+      }
+    }
+
+    @case ('alerts') {
+      @if (alerts().length === 0) {
+        <div class="empty">
+          <span class="mi">check_circle</span>
+          <p>No hay alertas ahora mismo. Los avisos de tráfico, obras o accidentes se envían desde la app.</p>
+        </div>
+      } @else {
+        <div class="alerts">
+          @for (alert of alerts(); track alert.id) {
+            <button type="button" (click)="glideTo(alert, 16)">
+              <span class="mi">warning_amber</span>
+              <span>
+                <strong>{{ alert.label }}</strong>
+                @if (alert.placeName) {
+                  <span class="small">{{ alert.placeName }}</span>
+                }
+                @if (alert.comment) {
+                  <span class="comment">{{ alert.comment }}</span>
+                }
+                @if (alert.confirmations > 0) {
+                  <span class="small">{{ alert.confirmations }} dicen que sigue ahí</span>
+                }
+              </span>
+            </button>
+          }
+        </div>
       }
     }
   }

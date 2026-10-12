@@ -527,7 +527,10 @@ button.chip-main:not(:disabled) {
 }
 
 .bubble .btn {
+  /* Con varias líneas recomendadas, una debajo de otra. */
+  display: flex;
   margin: 8px 0 0 -12px;
+  text-align: left;
 }
 
 .ask {
