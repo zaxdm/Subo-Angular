@@ -221,6 +221,29 @@ export function alertFromJson(json: Json): CityAlert {
   };
 }
 
+/** Una línea que deja cerca de un destino. */
+export interface DestinationLine {
+  routeId: string;
+
+  /** Lo que hay que andar al bajarse, en metros. */
+  alightMeters: number;
+
+  /** Lo que hay que andar para subirse; `null` si no se sabe de dónde se sale. */
+  boardMeters: number | null;
+
+  /** Pasa por el destino antes que por donde se sube. */
+  wrongWay: boolean;
+}
+
+/** El sitio que alguien buscó y las líneas que llevan hasta él, la mejor primero. */
+export interface Destination extends GeoPoint {
+  name: string;
+  lines: DestinationLine[];
+
+  /** Ninguna deja a distancia de caminata: las líneas son solo las que más se acercan. */
+  far: boolean;
+}
+
 /** Lo que contesta el asistente y las líneas que recomienda, la mejor primero. */
 export interface AssistantAnswer {
   text: string;

@@ -26,7 +26,16 @@ import {
   storeFavorites,
 } from '../../core/favorites';
 import { Fix, currentLocation } from '../../core/locate';
-import { ApiError, BusRoute, CityAlert, GeoPoint, messageOf, routeTitle } from '../../core/models';
+import {
+  ApiError,
+  BusRoute,
+  CityAlert,
+  Destination,
+  DestinationLine,
+  GeoPoint,
+  messageOf,
+  routeTitle,
+} from '../../core/models';
 import { metersToLine } from '../../core/nearby';
 import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
@@ -72,6 +81,13 @@ const TRUJILLO: L.LatLngTuple = [-8.112, -79.0288];
 // Más lejos que el mínimo ya no se distingue la ciudad.
 const MIN_ZOOM = 10;
 const MAX_ZOOM = 19;
+
+/** Lo que se espera a que alguien deje de escribir antes de buscar a dónde va. */
+const SEARCH_PAUSE_MS = 600;
+
+/** Una distancia a pie, como se dice: «250 m» o «1,4 km». */
+const walk = (meters: number): string =>
+  meters < 1000 ? `${Math.round(meters / 10) * 10} m` : `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
 
 /** Hasta dónde se anda, más o menos, para coger un micro. */
 const NEAR_METERS = 300;
@@ -139,9 +155,14 @@ export class Home implements OnDestroy {
   protected readonly maxFavorites = MAX_FAVORITES;
   protected readonly routeTitle = routeTitle;
   protected readonly favoriteLabel = favoriteLabel;
+  protected readonly walk = walk;
 
   protected readonly tab = signal<Tab>('lines');
   protected readonly search = signal('');
+
+  /** El sitio al que va quien escribió en el buscador, si sale en el mapa. */
+  protected readonly destination = signal<Destination | null>(null);
+  protected readonly searchingPlace = signal(false);
   protected readonly question = signal('');
   protected readonly messages = signal<Message[]>([]);
   protected readonly asking = signal(false);
@@ -206,6 +227,14 @@ export class Home implements OnDestroy {
       );
   });
 
+  /** Las líneas que llevan al sitio buscado, la mejor primero. */
+  protected readonly reaching = computed(() =>
+    (this.destination()?.lines ?? []).flatMap((line: DestinationLine) => {
+      const route = this.store.lines().find((candidate) => candidate.id === line.routeId);
+      return route === undefined ? [] : [{ ...line, route }];
+    }),
+  );
+
   /** Las líneas que pasan cerca del sitio marcado, la más cercana primero. */
   protected readonly near = computed(() => {
     const pin = this.pin();
@@ -234,7 +263,7 @@ export class Home implements OnDestroy {
 
   protected readonly greeting = computed(() => {
     const name = this.store.session()?.name.trim().split(' ')[0] ?? '';
-    return name === '' ? '¿Qué micro tomas hoy?' : `Hola, ${name}. ¿Qué micro tomas hoy?`;
+    return name === '' ? '¿A dónde vas hoy?' : `Hola, ${name}. ¿A dónde vas hoy?`;
   });
 
   // --- El mapa ---
@@ -308,6 +337,27 @@ export class Home implements OnDestroy {
       untracked(() => {
         if (!this.keepChat) this.tab.set('lines');
         this.keepChat = false;
+      });
+    });
+
+    // Lo escrito en el buscador se busca también como un sitio del mapa, cuando
+    // se deja de escribir: así «Tecsup» da las líneas que llevan hasta allí.
+    effect((onCleanup) => {
+      const query = this.search().trim();
+      this.destination.set(null);
+      this.searchingPlace.set(query.length >= 3);
+      if (query.length < 3) return;
+      let current = true;
+      const timer = setTimeout(async () => {
+        const destination = await this.api.destination(query, untracked(this.me)).catch(() => null);
+        if (!current) return;
+        this.searchingPlace.set(false);
+        this.destination.set(destination);
+        if (destination !== null) this.showDestination(destination);
+      }, SEARCH_PAUSE_MS);
+      onCleanup(() => {
+        current = false;
+        clearTimeout(timer);
       });
     });
 
@@ -481,6 +531,12 @@ export class Home implements OnDestroy {
   }
 
   // --- Favoritos ---
+
+  /** Lleva el mapa al sitio buscado y lo deja marcado. */
+  protected showDestination(place: GeoPoint): void {
+    this.pin.set({ latitude: place.latitude, longitude: place.longitude });
+    this.glideTo(place, 15);
+  }
 
   /** Lleva el mapa a un favorito y lo deja marcado. */
   protected showFavorite(place: FavoritePlace): void {

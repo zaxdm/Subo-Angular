@@ -333,6 +333,15 @@ button.chip-main:not(:disabled) {
   padding: 0 8px 16px;
 }
 
+/* El título de cada grupo de la lista: las que llevan a un sitio y las que lo nombran. */
+.group {
+  padding: 10px 8px 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .line {
   display: flex;
   align-items: center;

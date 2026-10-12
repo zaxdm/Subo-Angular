@@ -6,6 +6,7 @@ import {
   AssistantAnswer,
   BusRoute,
   CityAlert,
+  Destination,
   GeoPoint,
   ModerationAlert,
   Session,
@@ -284,6 +285,42 @@ export class Api {
     // Todo Trujillo desde su centro; el servidor recorta el radio a su máximo.
     const data = await this.send('GET', '/api/alerts?lat=-8.112&lon=-79.0288&radius=30000');
     return items(data['alerts']).map(alertFromJson);
+  }
+
+  /**
+   * Busca en el mapa el sitio al que va alguien y las líneas que dejan cerca;
+   * con [here], también cuánto hay que andar para subirse. `null` si el sitio
+   * no sale en el mapa. No pide sesión.
+   */
+  async destination(query: string, here: GeoPoint | null = null): Promise<Destination | null> {
+    const params = new URLSearchParams({ q: query.trim() });
+    if (here !== null) {
+      params.set('lat', String(here.latitude));
+      params.set('lon', String(here.longitude));
+    }
+    const data = await this.send('GET', `/api/destinations?${params}`);
+    const place = data['place'];
+    if (place === null || typeof place !== 'object') return null;
+    const { name, latitude, longitude } = place as Json;
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') return null;
+    return {
+      name: typeof name === 'string' ? name : query.trim(),
+      latitude,
+      longitude,
+      far: data['far'] === true,
+      lines: items(data['lines']).flatMap((line) => {
+        const { routeId, alightMeters, boardMeters } = line;
+        if (typeof routeId !== 'string' || typeof alightMeters !== 'number') return [];
+        return [
+          {
+            routeId,
+            alightMeters,
+            boardMeters: typeof boardMeters === 'number' ? boardMeters : null,
+            wrongWay: line['wrongWay'] === true,
+          },
+        ];
+      }),
+    };
   }
 
   /**

@@ -196,7 +196,7 @@
           <h2>{{ greeting() }}</h2>
           <label class="search">
             <span class="mi">search</span>
-            <input type="search" class="input" placeholder="Línea, zona o punto de referencia" [(ngModel)]="search" />
+            <input type="search" class="input" placeholder="Un lugar, una zona o una línea" [(ngModel)]="search" />
           </label>
           <!-- Sin cuenta se ve la lista, pero el recorrido pide entrar. -->
           @if (!store.session()) {
@@ -211,7 +211,7 @@
           </div>
         </div>
 
-        @if (visible().length === 0) {
+        @if (visible().length === 0 && reaching().length === 0 && !searchingPlace()) {
           <div class="empty">
             <span class="mi">search_off</span>
             <p>
@@ -224,6 +224,41 @@
           </div>
         } @else {
           <div class="lines">
+            <!-- Lo escrito también se busca como un sitio: primero, las líneas que llevan hasta él. -->
+            @if (destination(); as place) {
+              <p class="group">
+                {{ place.far ? 'Ninguna línea deja cerca de ' : 'Para llegar a ' }}{{ place.name
+                }}{{ place.far ? '. Las que más se acercan:' : '' }}
+              </p>
+              @for (item of reaching(); track item.route.id) {
+                <button type="button" class="line" (click)="store.selectLine(item.route.id)">
+                  <span class="letter" [style.background]="colorOf(item.route)">{{ item.route.letter || '·' }}</span>
+                  <span class="line-text">
+                    <strong class="ellipsis">{{ item.route.name }}</strong>
+                    <span class="ellipsis">
+                      @if (item.boardMeters !== null) {
+                        Subes a {{ walk(item.boardMeters) }} ·
+                      }
+                      te deja a {{ walk(item.alightMeters) }}
+                      @if (item.wrongWay) {
+                        · da toda la vuelta
+                      }
+                    </span>
+                  </span>
+                  <span class="line-fare">
+                    <strong>S/ {{ item.route.fare.toFixed(2) }}</strong>
+                    @if (item.route.durationMinutes > 0) {
+                      <span>{{ item.route.durationMinutes }} min</span>
+                    }
+                  </span>
+                </button>
+              }
+              @if (visible().length > 0) {
+                <p class="group">Líneas que nombran «{{ search().trim() }}»</p>
+              }
+            } @else if (searchingPlace()) {
+              <p class="group">Buscando ese lugar en el mapa…</p>
+            }
             @for (route of visible(); track route.id) {
               <button type="button" class="line" (click)="store.selectLine(route.id)">
                 <span class="letter" [style.background]="colorOf(route)">{{ route.letter || '·' }}</span>
