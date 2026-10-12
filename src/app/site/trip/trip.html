@@ -1,0 +1,36 @@
+<section class="trip">
+  <header class="head card">
+    @if (trip() === undefined) {
+      <h1>Buscando el viaje…</h1>
+    } @else if (trip() === null) {
+      <h1>Este enlace no lleva a ningún viaje</h1>
+      <p class="muted">Puede que esté mal copiado o que el viaje sea de hace varios días.</p>
+    } @else {
+      <span class="live" [class.off]="trip()!.ended || stale()">
+        <span class="dot"></span>
+        {{ trip()!.ended ? 'Terminado' : stale() ? 'Sin señal' : 'En vivo' }}
+      </span>
+      <h1>{{ title() }}</h1>
+      @if (trip()!.ended) {
+        <p class="muted">Ya no se comparte su ubicación.</p>
+      } @else {
+        @if (trip()!.stop; as stop) {
+          <p class="muted">{{ stop.name === '' ? 'Marcó dónde se baja en el mapa.' : 'Se baja en ' + stop.name + '.' }}</p>
+        }
+        <p class="status">{{ status() }}</p>
+      }
+    }
+    @if (offline()) {
+      <p class="problem">No hay conexión: se reintenta solo.</p>
+    }
+    <a class="app" routerLink="/descargar">
+      <span class="mi">directions_bus</span>
+      Compartido desde Subo, la app de micros de Trujillo
+    </a>
+  </header>
+
+  <div class="map-area" [class.hidden]="trip() === null">
+    <div #map class="map"></div>
+    <span class="credit">© OpenStreetMap</span>
+  </div>
+</section>

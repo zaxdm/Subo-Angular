@@ -1,0 +1,126 @@
+:host {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.trip {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 12px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+}
+
+.head h1 {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #37d67a;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.live.off {
+  background: var(--body);
+}
+
+.live.off .dot {
+  background: #fff;
+  animation: none;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.status {
+  font-weight: 600;
+}
+
+.problem {
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.app {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: 4px;
+  color: var(--body);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.app:hover {
+  text-decoration: underline;
+}
+
+.app .mi {
+  font-size: 18px;
+}
+
+.map-area {
+  position: relative;
+  flex: 1;
+  /* En un teléfono, con la cabecera encima, el mapa sigue teniendo sitio. */
+  min-height: 55vh;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.map-area.hidden {
+  display: none;
+}
+
+.map {
+  position: absolute;
+  inset: 0;
+}
+
+.credit {
+  position: absolute;
+  bottom: 4px;
+  left: 6px;
+  z-index: 1000;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 80%);
+  font-size: 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}

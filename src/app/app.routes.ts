@@ -80,6 +80,8 @@ export const routes: Routes = [
         canActivate: [lineNeedsSession],
         loadComponent: () => import('./site/home/home').then((m) => m.Home),
       },
+      // El enlace que manda la app al compartir un viaje en vivo. No pide sesión.
+      { path: 'viaje/:id', loadComponent: () => import('./site/trip/trip').then((m) => m.Trip) },
       { path: 'descargar', loadComponent: () => import('./site/download/download').then((m) => m.Download) },
       {
         path: 'privacidad',
