@@ -1,7 +1,7 @@
 {
-  "versionCode": 3,
-  "versionName": "1.2",
+  "versionCode": 4,
+  "versionName": "1.3",
   "url": "subo.apk",
-  "notes": "• Guardar una ruta ya no cierra la app.\n• Cerca del paradero final te propone el micro que llega y sigue de vuelta.\n• Puedes tomar la foto de una alerta con la cámara.\n• Cada cuenta tiene sus favoritos.\n• La app te avisa al momento de las versiones nuevas y las descarga ella misma.",
-  "notes_en": "• Saving a route no longer closes the app.\n• Near the last stop it suggests the bus that arrives and heads back.\n• You can take an alert's photo with the camera.\n• Each account has its own favourites.\n• The app tells you right away about new versions and downloads them itself."
+  "notes": "• Al tocar una alerta en el mapa ahora también se ve su foto.\n• «Tu actividad» en el perfil muestra tus rutas guardadas y todas las alertas que has enviado.",
+  "notes_en": "• Tapping an alert on the map now shows its photo too.\n• \"Your activity\" in the profile shows your saved routes and every alert you've sent."
 }
