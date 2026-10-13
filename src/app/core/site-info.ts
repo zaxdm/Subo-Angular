@@ -33,8 +33,12 @@ export const SiteInfo = {
    */
   apkUrl: 'descargas/subo.apk',
 
-  /** Lo que se enseña junto al botón, por ejemplo `1.0` y `18 MB`. */
-  apkVersion: '1.0',
+  /**
+   * Lo que se enseña junto al botón, por ejemplo `1.0` y `18 MB`. Al subir un
+   * instalador nuevo hay que poner también su versión en
+   * `public/descargas/version.json`: de ahí saca la app que hay una actualización.
+   */
+  apkVersion: '1.1',
   apkSize: '4 MB',
 };
 
