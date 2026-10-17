@@ -140,9 +140,10 @@ describe('groupServices', () => {
   it('marca como repetida la ruta que hace el mismo recorrido en el mismo sentido', () => {
     const ida = route();
     const copia = { ...ida, id: 'r3' };
-    const line = groupServices([ida, copia])[0];
+    const vuelta = { ...duplicateRoute(ida, true), id: 'r2', name: 'Huanchaco' };
+    const line = groupServices([ida, copia, vuelta])[0];
 
-    expect(line.routes.map((item) => item.direction)).toEqual(['Ida 1', 'Ida 2']);
+    expect(line.routes.map((item) => item.direction)).toEqual(['Ida 1', 'Ida 2', 'Vuelta']);
     expect(line.routes[1].duplicateOf).toBe(ida);
   });
 

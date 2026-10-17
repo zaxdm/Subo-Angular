@@ -100,7 +100,9 @@ export function groupServices(routes: BusRoute[]): ServiceLine[] {
     groups.set(key, [...(groups.get(key) ?? []), route]);
   }
   return [...groups].map(([key, members]) => {
-    const ways = members.map((route, index) => index === 0 || sameWay(members[0], route));
+    // Con dos recorridos, uno es la ida y el otro la vuelta, aunque sea circular
+    // o el nombre no lo diga.
+    const ways = members.map((route, index) => index === 0 || (members.length !== 2 && sameWay(members[0], route)));
     const outbound = ways.filter((way) => way).length;
     const inbound = ways.length - outbound;
     const counters = { ida: 0, vuelta: 0 };
