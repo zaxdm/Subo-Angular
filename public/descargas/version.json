@@ -1,7 +1,7 @@
 {
-  "versionCode": 4,
-  "versionName": "1.3",
+  "versionCode": 5,
+  "versionName": "1.4",
   "url": "subo.apk",
-  "notes": "• Al tocar una alerta en el mapa ahora también se ve su foto.\n• «Tu actividad» en el perfil muestra tus rutas guardadas y todas las alertas que has enviado.",
-  "notes_en": "• Tapping an alert on the map now shows its photo too.\n• \"Your activity\" in the profile shows your saved routes and every alert you've sent."
+  "notes": "• Si estás en una calle por la que pasa el micro, la app te dice que puedes tomarlo ahí mismo: ya no te manda al punto de referencia más cercano.\n• «Cómo llegar» te hace subir y bajar en cualquier punto del recorrido.",
+  "notes_en": "• If you're on a street the bus runs along, the app tells you to catch it right there instead of sending you to the nearest reference point.\n• \"How to get there\" lets you board and get off anywhere along the route."
 }
