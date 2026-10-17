@@ -142,7 +142,12 @@
             }
             <h2>{{ route.name }}</h2>
           </div>
-          <p class="muted">{{ route.origin }} – {{ route.destination }}</p>
+          <p class="muted">
+            @if (directions().get(route); as way) {
+              <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
+            }
+            {{ route.origin }} – {{ route.destination }}
+          </p>
 
           <div class="facts">
             <div>
@@ -244,6 +249,9 @@
                   <span class="line-text">
                     <strong class="ellipsis">{{ item.route.name }}</strong>
                     <span class="ellipsis">
+                      @if (directions().get(item.route); as way) {
+                        <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
+                      }
                       @if (item.boardMeters !== null) {
                         Subes a {{ walk(item.boardMeters) }} ·
                       }
@@ -277,6 +285,9 @@
                 <span class="line-text">
                   <strong class="ellipsis">{{ route.name }}</strong>
                   <span class="ellipsis">
+                    @if (directions().get(route); as way) {
+                      <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
+                    }
                     {{ route.origin }} <span class="mi arrow">arrow_forward</span>
                     {{ route.destination }}
                   </span>

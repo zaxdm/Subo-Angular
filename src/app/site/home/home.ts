@@ -37,6 +37,7 @@ import {
   routeTitle,
   safeUrl,
 } from '../../core/models';
+import { directionsOf } from '../../core/directions';
 import { metersToLine } from '../../core/nearby';
 import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
@@ -157,6 +158,12 @@ export class Home implements OnDestroy {
   protected readonly routeTitle = routeTitle;
   protected readonly favoriteLabel = favoriteLabel;
   protected readonly walk = walk;
+
+  /**
+   * «Ida» o «Vuelta» de cada línea: las dos llevan el mismo nombre y la misma
+   * foto, y sin esto parecen repetidas.
+   */
+  protected readonly directions = computed(() => directionsOf(this.store.lines()));
   protected readonly safeUrl = safeUrl;
 
   protected readonly tab = signal<Tab>('lines');

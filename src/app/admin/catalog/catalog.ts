@@ -1,15 +1,25 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { BusRoute, ROUTE_STATUSES, RouteStatus, copyRoute, newRoute, routeStatusLabel, safeUrl } from '../../core/models';
+import {
+  BusRoute,
+  ROUTE_STATUSES,
+  RouteStatus,
+  copyRoute,
+  newRoute,
+  routeStatusLabel,
+  safeUrl,
+} from '../../core/models';
+import { groupServices } from '../../core/directions';
 import { duplicateRoute } from '../../core/route-tools';
 import { Store } from '../../core/store';
 import { RoutePhoto } from '../../shared/route-photo/route-photo';
 import { Editor } from '../editor/editor';
 
 /**
- * El catálogo: cuántas rutas hay, un buscador con filtro por estado y una
- * tarjeta por ruta. Con una ruta abierta, en su lugar se ve el editor.
+ * El catálogo: cuántas líneas hay, un buscador con filtro por estado y una
+ * tarjeta por línea (empresa y letra) con su ida y su vuelta dentro. Con una
+ * ruta abierta, en su lugar se ve el editor.
  */
 @Component({
   imports: [FormsModule, RoutePhoto, Editor],
@@ -40,17 +50,42 @@ export class Catalog {
     () => this.store.routes().filter((route) => safeUrl(route.imageUrl) !== null).length,
   );
 
+  /** Solo las rutas que repiten el recorrido de otra de su línea. */
+  protected readonly onlyDuplicates = signal(false);
+
+  /** Las rutas agrupadas por línea, con su sentido y si repiten a otra. */
+  protected readonly services = computed(() => groupServices(this.store.routes()));
+
+  protected readonly duplicates = computed(
+    () =>
+      this.services()
+        .flatMap((line) => line.routes)
+        .filter((item) => item.duplicateOf !== null).length,
+  );
+
   protected readonly visible = computed(() => {
     const query = this.search().trim().toLowerCase();
     const status = this.status();
-    return this.store.routes().filter((route) => {
-      if (status !== '' && route.status !== status) return false;
-      return [route.name, route.vehicleName, route.origin, route.destination, route.letter]
-        .join(' ')
-        .toLowerCase()
-        .includes(query);
-    });
+    const duplicates = this.onlyDuplicates();
+    return this.services()
+      .map((line) => ({
+        ...line,
+        routes: line.routes.filter(({ route, duplicateOf }) => {
+          if (status !== '' && route.status !== status) return false;
+          if (duplicates && duplicateOf === null) return false;
+          return [route.name, route.vehicleName, route.origin, route.destination, route.letter]
+            .join(' ')
+            .toLowerCase()
+            .includes(query);
+        }),
+      }))
+      .filter((line) => line.routes.length > 0);
   });
+
+  /** La foto de la línea: la primera de sus rutas que tenga una. */
+  protected photoOf(routes: { route: BusRoute }[]): string | null {
+    return routes.map(({ route }) => safeUrl(route.imageUrl)).find((url) => url !== null) ?? null;
+  }
 
   protected async refresh(): Promise<void> {
     this.refreshing.set(true);

@@ -25,11 +25,17 @@
 
   <section class="metrics">
     <div class="card">
-      <span class="small ellipsis">Rutas en total</span>
-      <strong>{{ store.routes().length }}</strong>
+      <span class="small ellipsis">Líneas</span>
+      <strong>{{ services().length }}</strong>
+      <span class="small muted ellipsis">Ida y vuelta cuentan como una</span>
     </div>
     <div class="card">
-      <span class="small ellipsis">Publicadas</span>
+      <span class="small ellipsis">Recorridos</span>
+      <strong>{{ store.routes().length }}</strong>
+      <span class="small muted ellipsis">Cada sentido por separado</span>
+    </div>
+    <div class="card">
+      <span class="small ellipsis">Recorridos publicados</span>
       <strong>{{ published() }}</strong>
     </div>
     <div class="card">
@@ -54,6 +60,17 @@
         <option [value]="item.code">{{ item.label }}</option>
       }
     </select>
+    @if (duplicates() > 0 || onlyDuplicates()) {
+      <button
+        type="button"
+        class="btn outline duplicates-filter"
+        [class.active]="onlyDuplicates()"
+        (click)="onlyDuplicates.set(!onlyDuplicates())"
+      >
+        <span class="mi">{{ onlyDuplicates() ? 'close' : 'content_copy' }}</span>
+        {{ onlyDuplicates() ? 'Ver todas' : duplicates() + (duplicates() === 1 ? ' repetida' : ' repetidas') }}
+      </button>
+    }
   </section>
 
   @if (visible().length === 0) {
@@ -66,54 +83,76 @@
     </p>
   } @else {
     <section class="grid">
-      @for (route of visible(); track route.id) {
+      @for (line of visible(); track line.key) {
         <article class="card route">
           <div class="photo-box">
-            <app-route-photo [url]="safeUrl(route.imageUrl)" [letter]="route.letter" />
+            <app-route-photo [url]="photoOf(line.routes)" [letter]="line.letter" />
           </div>
           <div class="route-body">
-            <!-- El color del estado tiene significado propio: verde publicada, ámbar pendiente, rojo oculta. -->
-            <span
-              class="pill"
-              [class.success]="route.status === 'APPROVED'"
-              [class.warning]="route.status === 'PENDING'"
-              [class.hidden]="route.status === 'REJECTED'"
-            >
-              {{ statusLabel(route.status) }}
-            </span>
-            <h2 class="ellipsis">{{ route.name }}</h2>
-            <p class="small ellipsis">
-              {{ route.origin }} <span class="mi arrow">arrow_forward</span> {{ route.destination }}
+            <h2 class="ellipsis">{{ line.name }}</h2>
+            <p class="small muted">
+              {{ line.routes.length === 1 ? '1 recorrido' : line.routes.length + ' recorridos' }}
             </p>
-            <hr class="divider" />
-            <p class="numbers">
-              <strong>S/ {{ route.fare.toFixed(2) }}</strong>
-              <span>{{ route.durationMinutes }} min</span>
-              <span class="ellipsis">{{ route.stops.length }} puntos de referencia</span>
-            </p>
-            <div class="route-actions">
-              <button type="button" class="btn outline" (click)="edit(route)">
-                <span class="mi">edit</span>
-                Editar ruta
-              </button>
-              <div class="copy">
-                <button
-                  type="button"
-                  class="icon-btn"
-                  title="Crear otra ruta a partir de esta"
-                  (click)="copying.set(copying() === route ? null : route)"
-                >
-                  <span class="mi">content_copy</span>
-                </button>
-                @if (copying() === route) {
-                  <div class="backdrop" (click)="copying.set(null)"></div>
-                  <div class="copy-menu">
-                    <button type="button" (click)="duplicate(route, false)">Duplicar</button>
-                    <button type="button" (click)="duplicate(route, true)">Crear la vuelta</button>
+            <ul class="variants">
+              @for (item of line.routes; track item.route.id) {
+                <li [class.repeated]="item.duplicateOf !== null">
+                  <div class="variant-head">
+                    @if (item.direction) {
+                      <span class="direction" [class.return]="item.direction.startsWith('Vuelta')">
+                        <span class="mi">{{ item.direction.startsWith('Vuelta') ? 'undo' : 'redo' }}</span>
+                        {{ item.direction }}
+                      </span>
+                    }
+                    <!-- El color del estado tiene significado propio: verde publicada, ámbar pendiente, rojo oculta. -->
+                    <span
+                      class="pill"
+                      [class.success]="item.route.status === 'APPROVED'"
+                      [class.warning]="item.route.status === 'PENDING'"
+                      [class.hidden]="item.route.status === 'REJECTED'"
+                    >
+                      {{ statusLabel(item.route.status) }}
+                    </span>
                   </div>
-                }
-              </div>
-            </div>
+                  <p class="small ellipsis">
+                    {{ item.route.origin }} <span class="mi arrow">arrow_forward</span> {{ item.route.destination }}
+                  </p>
+                  <p class="numbers">
+                    <strong>S/ {{ item.route.fare.toFixed(2) }}</strong>
+                    <span>{{ item.route.durationMinutes }} min</span>
+                    <span class="ellipsis">{{ item.route.stops.length }} puntos de referencia</span>
+                  </p>
+                  @if (item.duplicateOf; as twin) {
+                    <p class="repeated-note small">
+                      <span class="mi">warning</span>
+                      Repite el recorrido de «{{ twin.origin }} → {{ twin.destination }}»
+                    </p>
+                  }
+                  <div class="route-actions">
+                    <button type="button" class="btn outline" (click)="edit(item.route)">
+                      <span class="mi">edit</span>
+                      Editar
+                    </button>
+                    <div class="copy">
+                      <button
+                        type="button"
+                        class="icon-btn"
+                        title="Crear otra ruta a partir de esta"
+                        (click)="copying.set(copying() === item.route ? null : item.route)"
+                      >
+                        <span class="mi">content_copy</span>
+                      </button>
+                      @if (copying() === item.route) {
+                        <div class="backdrop" (click)="copying.set(null)"></div>
+                        <div class="copy-menu">
+                          <button type="button" (click)="duplicate(item.route, false)">Duplicar</button>
+                          <button type="button" (click)="duplicate(item.route, true)">Crear la vuelta</button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </li>
+              }
+            </ul>
           </div>
         </article>
       }

@@ -1,4 +1,5 @@
 import { BusRoute, newRoute, routeFromJson, routeToJson, safeUrl, sessionOf } from './models';
+import { groupServices } from './directions';
 import { metersToLine } from './nearby';
 import { duplicateRoute, parseStreetPath, streetUrl } from './route-tools';
 
@@ -71,7 +72,17 @@ describe('trazado por las calles', () => {
   it('lee el camino de la respuesta', () => {
     const body = JSON.stringify({
       code: 'Ok',
-      routes: [{ distance: 1234.5, geometry: { coordinates: [[-79.03, -8.11], [-79.04, -8.1]] } }],
+      routes: [
+        {
+          distance: 1234.5,
+          geometry: {
+            coordinates: [
+              [-79.03, -8.11],
+              [-79.04, -8.1],
+            ],
+          },
+        },
+      ],
     });
     expect(parseStreetPath(body)).toEqual({
       points: [
@@ -112,5 +123,30 @@ describe('modelos', () => {
     // Lo que el servidor no dice se conserva; una foto quitada, no.
     expect(sessionOf({}, passenger)).toEqual(passenger);
     expect(sessionOf({ avatarUrl: null }, passenger).avatarUrl).toBeNull();
+  });
+});
+
+describe('groupServices', () => {
+  it('junta la ida y la vuelta de una línea y las distingue', () => {
+    const ida = route();
+    const vuelta = { ...duplicateRoute(ida, true), id: 'r2', name: 'Huanchaco' };
+    const [line, ...rest] = groupServices([ida, vuelta]);
+
+    expect(rest).toEqual([]);
+    expect(line.routes.map((item) => item.direction)).toEqual(['Ida', 'Vuelta']);
+    expect(line.routes.every((item) => item.duplicateOf === null)).toBe(true);
+  });
+
+  it('marca como repetida la ruta que hace el mismo recorrido en el mismo sentido', () => {
+    const ida = route();
+    const copia = { ...ida, id: 'r3' };
+    const line = groupServices([ida, copia])[0];
+
+    expect(line.routes.map((item) => item.direction)).toEqual(['Ida 1', 'Ida 2']);
+    expect(line.routes[1].duplicateOf).toBe(ida);
+  });
+
+  it('una línea con un solo recorrido no lleva sentido', () => {
+    expect(groupServices([route()])[0].routes[0].direction).toBe('');
   });
 });

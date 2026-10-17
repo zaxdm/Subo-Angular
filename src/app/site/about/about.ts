@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { groupServices } from '../../core/directions';
 import { Store } from '../../core/store';
 
 /** La portada: quiénes somos y qué hace Subo. Es lo primero que se ve. */
@@ -13,6 +14,9 @@ import { Store } from '../../core/store';
 export class About {
   /** Las líneas publicadas, para contar cuánto hay ya en el mapa. */
   protected readonly routes = inject(Store).lines;
+
+  /** Empresa y letra: la ida y la vuelta son una sola línea. */
+  protected readonly lineCount = computed(() => groupServices(this.routes()).length);
 
   protected readonly stops = computed(() => this.routes().reduce((total, route) => total + route.stops.length, 0));
 

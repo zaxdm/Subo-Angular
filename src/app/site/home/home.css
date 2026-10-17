@@ -679,3 +679,24 @@ button.chip-main:not(:disabled) {
     display: none;
   }
 }
+
+/* El sentido de la línea: la ida y la vuelta tienen el mismo nombre y la misma foto. */
+.way {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  border: 1px solid transparent;
+  vertical-align: 1px;
+}
+
+.way.return {
+  background: var(--chip);
+  color: var(--ink-soft);
+  border: 1px dashed currentColor;
+}

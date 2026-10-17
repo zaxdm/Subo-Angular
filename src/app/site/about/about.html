@@ -52,7 +52,7 @@
     <div class="card stat">
       <span class="mi">directions_bus</span>
       <div>
-        <strong>{{ routes().length }}</strong>
+        <strong>{{ lineCount() }}</strong>
         <span>líneas en el mapa</span>
       </div>
     </div>
@@ -113,7 +113,12 @@
       <figure class="photo">
         <span class="mi">photo_camera</span>
         Foto {{ number }}
-        <img [src]="'nosotros/galeria-' + number + '.jpg'" alt="" loading="lazy" (error)="$any($event.target).hidden = true" />
+        <img
+          [src]="'nosotros/galeria-' + number + '.jpg'"
+          alt=""
+          loading="lazy"
+          (error)="$any($event.target).hidden = true"
+        />
       </figure>
     }
   </section>
