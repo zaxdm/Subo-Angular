@@ -56,11 +56,12 @@ export class Catalog {
   /** Las rutas agrupadas por línea, con su sentido y si repiten a otra. */
   protected readonly services = computed(() => groupServices(this.store.routes()));
 
+  /** Las repetidas que aún se ven o esperan revisión: las ocultas ya están atendidas. */
   protected readonly duplicates = computed(
     () =>
       this.services()
         .flatMap((line) => line.routes)
-        .filter((item) => item.duplicateOf !== null).length,
+        .filter((item) => item.duplicateOf !== null && item.route.status !== 'REJECTED').length,
   );
 
   protected readonly visible = computed(() => {
