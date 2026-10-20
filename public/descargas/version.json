@@ -1,7 +1,7 @@
 {
-  "versionCode": 6,
-  "versionName": "1.5",
+  "versionCode": 7,
+  "versionName": "1.6",
   "url": "subo.apk",
-  "notes": "• Ajustes más claros: las opciones van agrupadas por tema.\n• La distancia y el sonido del aviso de llegada se eligen desde una lista, y puedes probar la alerta.",
-  "notes_en": "• Clearer settings: options are grouped by topic.\n• Pick the arrival alert distance and sound from a list, and test the alert."
+  "notes": "• Diseño nuevo: letra más clara, colores más limpios y botones más fáciles de tocar.\n• Cada tipo de alerta tiene su propio color, en la lista y en el mapa.",
+  "notes_en": "• New look: clearer type, cleaner colors and easier-to-tap buttons.\n• Each alert type has its own color, in the list and on the map."
 }
