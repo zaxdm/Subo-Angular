@@ -73,20 +73,25 @@ export class Stats {
   protected readonly points = computed<DayPoint[]>(() => (this.data()?.series ?? []) as unknown as DayPoint[]);
 
   protected readonly metrics = computed(() => {
-    const totals = this.data()?.totals;
-    if (!totals) return [];
+    const data = this.data();
+    const totals = data?.totals;
+    if (!data || !totals) return [];
+    // Las visitas y descargas se cuentan desde hace poco: si el periodo
+    // anterior no tiene registro, compararlo engañaría.
+    const fresh = data.trackingSince === null || data.trackingSince > (data.series[0]?.day ?? '');
+    const tracked = (compared: Compared) => (fresh ? { text: 'sin periodo anterior', up: null } : change(compared));
     return [
       {
         label: 'Visitantes al día',
         hint: 'Personas distintas por día, de media',
         value: totals.dailyVisitors.value,
-        change: change(totals.dailyVisitors),
+        change: tracked(totals.dailyVisitors),
       },
       {
         label: 'Cuentas activas',
         hint: 'Cuentas que entraron en el periodo',
         value: totals.activeAccounts.value,
-        change: change(totals.activeAccounts),
+        change: tracked(totals.activeAccounts),
       },
       {
         label: 'Cuentas nuevas',
@@ -98,7 +103,7 @@ export class Stats {
         label: 'Descargas de la app',
         hint: 'Clics en «Descargar» de la web',
         value: totals.downloads.value,
-        change: change(totals.downloads),
+        change: tracked(totals.downloads),
       },
       {
         label: 'Alertas publicadas',
