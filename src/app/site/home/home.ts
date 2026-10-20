@@ -100,16 +100,6 @@ const LINE_COLORS = ['#e0a800', '#1f7a8c', '#c8553d', '#5b5f97', '#2e7d4f', '#b5
 const INK = '#1c1a14';
 const MAP_BLUE = '#1a73e8';
 
-/** El color de una línea que no es la abierta: apagado, mezclado con el gris del mapa. */
-function dimmed(color: string): string {
-  const grey = [0xe9, 0xe6, 0xdf];
-  const mixed = [1, 3, 5].map((start, index) => {
-    const channel = parseInt(color.slice(start, start + 2), 16);
-    return Math.round(channel + (grey[index] - channel) * 0.72);
-  });
-  return `rgb(${mixed.join(' ')})`;
-}
-
 const latLng = (point: GeoPoint): L.LatLngTuple => [point.latitude, point.longitude];
 
 /** Una marca del mapa hecha con HTML: un círculo con un texto o un icono dentro. */
@@ -403,35 +393,17 @@ export class Home implements OnDestroy {
     return this.colors().get(route) ?? LINE_COLORS[0];
   }
 
+  /** Como en la app, en el mapa solo se ve la línea que se eligió; sin elegir ninguna, ninguna. */
   private drawLines(): void {
     const selected = this.selected();
     this.lineLayer.clearLayers();
-    // La abierta se pinta la última, encima de las demás.
-    const routes = [...this.store.lines().filter((route) => route !== selected), ...(selected ? [selected] : [])];
-    for (const route of routes) {
-      const points = (this.linePoints().get(route) ?? []).map(latLng);
-      if (points.length < 2) continue;
-      const color = this.colorOf(route);
-      const open = route === selected;
-      const style: L.PolylineOptions = {
-        weight: open ? 6 : 4,
-        color: selected === null || open ? color : dimmed(color),
-        opacity: 1,
-      };
-      if (open) L.polyline(points, { weight: 9, color: INK, opacity: 1, interactive: false }).addTo(this.lineLayer);
-      const line = L.polyline(points, style).addTo(this.lineLayer);
-      // Sobre una línea sale su nombre, y se resalta para distinguirla de las de al lado.
-      line.bindTooltip(routeTitle(route), {
-        sticky: true,
-        className: 'line-tip',
-        direction: 'right',
-        offset: [12, 12],
-      });
-      if (!open) {
-        line.on('mouseover', () => line.setStyle({ weight: 6, color }).bringToFront());
-        line.on('mouseout', () => line.setStyle(style));
-      }
-    }
+    if (selected === null) return;
+    const points = (this.linePoints().get(selected) ?? []).map(latLng);
+    if (points.length < 2) return;
+    L.polyline(points, { weight: 9, color: INK, opacity: 1, interactive: false }).addTo(this.lineLayer);
+    L.polyline(points, { weight: 6, color: this.colorOf(selected), opacity: 1 })
+      .bindTooltip(routeTitle(selected), { sticky: true, className: 'line-tip', direction: 'right', offset: [12, 12] })
+      .addTo(this.lineLayer);
   }
 
   private drawMarkers(): void {
@@ -459,14 +431,6 @@ export class Home implements OnDestroy {
         const end = index === 0 || index === selected.stops.length - 1;
         add(stop, badge(end ? 'mk-stop end' : 'mk-stop', '', 20), stop.name);
       });
-    } else {
-      // Sin línea abierta, cada una lleva su letra donde empieza.
-      for (const route of this.store.lines()) {
-        if (route.stops.length === 0 || route.letter === '') continue;
-        const icon = badge('mk-letter', route.letter, 28);
-        (icon.options.html as HTMLElement).style.background = this.colorOf(route);
-        add(route.stops[0], icon, routeTitle(route), () => this.store.selectLine(route.id));
-      }
     }
     for (const place of this.favorites()) {
       add(place, badge('mk-favorite mi', place.kind.icon), favoriteLabel(place), () => this.showFavorite(place));
