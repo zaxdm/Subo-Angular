@@ -1,7 +1,7 @@
 {
-  "versionCode": 5,
-  "versionName": "1.4",
+  "versionCode": 6,
+  "versionName": "1.5",
   "url": "subo.apk",
-  "notes": "• Si estás en una calle por la que pasa el micro, la app te dice que puedes tomarlo ahí mismo: ya no te manda al punto de referencia más cercano.\n• «Cómo llegar» te hace subir y bajar en cualquier punto del recorrido.",
-  "notes_en": "• If you're on a street the bus runs along, the app tells you to catch it right there instead of sending you to the nearest reference point.\n• \"How to get there\" lets you board and get off anywhere along the route."
+  "notes": "• Ajustes más claros: las opciones van agrupadas por tema.\n• La distancia y el sonido del aviso de llegada se eligen desde una lista, y puedes probar la alerta.",
+  "notes_en": "• Clearer settings: options are grouped by topic.\n• Pick the arrival alert distance and sound from a list, and test the alert."
 }
