@@ -178,12 +178,12 @@ h1 {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fdfbf6;
+  background: #faf9f6;
 }
 
 .variants li.repeated {
   border-color: var(--warning);
-  background: #fffaf0;
+  background: #fff8e3;
 }
 
 .variant-head {

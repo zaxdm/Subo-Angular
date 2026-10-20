@@ -31,7 +31,7 @@ table {
 th {
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
-  background: #fcfaf3;
+  background: #f9f8f5;
   color: var(--muted);
   font-size: 11px;
   font-weight: 700;
@@ -54,7 +54,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background: #fdfbf5;
+  background: #faf9f6;
 }
 
 tr:last-child td {

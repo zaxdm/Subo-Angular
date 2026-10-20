@@ -1,7 +1,7 @@
 :host {
   display: flex;
   min-height: 100dvh;
-  background: #faf7ee;
+  background: #f5f3ee;
 }
 
 /* --- Barra lateral: oscura, con el amarillo de Subo para la sección abierta. --- */
@@ -17,7 +17,7 @@
   height: 100dvh;
   padding: 22px 14px 14px;
   background: var(--ink);
-  color: #d9d3c2;
+  color: #d4d6db;
 }
 
 .brand {
@@ -35,7 +35,7 @@
 }
 
 .brand span {
-  color: #9b947f;
+  color: #8e939e;
   font-size: 12px;
 }
 
@@ -55,7 +55,7 @@ nav {
 
 .group {
   margin: 16px 12px 6px;
-  color: #827b67;
+  color: #767b86;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -73,7 +73,7 @@ nav a {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: #cfc8b4;
+  color: #c9ccd2;
   font-weight: 500;
   text-decoration: none;
   transition:
@@ -176,12 +176,12 @@ nav .mi {
 }
 
 .id span {
-  color: #9b947f;
+  color: #8e939e;
   font-size: 11.5px;
 }
 
 .me .icon-btn {
-  color: #cfc8b4;
+  color: #c9ccd2;
 }
 
 .me .icon-btn:hover {

@@ -95,9 +95,9 @@ const walk = (meters: number): string =>
 const NEAR_METERS = 300;
 
 /** Un color por línea, para distinguirlas en el mapa. */
-const LINE_COLORS = ['#e0a800', '#1f7a8c', '#c8553d', '#5b5f97', '#2e7d4f', '#b5459b', '#3f6fd1', '#8a5a2b'];
+const LINE_COLORS = ['#0f766e', '#c2410c', '#1d4ed8', '#a21caf', '#15803d', '#6d28d9', '#8a6100', '#0f4c5c'];
 
-const INK = '#1c1a14';
+const INK = '#15171c';
 const MAP_BLUE = '#1a73e8';
 
 const latLng = (point: GeoPoint): L.LatLngTuple => [point.latitude, point.longitude];
@@ -424,7 +424,11 @@ export class Home implements OnDestroy {
     };
 
     for (const alert of this.alerts()) {
-      add(alert, badge('mk-alert mi', 'warning_amber'), [alert.label, alert.placeName].filter(Boolean).join(' · '));
+      add(
+        alert,
+        badge(`mk-alert mi t-${alert.type.toLowerCase()}`, 'warning_amber'),
+        [alert.label, alert.placeName].filter(Boolean).join(' · '),
+      );
     }
     if (selected !== null) {
       selected.stops.forEach((stop, index) => {

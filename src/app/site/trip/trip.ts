@@ -151,8 +151,8 @@ export class Trip implements OnDestroy {
 
     const line = route ? (route.path.length >= 2 ? route.path : route.stops).map(latLng) : [];
     if (line.length >= 2) {
-      L.polyline(line, { weight: 8, color: '#1c1a14', interactive: false }).addTo(this.lineLayer);
-      L.polyline(line, { weight: 5, color: '#e0a800', interactive: false }).addTo(this.lineLayer);
+      L.polyline(line, { weight: 8, color: '#15171c', interactive: false }).addTo(this.lineLayer);
+      L.polyline(line, { weight: 5, color: '#ffc629', interactive: false }).addTo(this.lineLayer);
     }
     if (trip.stop) {
       L.marker(latLng(trip.stop), { icon: badge('mk-stop end', 20), keyboard: false })

@@ -110,7 +110,7 @@
   flex-direction: column;
   padding: 10px 12px;
   border-radius: 12px;
-  background: #f5f2e8;
+  background: #efece5;
 }
 
 .phone-field small,
@@ -130,7 +130,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #ede8d8;
+  border: 1px solid #e8e5dd;
   border-radius: 12px;
   font-size: 12px;
 }
@@ -246,7 +246,7 @@
 }
 
 .showcase.dark p {
-  color: #cfc9b6;
+  color: #c9ccd2;
 }
 
 .route-line {

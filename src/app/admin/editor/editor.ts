@@ -67,7 +67,7 @@ interface Field {
 const MAX_STOPS = 300;
 const MAX_PATH_POINTS = 20000;
 const TRUJILLO: L.LatLngTuple = [-8.112, -79.0288];
-const INK = '#1c1a14';
+const INK = '#15171c';
 
 const latLng = (point: GeoPoint): L.LatLngTuple => [point.latitude, point.longitude];
 
