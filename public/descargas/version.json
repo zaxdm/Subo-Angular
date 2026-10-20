@@ -1,7 +1,7 @@
 {
-  "versionCode": 8,
-  "versionName": "1.7",
+  "versionCode": 9,
+  "versionName": "1.8",
   "url": "subo.apk",
-  "notes": "• Diseño completamente nuevo en todas las pantallas.\n• Nueva pestaña Asistente en la barra de abajo.\n• Lista de rutas más clara, con pasaje, minutos y cuánto caminas.",
-  "notes_en": "• Completely new design on every screen.\n• New Assistant tab in the bottom bar.\n• Clearer route list with fare, minutes and walking distance."
+  "notes": "• Vuelve la letra de siempre.\n• Las rutas que pasan cerca de ti se ven otra vez en tarjetas con foto.\n• La foto del micro sale arriba en su ficha.",
+  "notes_en": "• The usual font is back.\n• Routes near you show again as photo cards.\n• The bus photo is at the top of its page."
 }

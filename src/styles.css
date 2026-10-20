@@ -1,36 +1,30 @@
 @import 'leaflet/dist/leaflet.css';
 @import 'material-icons/iconfont/outlined.css';
 
-/* La letra de Subo, Plus Jakarta Sans, va dentro de la web con sus pesos, como en la app. */
+/* La letra va dentro de la web con sus negritas, como en la app. */
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Roboto';
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/PlusJakartaSans-Regular.ttf') format('truetype');
+  src: url('/fonts/Roboto-Regular.ttf') format('truetype');
 }
 @font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Roboto';
   font-weight: 500;
   font-display: swap;
-  src: url('/fonts/PlusJakartaSans-Medium.ttf') format('truetype');
+  src: url('/fonts/Roboto-Medium.ttf') format('truetype');
 }
 @font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/PlusJakartaSans-SemiBold.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Roboto';
   font-weight: 700;
   font-display: swap;
-  src: url('/fonts/PlusJakartaSans-Bold.ttf') format('truetype');
+  src: url('/fonts/Roboto-Bold.ttf') format('truetype');
 }
 @font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-weight: 800 900;
+  font-family: 'Roboto';
+  font-weight: 900;
   font-display: swap;
-  src: url('/fonts/PlusJakartaSans-ExtraBold.ttf') format('truetype');
+  src: url('/fonts/Roboto-Black.ttf') format('truetype');
 }
 
 /* Paleta de Subo: amarillo, tinta y arena, con el petróleo para la ubicación y las caminatas. La misma en la web y en la app. */
@@ -97,9 +91,8 @@ body {
 body {
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   font-size: 14px;
-  font-weight: 500;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
