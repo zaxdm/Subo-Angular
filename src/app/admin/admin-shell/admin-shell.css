@@ -1,175 +1,303 @@
 :host {
   display: flex;
   min-height: 100dvh;
+  background: #faf7ee;
 }
+
+/* --- Barra lateral: oscura, con el amarillo de Subo para la sección abierta. --- */
 
 .sidebar {
   position: sticky;
   top: 0;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   flex: none;
-  width: 230px;
+  width: 252px;
   height: 100dvh;
-  padding: 36px 20px 32px;
-  border-right: 1px solid var(--line);
-  background: var(--surface);
+  padding: 22px 14px 14px;
+  background: var(--ink);
+  color: #d9d3c2;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
+  padding: 0 8px 22px;
 }
 
 .brand strong {
   display: block;
-  font-size: 19px;
-  line-height: 1.2;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.15;
 }
 
 .brand span {
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: 2px;
+  color: #9b947f;
+  font-size: 12px;
 }
 
-.motto {
-  margin: 60px 0 16px;
-  color: var(--muted);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
+.close {
+  display: none;
+  margin-left: auto;
+  color: #fff;
 }
 
 nav {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
+  overflow-y: auto;
 }
 
-/* Una sección en la navegación; la activa es una pastilla amarilla. */
+.group {
+  margin: 16px 12px 6px;
+  color: #827b67;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.group:first-child {
+  margin-top: 0;
+}
+
 nav a {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 18px;
-  border-radius: 999px;
-  color: var(--muted);
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #cfc8b4;
   font-weight: 500;
   text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 nav a:hover {
-  background: var(--chip);
+  background: rgb(255 255 255 / 6%);
+  color: #fff;
 }
 
 nav a.active {
+  background: rgb(255 196 0 / 14%);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* La rayita amarilla marca la sección abierta también sin fijarse en el fondo. */
+nav a.active::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--accent);
+}
+
+nav .mi {
+  font-size: 20px;
+}
+
+.badge {
+  margin-left: auto;
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* La cuenta abajo: quién está dentro, y salir. */
+.me {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 5%);
+}
+
+.who {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 2px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.avatar {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 50%;
   background: var(--accent);
   color: var(--ink);
   font-weight: 700;
 }
 
-nav .mi {
-  font-size: 17px;
+.avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.foot {
-  margin-top: auto;
-}
-
-.city {
+.id {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  color: var(--muted);
-  font-size: 12px;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
 }
 
-.city i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
+.id strong {
+  color: #fff;
+  font-size: 13px;
 }
 
-.slogan {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.35;
+.id span {
+  color: #9b947f;
+  font-size: 11.5px;
 }
+
+.me .icon-btn {
+  color: #cfc8b4;
+}
+
+.me .icon-btn:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+
+/* --- Contenido --- */
 
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 0 44px;
 }
 
-header {
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: none;
-  height: 88px;
+  height: 64px;
+  padding: 0 40px;
+  border-bottom: 1px solid var(--line);
+  background: rgb(250 247 238 / 86%);
+  backdrop-filter: blur(10px);
 }
 
-header .kicker {
+.menu {
+  display: none;
+}
+
+.crumbs {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
-/* La cuenta va pegada a la derecha y, si el nombre es largo, se recorta. */
-.account {
-  max-width: 260px;
-  color: var(--muted);
-  font-size: 12px;
+.crumbs .mi {
+  font-size: 18px;
+  color: var(--faint);
+}
+
+.crumbs strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.web {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.web .mi {
+  font-size: 17px;
 }
 
 main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 40px;
 }
 
-/* Sin barra lateral, la marca y las secciones van en una franja arriba. */
-@media (max-width: 899px) {
-  :host {
-    flex-direction: column;
-  }
+.scrim {
+  display: none;
+}
 
+/* Sin sitio para la barra lateral, se abre como un cajón desde el menú. */
+@media (max-width: 959px) {
   .sidebar {
-    position: static;
-    width: auto;
-    height: auto;
-    padding: 14px 20px 12px;
-    border-right: 0;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
   }
 
-  .motto,
-  .foot,
-  .account {
+  .sidebar.open {
+    transform: none;
+    box-shadow: 8px 0 30px rgb(0 0 0 / 25%);
+  }
+
+  .close,
+  .menu {
+    display: inline-grid;
+  }
+
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    display: block;
+    background: rgb(0 0 0 / 40%);
+  }
+
+  .topbar {
+    padding: 0 12px 0 8px;
+  }
+
+  main {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 479px) {
+  .web .label {
     display: none;
-  }
-
-  /* Son varias: en una pantalla estrecha se deslizan de lado. */
-  nav {
-    flex-direction: row;
-    gap: 8px;
-    margin-top: 14px;
-    overflow-x: auto;
-  }
-
-  nav a {
-    flex: none;
-  }
-
-  .content {
-    padding: 0 20px;
-  }
-
-  header {
-    height: 60px;
   }
 }

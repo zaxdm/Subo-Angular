@@ -4,11 +4,27 @@
   subtitle="Quién se registró, cuándo entró por última vez y qué aporta."
   [loading]="loading()"
   [ready]="list() !== null || failed()"
+  emptyIcon="cloud_off"
   [emptyMessage]="list() === null && failed() ? 'No se pudo cargar la lista de cuentas.' : null"
   (refresh)="load()"
 >
-  <section class="filters">
-    <label class="search">
+  <button
+    actions
+    type="button"
+    class="btn outline export"
+    [disabled]="exporting() || !list()?.total"
+    (click)="exportCsv()"
+  >
+    @if (exporting()) {
+      <span class="spinner"></span>
+    } @else {
+      <span class="mi">download</span>
+    }
+    Exportar CSV
+  </button>
+
+  <section class="toolbar">
+    <label class="search-field">
       <span class="mi">search</span>
       <input
         type="search"
@@ -23,27 +39,23 @@
         <option [value]="item.code">{{ item.label }}</option>
       }
     </select>
-    <button type="button" class="btn outline" [disabled]="exporting() || !list()?.total" (click)="exportCsv()">
-      @if (exporting()) {
-        <span class="spinner"></span>
-      } @else {
-        <span class="mi">download</span>
-      }
-      Exportar CSV
-    </button>
   </section>
 
-  <div class="chips" role="group" aria-label="Filtro">
+  <div class="chip-row" role="group" aria-label="Filtro">
     @for (item of filters; track item.code) {
       <button type="button" [class.on]="filter() === item.code" (click)="chooseFilter(item.code)">
-        {{ item.label }} <span>{{ list()?.counts?.[item.code] ?? 0 }}</span>
+        {{ item.label }} <span class="count">{{ list()?.counts?.[item.code] ?? 0 }}</span>
       </button>
     }
   </div>
 
   @if (list(); as data) {
     @if (data.users.length === 0) {
-      <p class="empty muted">Ninguna cuenta coincide con la búsqueda.</p>
+      <div class="empty-state">
+        <span class="mi">person_search</span>
+        <strong>Ninguna cuenta coincide</strong>
+        <span>Prueba con otra búsqueda u otro filtro.</span>
+      </div>
     } @else {
       <div class="card table-card">
         <table>
@@ -61,28 +73,30 @@
             @for (user of data.users; track user.id) {
               <tr [class.blocked]="user.blocked">
                 <td class="who">
-                  <span class="avatar">{{ (user.name || user.email).charAt(0).toUpperCase() }}</span>
-                  <span class="id">
-                    <strong class="ellipsis">{{ user.name }}</strong>
-                    <span class="ellipsis muted">{{ user.email }}</span>
-                    <span class="tags">
-                      @if (user.isAdmin) {
-                        <i class="tag">Administrador</i>
-                      }
-                      @if (user.isPremium) {
-                        <i class="tag gold">Premium</i>
-                      }
-                      @if (user.google) {
-                        <i class="tag">Google</i>
-                      }
-                      @if (!user.emailVerified) {
-                        <i class="tag warn">Sin verificar</i>
-                      }
-                      @if (user.blocked) {
-                        <i class="tag danger">Bloqueada</i>
-                      }
+                  <div class="who-in">
+                    <span class="avatar-dot">{{ (user.name || user.email).charAt(0).toUpperCase() }}</span>
+                    <span class="id">
+                      <strong class="ellipsis">{{ user.name }}</strong>
+                      <span class="ellipsis muted">{{ user.email }}</span>
+                      <span class="tags">
+                        @if (user.isAdmin) {
+                          <i class="tag">Administrador</i>
+                        }
+                        @if (user.isPremium) {
+                          <i class="tag gold">Premium</i>
+                        }
+                        @if (user.google) {
+                          <i class="tag">Google</i>
+                        }
+                        @if (!user.emailVerified) {
+                          <i class="tag warn">Sin verificar</i>
+                        }
+                        @if (user.blocked) {
+                          <i class="tag danger">Bloqueada</i>
+                        }
+                      </span>
                     </span>
-                  </span>
+                  </div>
                 </td>
                 <td>{{ lastSeen(user.createdAt) }}</td>
                 <td>
@@ -101,7 +115,14 @@
                 <td class="num">{{ user.ratings }}</td>
                 <td class="act">
                   @if (!user.isAdmin) {
-                    <button type="button" class="btn text" [disabled]="busy() === user.id" (click)="toggleBlock(user)">
+                    <button
+                      type="button"
+                      class="btn text row-action"
+                      [class.unblock]="user.blocked"
+                      [disabled]="busy() === user.id"
+                      (click)="toggleBlock(user)"
+                    >
+                      <span class="mi">{{ user.blocked ? 'lock_open' : 'block' }}</span>
                       {{ user.blocked ? 'Desbloquear' : 'Bloquear' }}
                     </button>
                   }
@@ -123,7 +144,7 @@
         >
           <span class="mi">chevron_left</span>
         </button>
-        <span class="small">Página {{ page() + 1 }} de {{ pages() }}</span>
+        <span class="page-no">{{ page() + 1 }} / {{ pages() }}</span>
         <button
           type="button"
           class="icon-btn"

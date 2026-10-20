@@ -2,45 +2,73 @@
   label="Buzón"
   title="Sugerencias"
   subtitle="Lo que los pasajeros escriben desde Soporte en la app."
+  emptyIcon="forum"
   [loading]="loading()"
   [ready]="items() !== null"
   [emptyMessage]="items()?.length === 0 ? 'El buzón está vacío.' : null"
   (refresh)="load()"
 >
-  @for (item of items(); track item) {
-    <article class="card">
-      <div class="top">
-        <span class="pill">{{ item.subject }}</span>
-        <span class="small ellipsis">{{ formatDateTime(item.createdAt) }}</span>
-        <button type="button" class="icon-btn" title="Eliminar sugerencia" (click)="delete(item)">
-          <span class="mi">delete</span>
-        </button>
+  <div class="chip-row filters" role="group" aria-label="Estado">
+    <button type="button" [class.on]="show() === ''" (click)="show.set('')">
+      Todas <span class="count">{{ counts()[''] }}</span>
+    </button>
+    @for (status of statuses; track status.code) {
+      <button type="button" [class.on]="show() === status.code" (click)="show.set(status.code)">
+        {{ plural[status.code] }} <span class="count">{{ counts()[status.code] ?? 0 }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="list">
+    @for (item of shown(); track item) {
+      <article
+        class="card"
+        [class.new]="item.status === 'NEW'"
+        [class.review]="item.status === 'IN_REVIEW'"
+        [class.done]="item.status === 'RESOLVED'"
+      >
+        <div class="top">
+          <span class="avatar-dot">{{ (authorOf(item) || '?').charAt(0).toUpperCase() }}</span>
+          <div class="meta">
+            <strong class="ellipsis">{{ authorOf(item) }}</strong>
+            <span class="ellipsis">
+              {{ formatDateTime(item.createdAt) }}
+              @if (originOf(item); as origin) {
+                · {{ origin }}
+              }
+            </span>
+          </div>
+          <button type="button" class="icon-btn delete" title="Eliminar sugerencia" (click)="delete(item)">
+            <span class="mi">delete</span>
+          </button>
+        </div>
+        <span class="pill subject">{{ item.subject }}</span>
+        <p class="message">{{ item.message }}</p>
+        @if (item.reply) {
+          <div class="reply">
+            <span class="mi">subdirectory_arrow_right</span>
+            <p><strong>Tu respuesta:</strong> {{ item.reply }}</p>
+          </div>
+        }
+        <div class="actions">
+          <select class="input" aria-label="Estado" (change)="review(item, $any($event.target).value, item.reply)">
+            @for (status of statuses; track status.code) {
+              <option [value]="status.code" [selected]="status.code === item.status">{{ status.label }}</option>
+            }
+          </select>
+          <button type="button" class="btn outline" (click)="openReply(item)">
+            <span class="mi">reply</span>
+            {{ item.reply ? 'Cambiar respuesta' : 'Responder' }}
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <span class="mi">filter_alt_off</span>
+        <strong>No hay sugerencias en este estado</strong>
       </div>
-      <p class="message">{{ item.message }}</p>
-      <p class="small">{{ authorOf(item) }}</p>
-      @if (originOf(item); as origin) {
-        <p class="small">{{ origin }}</p>
-      }
-      @if (item.reply) {
-        <p class="reply">Respuesta: {{ item.reply }}</p>
-      }
-      <div class="actions">
-        <select
-          class="input"
-          aria-label="Estado"
-          (change)="review(item, $any($event.target).value, item.reply)"
-        >
-          @for (status of statuses; track status.code) {
-            <option [value]="status.code" [selected]="status.code === item.status">{{ status.label }}</option>
-          }
-        </select>
-        <button type="button" class="btn outline" (click)="openReply(item)">
-          <span class="mi">reply</span>
-          {{ item.reply ? 'Cambiar respuesta' : 'Responder' }}
-        </button>
-      </div>
-    </article>
-  }
+    }
+  </div>
 </app-page-frame>
 
 @if (replying()) {

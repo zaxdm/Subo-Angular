@@ -1,23 +1,35 @@
 <header>
-  <div>
+  <div class="titles">
     <p class="kicker">{{ label() }}</p>
-    <h1 class="h-large">{{ title() }}</h1>
+    <h1>{{ title() }}</h1>
     <p class="muted">{{ subtitle() }}</p>
   </div>
-  <button type="button" class="btn outline" [disabled]="loading()" (click)="refresh.emit()">
-    @if (loading()) {
-      <span class="spinner"></span>
-    } @else {
-      <span class="mi">refresh</span>
-    }
-    Actualizar
-  </button>
+  <div class="actions">
+    <ng-content select="[actions]" />
+    <button
+      type="button"
+      class="btn outline refresh"
+      title="Actualizar"
+      [disabled]="loading()"
+      (click)="refresh.emit()"
+    >
+      @if (loading()) {
+        <span class="spinner"></span>
+      } @else {
+        <span class="mi">refresh</span>
+      }
+      <span class="label">Actualizar</span>
+    </button>
+  </div>
 </header>
 
 @if (!ready()) {
   <div class="rest"><span class="spinner big"></span></div>
 } @else if (emptyMessage(); as message) {
-  <div class="rest muted">{{ message }}</div>
+  <div class="empty-state">
+    <span class="mi">{{ emptyIcon() }}</span>
+    <strong>{{ message }}</strong>
+  </div>
 } @else {
   <ng-content />
 }

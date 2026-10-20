@@ -4,36 +4,109 @@
   flex: 1;
 }
 
+.filters {
+  margin-bottom: 18px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  align-items: start;
+  gap: 14px;
+}
+
+/* El estado se ve en la raya de la izquierda y, además, en el selector de abajo. */
 .card {
-  margin-bottom: 14px;
-  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px 18px 16px 20px;
+  border-left: 4px solid var(--field-line);
+}
+
+.card.new {
+  border-left-color: var(--accent);
+}
+
+.card.review {
+  border-left-color: var(--chart-1);
+}
+
+.card.done {
+  border-left-color: var(--success);
 }
 
 .top {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
 }
 
-.top .small {
+.top .avatar-dot {
+  width: 34px;
+  height: 34px;
+  font-size: 13px;
+}
+
+.meta {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.35;
 }
 
-.top .mi {
-  font-size: 20px;
+.meta strong {
+  font-size: 13.5px;
+}
+
+.meta span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.delete {
+  width: 34px;
+  height: 34px;
+  color: var(--faint);
+}
+
+.delete:hover {
   color: var(--danger);
 }
 
+.delete .mi {
+  font-size: 19px;
+}
+
+.subject {
+  margin-top: 12px;
+}
+
 .message {
-  margin: 8px 0 12px;
+  margin: 8px 0 4px;
+  color: var(--ink-soft);
   white-space: pre-wrap;
 }
 
 .reply {
-  margin-top: 12px;
-  padding: 12px;
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
   border-radius: 10px;
-  background: var(--accent-soft);
+  background: var(--accent-wash);
+  font-size: 13px;
+}
+
+.reply .mi {
+  color: var(--accent-text);
+  font-size: 18px;
+}
+
+.reply p {
   white-space: pre-wrap;
 }
 
@@ -41,14 +114,36 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 12px;
-  margin-top: 12px;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
 }
 
 .card select {
-  width: 170px;
+  width: 160px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.card .actions .btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
 }
 
 .dialog {
   max-width: 508px;
+}
+
+@media (max-width: 479px) {
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

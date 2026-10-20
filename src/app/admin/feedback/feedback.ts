@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { Api } from '../../core/api';
@@ -30,6 +30,28 @@ export class Feedback {
   /** `null` mientras llega la primera respuesta. */
   protected readonly items = signal<Suggestion[] | null>(null);
   protected readonly loading = signal(false);
+
+  /** Cómo se dice cada estado en un filtro: "Nuevas", "Resueltas". */
+  protected readonly plural: Record<SuggestionStatus, string> = {
+    NEW: 'Nuevas',
+    IN_REVIEW: 'En revisión',
+    RESOLVED: 'Resueltas',
+  };
+
+  /** Vacío: todas. */
+  protected readonly show = signal<SuggestionStatus | ''>('');
+
+  protected readonly shown = computed(() => {
+    const show = this.show();
+    return (this.items() ?? []).filter((item) => show === '' || item.status === show);
+  });
+
+  /** Cuántas hay en cada estado, para los filtros. */
+  protected readonly counts = computed(() => {
+    const counts: Record<string, number> = { '': this.items()?.length ?? 0 };
+    for (const item of this.items() ?? []) counts[item.status] = (counts[item.status] ?? 0) + 1;
+    return counts;
+  });
 
   /** La sugerencia que se está contestando, y lo escrito hasta ahora. */
   protected readonly replying = signal<Suggestion | null>(null);

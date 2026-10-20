@@ -7,44 +7,56 @@
   (refresh)="load()"
 >
   <form class="card add" (ngSubmit)="add()">
-    <h2 class="title">Añadir administrador</h2>
-    <p class="small">Tiene que tener ya una cuenta en la app.</p>
-    <div class="row">
-      <label class="field">
-        <input
-          class="input"
-          name="email"
-          type="email"
-          placeholder="Correo de su cuenta"
-          aria-label="Correo de su cuenta"
-          [class.invalid]="emailProblem()"
-          [(ngModel)]="email"
-        />
-        @if (emailProblem(); as problem) {
-          <small class="problem">{{ problem }}</small>
-        }
-      </label>
-      <button type="submit" class="btn small-btn" [disabled]="adding()">
-        <span class="mi">person_add_alt</span>
-        Añadir
-      </button>
+    <span class="icon-tile"><span class="mi">person_add_alt</span></span>
+    <div class="add-body">
+      <h2 class="title">Añadir administrador</h2>
+      <p class="small">Tiene que tener ya una cuenta en la app.</p>
+      <div class="row">
+        <label class="field">
+          <input
+            class="input"
+            name="email"
+            type="email"
+            placeholder="Correo de su cuenta"
+            aria-label="Correo de su cuenta"
+            [class.invalid]="emailProblem()"
+            [(ngModel)]="email"
+          />
+          @if (emailProblem(); as problem) {
+            <small class="problem">{{ problem }}</small>
+          }
+        </label>
+        <button type="submit" class="btn small-btn" [disabled]="adding()">
+          <span class="mi">person_add_alt</span>
+          Añadir
+        </button>
+      </div>
     </div>
   </form>
 
-  @for (person of people(); track person.id) {
-    <div class="card person">
-      <div>
-        <strong>{{ person.name || person.email }}</strong>
-        <span class="muted">{{ person.email }}</span>
+  <div class="section-head">
+    <h2>Equipo</h2>
+    <p>{{ people()?.length }} {{ people()?.length === 1 ? 'persona' : 'personas' }} con acceso</p>
+  </div>
+  <div class="card rows">
+    @for (person of people(); track person.id) {
+      <div class="person">
+        <span class="avatar-dot">{{ (person.name || person.email).charAt(0).toUpperCase() }}</span>
+        <div>
+          <strong class="ellipsis">{{ person.name || person.email }}</strong>
+          <span class="muted ellipsis">{{ person.email }}</span>
+        </div>
+        <!-- Al principal no se le quita el acceso: el panel no se queda sin dueño. -->
+        @if (person.isPrincipal) {
+          <span class="pill">Principal</span>
+        } @else {
+          <button type="button" class="btn text remove" (click)="remove(person)">
+            <span class="mi">person_remove</span>Quitar
+          </button>
+        }
       </div>
-      <!-- Al principal no se le quita el acceso: el panel no se queda sin dueño. -->
-      @if (person.isPrincipal) {
-        <span class="small">Principal</span>
-      } @else {
-        <button type="button" class="btn text" (click)="remove(person)">Quitar</button>
-      }
-    </div>
-  } @empty {
-    <p class="muted">Todavía no hay administradores.</p>
-  }
+    } @empty {
+      <p class="muted">Todavía no hay administradores.</p>
+    }
+  </div>
 </app-page-frame>

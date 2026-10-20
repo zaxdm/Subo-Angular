@@ -4,19 +4,25 @@
   <header>
     <div>
       <p class="kicker">Catálogo</p>
-      <h1 class="h-large">Rutas y micros</h1>
+      <h1>Rutas y micros</h1>
       <p class="muted">Lo que publiques aquí es lo que ven los pasajeros en la app.</p>
     </div>
     <div class="actions">
-      <button type="button" class="btn outline" [disabled]="refreshing()" (click)="refresh()">
+      <button
+        type="button"
+        class="btn outline refresh"
+        title="Actualizar"
+        [disabled]="refreshing()"
+        (click)="refresh()"
+      >
         @if (refreshing()) {
           <span class="spinner"></span>
         } @else {
           <span class="mi">refresh</span>
         }
-        Actualizar
+        <span class="label">Actualizar</span>
       </button>
-      <button type="button" class="btn small-btn" (click)="create()">
+      <button type="button" class="btn accent new" (click)="create()">
         <span class="mi">add</span>
         Nueva ruta
       </button>
@@ -24,28 +30,42 @@
   </header>
 
   <section class="metrics">
-    <div class="card">
-      <span class="small ellipsis">Líneas</span>
-      <strong>{{ services().length }}</strong>
-      <span class="small muted ellipsis">Ida y vuelta cuentan como una</span>
+    <div class="card metric">
+      <span class="icon-tile"><span class="mi">directions_bus</span></span>
+      <div>
+        <strong>{{ services().length }}</strong>
+        <span class="ellipsis">Líneas</span>
+        <small class="ellipsis">Ida y vuelta cuentan como una</small>
+      </div>
     </div>
-    <div class="card">
-      <span class="small ellipsis">Recorridos</span>
-      <strong>{{ store.routes().length }}</strong>
-      <span class="small muted ellipsis">Cada sentido por separado</span>
+    <div class="card metric">
+      <span class="icon-tile blue"><span class="mi">alt_route</span></span>
+      <div>
+        <strong>{{ store.routes().length }}</strong>
+        <span class="ellipsis">Recorridos</span>
+        <small class="ellipsis">Cada sentido por separado</small>
+      </div>
     </div>
-    <div class="card">
-      <span class="small ellipsis">Recorridos publicados</span>
-      <strong>{{ published() }}</strong>
+    <div class="card metric">
+      <span class="icon-tile green"><span class="mi">check_circle</span></span>
+      <div>
+        <strong>{{ published() }}</strong>
+        <span class="ellipsis">Publicados</span>
+        <small class="ellipsis">Los ven los pasajeros</small>
+      </div>
     </div>
-    <div class="card">
-      <span class="small ellipsis">Con foto</span>
-      <strong>{{ withPhoto() }}</strong>
+    <div class="card metric">
+      <span class="icon-tile orange"><span class="mi">photo_camera</span></span>
+      <div>
+        <strong>{{ withPhoto() }}</strong>
+        <span class="ellipsis">Con foto</span>
+        <small class="ellipsis">De {{ store.routes().length }} recorridos</small>
+      </div>
     </div>
   </section>
 
-  <section class="filters">
-    <label class="search">
+  <section class="toolbar">
+    <label class="search-field">
       <span class="mi">search</span>
       <input
         type="search"
@@ -54,12 +74,16 @@
         [(ngModel)]="search"
       />
     </label>
-    <select class="input status" aria-label="Estado" [(ngModel)]="status">
-      <option value="">Todos los estados</option>
+    <div class="chip-row" role="group" aria-label="Estado">
+      <button type="button" [class.on]="status() === ''" (click)="status.set('')">
+        Todas <span class="count">{{ statusCounts()[''] }}</span>
+      </button>
       @for (item of statuses; track item.code) {
-        <option [value]="item.code">{{ item.label }}</option>
+        <button type="button" [class.on]="status() === item.code" (click)="status.set(item.code)">
+          {{ item.label }}s <span class="count">{{ statusCounts()[item.code] ?? 0 }}</span>
+        </button>
       }
-    </select>
+    </div>
     @if (duplicates() > 0 || onlyDuplicates()) {
       <button
         type="button"
@@ -74,22 +98,26 @@
   </section>
 
   @if (visible().length === 0) {
-    <p class="empty muted">
-      {{
-        store.routes().length === 0
-          ? 'Todavía no hay rutas. Crea la primera con «Nueva ruta».'
-          : 'Ninguna ruta coincide con la búsqueda.'
-      }}
-    </p>
+    <div class="empty-state">
+      <span class="mi">{{ store.routes().length === 0 ? 'add_road' : 'search_off' }}</span>
+      <strong>{{ store.routes().length === 0 ? 'Todavía no hay rutas' : 'Ninguna ruta coincide' }}</strong>
+      <span>{{
+        store.routes().length === 0 ? 'Crea la primera con «Nueva ruta».' : 'Prueba con otra búsqueda u otro estado.'
+      }}</span>
+    </div>
   } @else {
+    <p class="count-line">{{ visible().length }} {{ visible().length === 1 ? 'línea' : 'líneas' }}</p>
     <section class="grid">
       @for (line of visible(); track line.key) {
         <article class="card route">
           <div class="photo-box">
             <app-route-photo [url]="photoOf(line.routes)" [letter]="line.letter" />
+            @if (line.letter && photoOf(line.routes)) {
+              <span class="letter-badge">{{ line.letter }}</span>
+            }
           </div>
           <div class="route-body">
-            <h2 class="ellipsis">{{ line.name }}</h2>
+            <h2 class="ellipsis" [title]="line.name">{{ line.name }}</h2>
             <p class="small muted">
               {{ line.routes.length === 1 ? '1 recorrido' : line.routes.length + ' recorridos' }}
             </p>
@@ -113,13 +141,13 @@
                       {{ statusLabel(item.route.status) }}
                     </span>
                   </div>
-                  <p class="small ellipsis">
+                  <p class="trip ellipsis">
                     {{ item.route.origin }} <span class="mi arrow">arrow_forward</span> {{ item.route.destination }}
                   </p>
                   <p class="numbers">
-                    <strong>S/ {{ item.route.fare.toFixed(2) }}</strong>
-                    <span>{{ item.route.durationMinutes }} min</span>
-                    <span class="ellipsis">{{ item.route.stops.length }} puntos de referencia</span>
+                    <span class="fare">S/ {{ item.route.fare.toFixed(2) }}</span>
+                    <span><span class="mi">schedule</span>{{ item.route.durationMinutes }} min</span>
+                    <span class="ellipsis"><span class="mi">place</span>{{ item.route.stops.length }} puntos</span>
                   </p>
                   @if (item.duplicateOf; as twin) {
                     <p class="repeated-note small">
@@ -144,8 +172,12 @@
                       @if (copying() === item.route) {
                         <div class="backdrop" (click)="copying.set(null)"></div>
                         <div class="copy-menu">
-                          <button type="button" (click)="duplicate(item.route, false)">Duplicar</button>
-                          <button type="button" (click)="duplicate(item.route, true)">Crear la vuelta</button>
+                          <button type="button" (click)="duplicate(item.route, false)">
+                            <span class="mi">content_copy</span>Duplicar
+                          </button>
+                          <button type="button" (click)="duplicate(item.route, true)">
+                            <span class="mi">swap_horiz</span>Crear la vuelta
+                          </button>
                         </div>
                       }
                     </div>

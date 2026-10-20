@@ -24,5 +24,8 @@ export class PageFrame {
   /** Qué decir cuando no hay nada que enseñar; `null` si hay contenido. */
   readonly emptyMessage = input<string | null>(null);
 
+  /** El icono que acompaña a ese mensaje. */
+  readonly emptyIcon = input('inbox');
+
   readonly refresh = output<void>();
 }

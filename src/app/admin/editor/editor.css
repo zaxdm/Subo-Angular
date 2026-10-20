@@ -16,6 +16,14 @@ header {
   margin-left: -12px;
 }
 
+h1 {
+  margin-top: 4px;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);

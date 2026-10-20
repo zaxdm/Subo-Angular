@@ -50,6 +50,13 @@ export class Catalog {
     () => this.store.routes().filter((route) => safeUrl(route.imageUrl) !== null).length,
   );
 
+  /** Cuántos recorridos hay en cada estado, para los filtros. */
+  protected readonly statusCounts = computed(() => {
+    const counts: Record<string, number> = { '': this.store.routes().length };
+    for (const route of this.store.routes()) counts[route.status] = (counts[route.status] ?? 0) + 1;
+    return counts;
+  });
+
   /** Solo las rutas que repiten el recorrido de otra de su línea. */
   protected readonly onlyDuplicates = signal(false);
 

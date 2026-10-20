@@ -1,43 +1,76 @@
-<aside class="sidebar">
+<aside class="sidebar" [class.open]="menuOpen()">
   <div class="brand">
-    <app-subo-mark [size]="43" />
+    <app-subo-mark [size]="38" />
     <div>
       <strong>Subo</strong>
-      <span>ADMINISTRACIÓN</span>
+      <span>Panel de control</span>
     </div>
+    <button type="button" class="icon-btn close" aria-label="Cerrar menú" (click)="menuOpen.set(false)">
+      <span class="mi">close</span>
+    </button>
   </div>
 
-  <p class="motto">TU CIUDAD, CONECTADA</p>
   <!-- Una ruta a medio editar se queda esperando al volver de otra sección. -->
   <nav>
-    @for (section of sections(); track section.path) {
-      <a
-        [routerLink]="section.path"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <span class="mi">{{ section.icon }}</span>
-        <span class="ellipsis">{{ section.label }}</span>
-      </a>
+    @for (group of groups(); track group.title) {
+      <p class="group">{{ group.title }}</p>
+      @for (section of group.sections; track section.path) {
+        <a
+          [routerLink]="section.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="menuOpen.set(false)"
+        >
+          <span class="mi">{{ section.icon }}</span>
+          <span class="ellipsis">{{ section.label }}</span>
+          @if (section.badge) {
+            <b class="badge" [title]="section.badge + ' por revisar'">{{ section.badge }}</b>
+          }
+        </a>
+      }
     }
   </nav>
 
-  <div class="foot">
-    <p class="city"><i></i> Trujillo, La Libertad</p>
-    <p class="slogan">Un buen viaje empieza<br />con una buena ruta.</p>
+  <div class="me">
+    <a class="who" routerLink="/panel/perfil" (click)="menuOpen.set(false)">
+      <span class="avatar">
+        {{ initial() }}
+        @if (store.session()?.avatarUrl; as avatar) {
+          <img [src]="avatar" alt="" (error)="$any($event.target).hidden = true" />
+        }
+      </span>
+      <span class="id">
+        <strong class="ellipsis">{{ store.session()?.name }}</strong>
+        <span class="ellipsis">{{ store.session()?.isSuperAdmin ? 'Administrador principal' : 'Administrador' }}</span>
+      </span>
+    </a>
+    <button type="button" class="icon-btn" title="Cerrar sesión" aria-label="Cerrar sesión" (click)="store.signOut()">
+      <span class="mi">logout</span>
+    </button>
   </div>
 </aside>
 
+@if (menuOpen()) {
+  <div class="scrim" (click)="menuOpen.set(false)"></div>
+}
+
 <div class="content">
-  <header>
-    <span class="kicker ellipsis">Centro de control</span>
-    <span class="account ellipsis">{{ store.session()?.name }}</span>
+  <header class="topbar">
+    <button type="button" class="icon-btn menu" aria-label="Abrir menú" (click)="menuOpen.set(true)">
+      <span class="mi">menu</span>
+    </button>
+    <p class="crumbs ellipsis">
+      <span>Panel</span>
+      <span class="mi">chevron_right</span>
+      <strong>{{ current() }}</strong>
+    </p>
     <!-- Sale del panel a la web de los pasajeros, sin cerrar sesión. -->
-    <a class="btn text" routerLink="/mapa">Ver la web</a>
-    <button type="button" class="btn text" (click)="store.signOut()">Cerrar sesión</button>
+    <a class="btn outline web" routerLink="/mapa">
+      <span class="mi">open_in_new</span>
+      <span class="label">Ver la web</span>
+    </a>
   </header>
-  <hr class="divider" />
-  <main>
+  <main class="admin-area">
     <router-outlet />
   </main>
 </div>

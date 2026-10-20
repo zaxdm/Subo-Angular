@@ -2,141 +2,182 @@
   label="Resumen"
   title="Estadísticas"
   subtitle="Quién entra, de dónde y qué se usa."
+  emptyIcon="cloud_off"
   [loading]="loading()"
   [ready]="data() !== null || failed()"
   [emptyMessage]="data() === null && failed() ? 'No se pudieron cargar las estadísticas.' : null"
   (refresh)="load()"
 >
-  <div class="toolbar">
-    <div class="segmented" role="group" aria-label="Periodo">
-      @for (period of periods; track period) {
-        <button type="button" [class.on]="days() === period" [disabled]="loading()" (click)="choose(period)">
-          {{ period }} días
-        </button>
-      }
-    </div>
-    @if (trackingNote(); as note) {
-      <p class="small muted note"><span class="mi">info</span>{{ note }}</p>
+  <div actions class="segmented" role="group" aria-label="Periodo">
+    @for (period of periods; track period) {
+      <button type="button" [class.on]="days() === period" [disabled]="loading()" (click)="choose(period)">
+        {{ period }} días
+      </button>
     }
   </div>
+
+  @if (trackingNote(); as note) {
+    <p class="note"><span class="mi">info</span>{{ note }}</p>
+  }
 
   <section class="metrics">
     @for (metric of metrics(); track metric.label) {
       <div class="card metric" [title]="metric.hint">
-        <span class="small ellipsis">{{ metric.label }}</span>
+        <div class="metric-top">
+          <span class="icon-tile" [class]="metric.tone"
+            ><span class="mi">{{ metric.icon }}</span></span
+          >
+          <span
+            class="change"
+            title="Frente al periodo anterior"
+            [class.up]="metric.change.up === true"
+            [class.down]="metric.change.up === false"
+          >
+            @if (metric.change.up !== null) {
+              <span class="mi">{{ metric.change.up ? 'trending_up' : 'trending_down' }}</span>
+            }
+            {{ metric.change.text }}
+          </span>
+        </div>
         <strong>{{ metric.value }}</strong>
-        <span class="small change" [class.up]="metric.change.up === true" [class.down]="metric.change.up === false">
-          @if (metric.change.up !== null) {
-            <span class="mi">{{ metric.change.up ? 'arrow_upward' : 'arrow_downward' }}</span>
-          }
-          {{ metric.change.text }}
-        </span>
+        <span class="label ellipsis">{{ metric.label }}</span>
+        <span class="hint ellipsis">{{ metric.hint }}</span>
       </div>
     }
   </section>
 
-  <section class="today">
-    @for (item of today(); track item.label) {
-      @if (item.link) {
-        <a [routerLink]="item.link"
-          ><strong>{{ item.value }}</strong> {{ item.label }}</a
-        >
-      } @else {
-        <span
-          ><strong>{{ item.value }}</strong> {{ item.label }}</span
-        >
-      }
-    }
-  </section>
-
-  <section class="card block">
-    <div class="head">
-      <div>
-        <h2 class="title">Visitantes por día</h2>
-        <p class="small">Personas distintas que abrieron la app o la web cada día.</p>
-      </div>
-      @if (platformShare(); as share) {
-        <p class="share small">Android {{ share.android }} % · Web {{ share.web }} %</p>
-      }
-    </div>
-    <app-day-chart [series]="visitorSeries" [data]="points()" unit="personas" />
-  </section>
-
-  <div class="pair">
-    <section class="card block">
-      <h2 class="title">Cuentas nuevas</h2>
-      <p class="small">Registros por día.</p>
-      <app-day-chart [series]="signupSeries" [data]="points()" unit="cuentas" />
-    </section>
-    <section class="card block">
-      <h2 class="title">Descargas de la app</h2>
-      <p class="small">Veces que se pulsó «Descargar» en la web.</p>
-      <app-day-chart [series]="downloadSeries" [data]="points()" unit="descargas" />
-      @if (devices().length > 0) {
-        <h3 class="sub">Desde qué aparato</h3>
-        @for (bar of devices(); track bar.label) {
-          <div class="bar">
-            <span class="ellipsis">{{ bar.label }}</span>
-            <span class="track"><i [style.width.%]="bar.percent"></i></span>
-            <strong>{{ bar.value }}</strong>
-          </div>
+  <section class="card today">
+    <p class="today-title"><span class="dot"></span>Ahora mismo</p>
+    <div class="today-items">
+      @for (item of today(); track item.label) {
+        @if (item.link) {
+          <a class="today-item" [routerLink]="item.link">
+            <span class="mi">{{ item.icon }}</span>
+            <strong>{{ item.value }}</strong>
+            <span>{{ item.label }}</span>
+          </a>
+        } @else {
+          <span class="today-item">
+            <span class="mi">{{ item.icon }}</span>
+            <strong>{{ item.value }}</strong>
+            <span>{{ item.label }}</span>
+          </span>
         }
       }
-    </section>
-  </div>
-
-  <section class="card block">
-    <div class="head">
-      <div>
-        <h2 class="title">Últimas cuentas</h2>
-        <p class="small">Las 8 más recientes.</p>
-      </div>
-      <a class="btn text" routerLink="/panel/usuarios">Ver todas<span class="mi">arrow_forward</span></a>
     </div>
-    @if (data()?.recentUsers?.length) {
-      <table class="people">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Correo</th>
-            <th>Se registró</th>
-            <th>Última visita</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (user of data()!.recentUsers; track user.id) {
-            <tr>
-              <td class="ellipsis">{{ user.name }}</td>
-              <td class="ellipsis muted">{{ user.email }}</td>
-              <td>{{ lastSeen(user.createdAt) }}</td>
-              <td>{{ user.lastSeenAt === null ? '—' : lastSeen(user.lastSeenAt) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    } @else {
-      <p class="muted">Todavía no hay cuentas.</p>
-    }
   </section>
 
-  <div class="pair">
+  <div class="main-row">
     <section class="card block">
-      <h2 class="title">Rutas más consultadas</h2>
-      <p class="small">Veces que se abrió su ficha en el periodo.</p>
-      @for (bar of topRoutes(); track $index) {
+      <div class="head">
+        <div>
+          <h2>Visitantes por día</h2>
+          <p>Personas distintas que abrieron la app o la web cada día.</p>
+        </div>
+      </div>
+      <app-day-chart [series]="visitorSeries" [data]="points()" unit="personas" />
+    </section>
+
+    <section class="card block side">
+      <h2>De dónde entran</h2>
+      <p>Reparto de las visitas del periodo.</p>
+      @if (platformShare(); as share) {
+        <div
+          class="share-bar"
+          role="img"
+          [attr.aria-label]="'Android ' + share.android + ' %, web ' + share.web + ' %'"
+        >
+          @if (share.android > 0) {
+            <i class="android" [style.width.%]="share.android"></i>
+          }
+          @if (share.web > 0) {
+            <i class="web" [style.width.%]="share.web"></i>
+          }
+        </div>
+        <ul class="share-legend">
+          <li>
+            <i class="android"></i><span class="mi">smartphone</span>App Android<strong>{{ share.android }} %</strong>
+          </li>
+          <li>
+            <i class="web"></i><span class="mi">language</span>Web<strong>{{ share.web }} %</strong>
+          </li>
+        </ul>
+      } @else {
+        <p class="muted none">Aún no hay visitas en este periodo.</p>
+      }
+
+      <h3 class="sub">Descargas por aparato</h3>
+      @for (bar of devices(); track bar.label) {
         <div class="bar">
           <span class="ellipsis">{{ bar.label }}</span>
           <span class="track"><i [style.width.%]="bar.percent"></i></span>
           <strong>{{ bar.value }}</strong>
         </div>
       } @empty {
-        <p class="muted">Nadie abrió la ficha de una ruta en este periodo.</p>
+        <p class="muted none">Nadie descargó la app en este periodo.</p>
+      }
+    </section>
+  </div>
+
+  <div class="pair">
+    <section class="card block">
+      <h2>Cuentas nuevas</h2>
+      <p>Registros por día.</p>
+      <app-day-chart [series]="signupSeries" [data]="points()" unit="cuentas" />
+    </section>
+    <section class="card block">
+      <h2>Descargas de la app</h2>
+      <p>Veces que se pulsó «Descargar» en la web.</p>
+      <app-day-chart [series]="downloadSeries" [data]="points()" unit="descargas" />
+    </section>
+  </div>
+
+  <div class="pair">
+    <section class="card block">
+      <div class="head">
+        <div>
+          <h2>Últimas cuentas</h2>
+          <p>Las 8 más recientes.</p>
+        </div>
+        <a class="btn text more" routerLink="/panel/usuarios">Ver todas<span class="mi">arrow_forward</span></a>
+      </div>
+      @for (user of data()?.recentUsers ?? []; track user.id) {
+        <div class="person">
+          <span class="avatar-dot">{{ (user.name || user.email).charAt(0).toUpperCase() }}</span>
+          <span class="who">
+            <strong class="ellipsis">{{ user.name }}</strong>
+            <span class="ellipsis">{{ user.email }}</span>
+          </span>
+          <span class="when">
+            <span>{{ lastSeen(user.createdAt) }}</span>
+            <small>{{ user.lastSeenAt === null ? 'sin visitas' : 'visto ' + lastSeen(user.lastSeenAt) }}</small>
+          </span>
+        </div>
+      } @empty {
+        <p class="muted none">Todavía no hay cuentas.</p>
       }
     </section>
 
     <section class="card block">
-      <h2 class="title">Alertas por tipo</h2>
-      <p class="small">Publicadas en el periodo.</p>
+      <h2>Rutas más consultadas</h2>
+      <p>Veces que se abrió su ficha en el periodo.</p>
+      @for (bar of topRoutes(); track $index) {
+        <div class="bar">
+          <span class="rank">{{ $index + 1 }}</span>
+          <span class="ellipsis">{{ bar.label }}</span>
+          <span class="track"><i [style.width.%]="bar.percent"></i></span>
+          <strong>{{ bar.value }}</strong>
+        </div>
+      } @empty {
+        <p class="muted none">Nadie abrió la ficha de una ruta en este periodo.</p>
+      }
+    </section>
+  </div>
+
+  <div class="trio">
+    <section class="card block">
+      <h2>Alertas por tipo</h2>
+      <p>Publicadas en el periodo.</p>
       @for (bar of byType(); track bar.label) {
         <div class="bar">
           <span class="ellipsis">{{ bar.label }}</span>
@@ -144,33 +185,31 @@
           <strong>{{ bar.value }}</strong>
         </div>
       } @empty {
-        <p class="muted">No se publicó ninguna alerta en este periodo.</p>
+        <p class="muted none">No se publicó ninguna alerta en este periodo.</p>
       }
     </section>
-  </div>
 
-  <div class="pair">
     <section class="card block">
-      <h2 class="title">Alertas por día</h2>
-      <p class="small">Cuántas se publicaron cada día.</p>
+      <h2>Alertas por día</h2>
+      <p>Cuántas se publicaron cada día.</p>
       <app-day-chart [series]="alertSeries" [data]="points()" unit="alertas" />
     </section>
 
     <section class="card block">
-      <h2 class="title">A qué hora se reporta</h2>
-      <p class="small">Alertas del periodo, por hora del día (hora de Perú).</p>
+      <h2>A qué hora se reporta</h2>
+      <p>Por hora del día (hora de Perú).</p>
       @if (anyHour()) {
         <div class="hours">
           @for (hour of hours(); track $index) {
             <div [title]="$index + ':00 · ' + hour.value + ' alertas'">
               <i [style.height.%]="hour.percent"></i>
-              <!-- Una de cada tres, para que quepan. -->
-              <span>{{ $index % 3 === 0 ? $index : '' }}</span>
+              <!-- Una de cada seis, para que quepan. -->
+              <span>{{ $index % 6 === 0 ? $index + 'h' : '' }}</span>
             </div>
           }
         </div>
       } @else {
-        <p class="muted">Aún no hay alertas que contar.</p>
+        <p class="muted none">Aún no hay alertas que contar.</p>
       }
     </section>
   </div>

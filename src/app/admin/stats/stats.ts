@@ -25,10 +25,10 @@ function bars(entries: { label: string; value: number }[]): Bar[] {
 /** Cómo cambió un número frente al periodo anterior, dicho en corto. */
 function change(compared: Compared): { text: string; up: boolean | null } {
   const { value, previous } = compared;
-  if (previous === 0) return { text: value > 0 ? 'nuevo en este periodo' : 'sin cambios', up: value > 0 ? true : null };
+  if (previous === 0) return { text: value > 0 ? 'nuevo' : 'sin cambios', up: value > 0 ? true : null };
   const percent = Math.round(((value - previous) / previous) * 100);
-  if (percent === 0) return { text: 'igual que antes', up: null };
-  return { text: `${percent > 0 ? '+' : ''}${percent} % vs. periodo anterior`, up: percent > 0 };
+  if (percent === 0) return { text: 'igual', up: null };
+  return { text: `${percent > 0 ? '+' : ''}${percent} %`, up: percent > 0 };
 }
 
 const DEVICES: Record<string, string> = { android: 'Android', ios: 'iPhone', computadora: 'Computadora' };
@@ -79,40 +79,52 @@ export class Stats {
     // Las visitas y descargas se cuentan desde hace poco: si el periodo
     // anterior no tiene registro, compararlo engañaría.
     const fresh = data.trackingSince === null || data.trackingSince > (data.series[0]?.day ?? '');
-    const tracked = (compared: Compared) => (fresh ? { text: 'sin periodo anterior', up: null } : change(compared));
+    const tracked = (compared: Compared) => (fresh ? { text: 'sin comparar', up: null } : change(compared));
     return [
       {
         label: 'Visitantes al día',
+        icon: 'visibility',
+        tone: 'blue',
         hint: 'Personas distintas por día, de media',
         value: totals.dailyVisitors.value,
         change: tracked(totals.dailyVisitors),
       },
       {
         label: 'Cuentas activas',
+        icon: 'how_to_reg',
+        tone: 'green',
         hint: 'Cuentas que entraron en el periodo',
         value: totals.activeAccounts.value,
         change: tracked(totals.activeAccounts),
       },
       {
         label: 'Cuentas nuevas',
+        icon: 'person_add',
+        tone: 'yellow',
         hint: 'Registros en el periodo',
         value: totals.newUsers.value,
         change: change(totals.newUsers),
       },
       {
         label: 'Descargas de la app',
+        icon: 'download',
+        tone: 'orange',
         hint: 'Clics en «Descargar» de la web',
         value: totals.downloads.value,
         change: tracked(totals.downloads),
       },
       {
         label: 'Alertas publicadas',
+        icon: 'campaign',
+        tone: 'red',
         hint: 'Reportes de la calle',
         value: totals.alerts.value,
         change: change(totals.alerts),
       },
       {
         label: 'Preguntas al asistente',
+        icon: 'smart_toy',
+        tone: 'gray',
         hint: 'Consultas a «Subo»',
         value: totals.assistantQuestions.value,
         change: change(totals.assistantQuestions),
@@ -125,13 +137,13 @@ export class Stats {
     const totals = this.data()?.totals;
     if (!totals) return [];
     return [
-      { label: 'Visitantes hoy', value: totals.visitorsToday, link: null },
-      { label: 'Cuentas en total', value: totals.users, link: '/panel/usuarios' },
-      { label: 'Premium activos', value: totals.premium, link: null },
-      { label: 'Rutas publicadas', value: totals.publishedRoutes, link: '/panel' },
-      { label: 'Rutas por aprobar', value: totals.pendingRoutes, link: '/panel' },
-      { label: 'Sugerencias nuevas', value: totals.newFeedback, link: '/panel/sugerencias' },
-      { label: 'Calificaciones', value: totals.ratings, link: null },
+      { label: 'Visitantes hoy', icon: 'visibility', value: totals.visitorsToday, link: null },
+      { label: 'Cuentas en total', icon: 'group', value: totals.users, link: '/panel/usuarios' },
+      { label: 'Premium activos', icon: 'workspace_premium', value: totals.premium, link: null },
+      { label: 'Rutas publicadas', icon: 'directions_bus', value: totals.publishedRoutes, link: '/panel' },
+      { label: 'Rutas por aprobar', icon: 'pending_actions', value: totals.pendingRoutes, link: '/panel' },
+      { label: 'Sugerencias nuevas', icon: 'forum', value: totals.newFeedback, link: '/panel/sugerencias' },
+      { label: 'Calificaciones', icon: 'star', value: totals.ratings, link: null },
     ];
   });
 

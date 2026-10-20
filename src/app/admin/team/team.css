@@ -5,42 +5,70 @@
 }
 
 .add {
-  margin-bottom: 16px;
-  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+}
+
+.add-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .row {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   margin-top: 12px;
 }
 
 .row .field {
-  flex: 0 1 320px;
+  flex: 0 1 340px;
+}
+
+.row .input {
+  padding: 10px 14px;
+  border-radius: 12px;
 }
 
 .row .btn {
-  margin-top: 3px;
+  padding: 10px 18px;
+  border-radius: 12px;
 }
 
-.person {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-  padding: 14px 18px;
-}
-
-.person div {
+.person > div {
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  line-height: 1.35;
 }
 
 .person strong {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.person .muted {
+  font-size: 12.5px;
+}
+
+.remove {
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.remove .mi {
+  font-size: 17px;
+}
+
+@media (max-width: 479px) {
+  .add .icon-tile {
+    display: none;
+  }
 }

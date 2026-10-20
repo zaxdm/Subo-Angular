@@ -2,45 +2,58 @@
   label="Moderación"
   title="Alertas"
   subtitle="Lo que la gente tiene publicado ahora mismo en el mapa."
+  emptyIcon="task_alt"
   [loading]="loading()"
   [ready]="alerts() !== null"
   [emptyMessage]="alerts()?.length === 0 ? 'No hay alertas vigentes.' : null"
   (refresh)="load()"
 >
-  @for (item of alerts(); track item.alert.id) {
-    <article class="card">
-      <div class="tags">
-        <span class="pill">{{ item.alert.label }}</span>
-        @if (item.reputation === 'TRUSTED') {
-          <span class="pill success">Suele acertar</span>
+  <p class="count-line">{{ alerts()?.length }} {{ alerts()?.length === 1 ? 'alerta vigente' : 'alertas vigentes' }}</p>
+  <div class="list">
+    @for (item of alerts(); track item.alert.id) {
+      <article class="card" [class.flagged]="item.reputation === 'UNRELIABLE' || item.authorBlocked">
+        @if (safeUrl(item.imageUrl); as photo) {
+          <img [src]="photo" alt="" loading="lazy" (error)="$any($event.target).hidden = true" />
         }
-        @if (item.reputation === 'UNRELIABLE') {
-          <span class="pill warning">Suele fallar</span>
-        }
-        @if (item.authorBlocked) {
-          <span class="pill danger">Cuenta bloqueada</span>
-        }
-        <span class="small">{{ formatDateTime(item.createdAt) }}</span>
-      </div>
-      <h2 class="title">{{ item.alert.placeName ?? 'Lugar sin nombre' }}</h2>
-      @if (item.alert.comment) {
-        <p>{{ item.alert.comment }}</p>
-      }
-      @if (safeUrl(item.imageUrl); as photo) {
-        <img [src]="photo" alt="" loading="lazy" (error)="$any($event.target).hidden = true" />
-      }
-      <p class="small author">{{ authorOf(item) }}</p>
-      <p class="small">Sigue ahí: {{ item.alert.confirmations }} · Ya no está: {{ item.dismissals }}</p>
-      <div class="actions">
-        <button type="button" class="btn outline" (click)="delete(item)">
-          <span class="mi danger">delete</span>
-          Eliminar alerta
-        </button>
-        <button type="button" class="btn outline" (click)="toggleBlock(item)">
-          <span class="mi">{{ item.authorBlocked ? 'lock_open' : 'block' }}</span>
-          {{ item.authorBlocked ? 'Desbloquear cuenta' : 'Bloquear cuenta' }}
-        </button>
-      </div>
-    </article>
-  }
+        <div class="body">
+          <div class="tags">
+            <span class="pill">{{ item.alert.label }}</span>
+            @if (item.reputation === 'TRUSTED') {
+              <span class="pill success">Suele acertar</span>
+            }
+            @if (item.reputation === 'UNRELIABLE') {
+              <span class="pill warning">Suele fallar</span>
+            }
+            @if (item.authorBlocked) {
+              <span class="pill danger">Cuenta bloqueada</span>
+            }
+          </div>
+          <h2><span class="mi">place</span>{{ item.alert.placeName ?? 'Lugar sin nombre' }}</h2>
+          @if (item.alert.comment) {
+            <p class="comment">{{ item.alert.comment }}</p>
+          }
+          <p class="meta"><span class="mi">person</span>{{ authorOf(item) }}</p>
+          <p class="meta"><span class="mi">schedule</span>{{ formatDateTime(item.createdAt) }}</p>
+          <div class="votes">
+            <span title="Personas que dicen que sigue ahí"
+              ><span class="mi">thumb_up</span>{{ item.alert.confirmations }} sigue ahí</span
+            >
+            <span title="Personas que dicen que ya no está"
+              ><span class="mi">thumb_down</span>{{ item.dismissals }} ya no está</span
+            >
+          </div>
+          <div class="actions">
+            <button type="button" class="btn outline danger-btn" (click)="delete(item)">
+              <span class="mi">delete</span>
+              Eliminar
+            </button>
+            <button type="button" class="btn outline" (click)="toggleBlock(item)">
+              <span class="mi">{{ item.authorBlocked ? 'lock_open' : 'block' }}</span>
+              {{ item.authorBlocked ? 'Desbloquear cuenta' : 'Bloquear cuenta' }}
+            </button>
+          </div>
+        </div>
+      </article>
+    }
+  </div>
 </app-page-frame>

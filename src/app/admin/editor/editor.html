@@ -4,7 +4,7 @@
       <span class="mi">arrow_back</span>
       Volver al catálogo
     </button>
-    <h1 class="h-large">{{ isNew() ? 'Nueva ruta' : 'Editar ruta' }}</h1>
+    <h1>{{ isNew() ? 'Nueva ruta' : 'Editar ruta' }}</h1>
   </div>
   <button type="button" class="btn small-btn" [disabled]="locked()" (click)="save()">
     @if (busy()) {
@@ -139,7 +139,9 @@
     <div class="buttons">
       <div class="modes">
         @for (item of modes; track item.id) {
-          <button type="button" [class.active]="mode() === item.id" (click)="mode.set(item.id)">{{ item.label }}</button>
+          <button type="button" [class.active]="mode() === item.id" (click)="mode.set(item.id)">
+            {{ item.label }}
+          </button>
         }
       </div>
       <button type="button" class="btn tonal" [disabled]="locked() || stops().length < 2" (click)="traceStreets()">

@@ -584,3 +584,224 @@ textarea.input {
   color: var(--ink);
   font-size: 11px;
 }
+
+/* --- Panel de administración: piezas que comparten sus secciones --- */
+
+/* Dentro del panel las tarjetas son más sobrias: menos curva y una sombra leve. */
+.admin-area .card {
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgb(28 26 20 / 4%);
+}
+
+/* La barra de herramientas de una lista: buscador, filtros y acciones en una fila. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin-bottom: 16px;
+}
+.toolbar .grow {
+  flex: 1;
+}
+
+.search-field {
+  position: relative;
+  flex: 1 1 280px;
+  max-width: 440px;
+}
+.search-field .mi {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  transform: translateY(-50%);
+  font-size: 19px;
+  color: var(--faint);
+  pointer-events: none;
+}
+.search-field .input {
+  padding: 10px 14px 10px 40px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+.admin-area select.input {
+  width: auto;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+/* Filtros en pastillas, con su número al lado. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip-row button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--field-line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.chip-row button:hover:not(.on) {
+  border-color: var(--faint);
+}
+.chip-row button .count {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+.chip-row button.on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+.chip-row button.on .count {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* Control segmentado: una opción de pocas, p. ej. el periodo. */
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--chip);
+}
+.segmented button {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented button.on {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgb(28 26 20 / 14%);
+}
+
+/* El encabezado de un bloque dentro de una página. */
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 28px 0 12px;
+}
+.section-head h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+.section-head p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Lo que se ve cuando una lista no tiene nada. */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  border: 1.5px dashed var(--field-line);
+  border-radius: 16px;
+  color: var(--muted);
+  text-align: center;
+}
+.empty-state .mi {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: var(--chip);
+  color: var(--faint);
+  font-size: 26px;
+}
+.empty-state strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+/* La inicial de una persona en un círculo, cuando no hay foto. */
+.avatar-dot {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+/* Un icono en un cuadrito de color suave, para encabezar una cifra o un bloque. */
+.icon-tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--accent-wash);
+  color: var(--accent-text);
+}
+.icon-tile .mi {
+  font-size: 20px;
+}
+.icon-tile.blue {
+  background: #e6f0fb;
+  color: #1d5aa3;
+}
+.icon-tile.green {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.icon-tile.orange {
+  background: #fdeee6;
+  color: #a6461c;
+}
+.icon-tile.red {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.icon-tile.gray {
+  background: var(--chip);
+  color: var(--ink-soft);
+}
+
+/* Una lista de filas dentro de una tarjeta, separadas por una línea. */
+.rows > * {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+}
+.rows > *:first-child {
+  border-top: 0;
+}

@@ -7,44 +7,51 @@
   (refresh)="load()"
 >
   <!-- Los comprobantes que esperan confirmación van arriba: es lo que hay que atender. -->
-  <h2 class="section">Comprobantes de pago</h2>
-  @for (payment of payments(); track payment.id) {
-    <div class="card payment">
-      <button type="button" class="proof" title="Ver la captura en grande" (click)="zoomed.set(payment.imageUrl)">
-        <img [src]="payment.imageUrl" alt="Captura del pago" loading="lazy" />
-      </button>
-      <div class="who">
-        <strong>{{ payment.userName || payment.userEmail }}</strong>
-        <span class="muted">{{ payment.userEmail }}</span>
-        <span class="muted">
-          {{ planLabel(payment.days) }} · S/ {{ payment.amount }} · {{ formatDateTime(payment.createdAt) }}
-        </span>
-      </div>
-      @if (payment.status === 'PENDING') {
-        <div class="actions">
-          <button type="button" class="btn small-btn" [disabled]="reviewing() !== null" (click)="approve(payment)">
-            <span class="mi">check</span>
-            Confirmar
-          </button>
-          <button type="button" class="btn text" [disabled]="reviewing() !== null" (click)="reject(payment)">
-            Rechazar
-          </button>
+  <div class="section-head first">
+    <h2>Comprobantes de pago</h2>
+    <p>Confirma solo cuando el dinero ya llegó a tu Yape.</p>
+  </div>
+  <div class="card rows">
+    @for (payment of payments(); track payment.id) {
+      <div class="payment" [class.pending]="payment.status === 'PENDING'">
+        <button type="button" class="proof" title="Ver la captura en grande" (click)="zoomed.set(payment.imageUrl)">
+          <img [src]="payment.imageUrl" alt="Captura del pago" loading="lazy" />
+        </button>
+        <div class="who">
+          <strong>{{ payment.userName || payment.userEmail }}</strong>
+          <span class="muted">{{ payment.userEmail }}</span>
+          <span class="muted">
+            {{ planLabel(payment.days) }} · S/ {{ payment.amount }} · {{ formatDateTime(payment.createdAt) }}
+          </span>
         </div>
-      } @else {
-        <span class="state" [class.ok]="payment.status === 'APPROVED'" [class.no]="payment.status === 'REJECTED'">
-          {{ payment.status === 'APPROVED' ? 'Confirmado' : 'Rechazado' }}
-        </span>
-      }
-    </div>
-  } @empty {
-    <p class="muted">Nadie ha subido un comprobante todavía.</p>
-  }
+        @if (payment.status === 'PENDING') {
+          <div class="actions">
+            <button type="button" class="btn small-btn" [disabled]="reviewing() !== null" (click)="approve(payment)">
+              <span class="mi">check</span>
+              Confirmar
+            </button>
+            <button type="button" class="btn text" [disabled]="reviewing() !== null" (click)="reject(payment)">
+              Rechazar
+            </button>
+          </div>
+        } @else {
+          <span class="state" [class.ok]="payment.status === 'APPROVED'" [class.no]="payment.status === 'REJECTED'">
+            {{ payment.status === 'APPROVED' ? 'Confirmado' : 'Rechazado' }}
+          </span>
+        }
+      </div>
+    } @empty {
+      <p class="muted">Nadie ha subido un comprobante todavía.</p>
+    }
+  </div>
 
-  <h2 class="section">Pago por Yape</h2>
+  <div class="section-head">
+    <h2>Pago por Yape</h2>
+  </div>
   <form class="card add" (ngSubmit)="saveYape()">
     <p class="small">
-      Lo que ve la gente en la app al pagar: tu QR, a nombre de quién sale y cuánto cuesta cada plan. Un plan sin
-      precio no se ofrece.
+      Lo que ve la gente en la app al pagar: tu QR, a nombre de quién sale y cuánto cuesta cada plan. Un plan sin precio
+      no se ofrece.
     </p>
     <div class="yape">
       <div class="qr">
@@ -93,7 +100,10 @@
     </div>
   </form>
 
-  <h2 class="section">Cuentas Premium</h2>
+  <div class="section-head">
+    <h2>Cuentas Premium</h2>
+    <p>{{ accounts()?.length }} {{ accounts()?.length === 1 ? 'cuenta activa' : 'cuentas activas' }}</p>
+  </div>
   <form class="card add" (ngSubmit)="add()">
     <h2 class="title">Activar o renovar a mano</h2>
     <p class="small">Tiene que tener ya una cuenta en la app. Si ya era Premium, el tiempo se suma al que le queda.</p>
@@ -124,17 +134,20 @@
     </div>
   </form>
 
-  @for (account of accounts(); track account.id) {
-    <div class="card person">
-      <div>
-        <strong>{{ account.name || account.email }}</strong>
-        <span class="muted">{{ account.email }} · hasta el {{ formatDate(account.until) }}</span>
+  <div class="card rows">
+    @for (account of accounts(); track account.id) {
+      <div class="person">
+        <span class="avatar-dot gold"><span class="mi">workspace_premium</span></span>
+        <div>
+          <strong>{{ account.name || account.email }}</strong>
+          <span class="muted">{{ account.email }} · hasta el {{ formatDate(account.until) }}</span>
+        </div>
+        <button type="button" class="btn text remove" (click)="remove(account)">Quitar</button>
       </div>
-      <button type="button" class="btn text" (click)="remove(account)">Quitar</button>
-    </div>
-  } @empty {
-    <p class="muted">Todavía no hay cuentas Premium.</p>
-  }
+    } @empty {
+      <p class="muted">Todavía no hay cuentas Premium.</p>
+    }
+  </div>
   @if (zoomed(); as url) {
     <div class="zoom" role="dialog" aria-label="Captura del pago" (click)="zoomed.set(null)">
       <img [src]="url" alt="Captura del pago" />
