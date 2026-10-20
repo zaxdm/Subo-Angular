@@ -9,8 +9,11 @@ import { SiteInfo } from '../../core/site-info';
   templateUrl: './download.html',
 })
 export class Download {
-  /** Dónde está el archivo; vacío si la descarga todavía no está lista. */
-  protected readonly apkUrl = SiteInfo.apkUrl;
+  /**
+   * El botón pasa por el servidor, que apunta la descarga para el panel y
+   * lleva al archivo. Vacío si la descarga todavía no está lista.
+   */
+  protected readonly apkUrl = SiteInfo.apkUrl === '' ? '' : `${SiteInfo.serverUrl}/api/app/download?from=web`;
 
   protected readonly details = [
     'Para Android',

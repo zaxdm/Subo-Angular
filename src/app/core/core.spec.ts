@@ -1,4 +1,14 @@
-import { BusRoute, newRoute, routeFromJson, routeToJson, safeUrl, sessionOf } from './models';
+import {
+  BusRoute,
+  dashboardFromJson,
+  newRoute,
+  routeFromJson,
+  routeToJson,
+  safeUrl,
+  sessionOf,
+  userListFromJson,
+} from './models';
+import { lastSeenLabel } from '../admin/users/users';
 import { groupServices } from './directions';
 import { metersToLine } from './nearby';
 import { duplicateRoute, parseStreetPath, streetUrl } from './route-tools';
@@ -149,5 +159,48 @@ describe('groupServices', () => {
 
   it('una línea con un solo recorrido no lleva sentido', () => {
     expect(groupServices([route()])[0].routes[0].direction).toBe('');
+  });
+});
+
+describe('panel de estadísticas', () => {
+  it('lee el tablero aunque falten campos', () => {
+    const data = dashboardFromJson({
+      days: 7,
+      totals: { users: 12, downloads: { value: 5, previous: 2 } },
+      series: [{ day: '2026-10-19', android: 3, web: 1 }],
+      recentUsers: [{ id: 'u1', name: 'Ana', email: 'ana@correo.pe', createdAt: 1, lastPlatform: 'ios' }],
+    });
+
+    expect(data.totals.users).toBe(12);
+    expect(data.totals.downloads).toEqual({ value: 5, previous: 2 });
+    expect(data.totals.alerts).toEqual({ value: 0, previous: 0 });
+    expect(data.series[0]).toEqual({
+      day: '2026-10-19',
+      android: 3,
+      web: 1,
+      signedIn: 0,
+      newUsers: 0,
+      downloads: 0,
+      alerts: 0,
+    });
+    expect(data.recentUsers[0].lastPlatform).toBeNull();
+    expect(data.trackingSince).toBeNull();
+  });
+
+  it('cuenta las cuentas de cada filtro', () => {
+    const list = userListFromJson({ users: [], total: 0, counts: { all: 9, blocked: 1 } });
+    expect(list.counts.all).toBe(9);
+    expect(list.counts.blocked).toBe(1);
+    expect(list.counts.premium).toBe(0);
+  });
+
+  it('dice cuándo entró alguien como lo diría una persona', () => {
+    const now = Date.UTC(2026, 9, 19, 15);
+    expect(lastSeenLabel(now - 30_000, now)).toBe('ahora');
+    expect(lastSeenLabel(now - 5 * 60_000, now)).toBe('hace 5 min');
+    expect(lastSeenLabel(now - 3 * 3_600_000, now)).toBe('hace 3 h');
+    expect(lastSeenLabel(now - 30 * 3_600_000, now)).toBe('ayer');
+    expect(lastSeenLabel(now - 4 * 86_400_000, now)).toBe('hace 4 días');
+    expect(lastSeenLabel(Date.UTC(2026, 6, 2, 15), now)).toBe('2 jul 2026');
   });
 });

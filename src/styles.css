@@ -52,6 +52,9 @@
   --danger: #a44638;
   --danger-soft: #fff0ed;
   --map-blue: #1a73e8;
+  /* Series de los gráficos del panel (paleta validada: azul y naranja se distinguen también con daltonismo). */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
   --shadow: 0 2px 6px rgb(0 0 0 / 22%);
 }
 

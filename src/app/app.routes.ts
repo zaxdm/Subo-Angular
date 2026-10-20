@@ -57,6 +57,7 @@ export const routes: Routes = [
       { path: 'alertas', loadComponent: () => import('./admin/alerts/alerts').then((m) => m.Alerts) },
       { path: 'sugerencias', loadComponent: () => import('./admin/feedback/feedback').then((m) => m.Feedback) },
       { path: 'estadisticas', loadComponent: () => import('./admin/stats/stats').then((m) => m.Stats) },
+      { path: 'usuarios', loadComponent: () => import('./admin/users/users').then((m) => m.Users) },
       {
         path: 'administradores',
         canActivate: [principalOnly],

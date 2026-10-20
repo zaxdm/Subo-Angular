@@ -26,6 +26,12 @@ import {
   routeToJson,
   sessionOf,
   statsFromJson,
+  Dashboard,
+  dashboardFromJson,
+  UserFilter,
+  UserList,
+  userListFromJson,
+  UserSort,
   suggestionFromJson,
 } from './models';
 import { SiteInfo } from './site-info';
@@ -221,6 +227,27 @@ export class Api {
     });
   }
 
+  async dashboard(days: number): Promise<Dashboard> {
+    return dashboardFromJson(await this.send('GET', `/api/admin/dashboard?days=${days}`));
+  }
+
+  async adminUsers(query: {
+    search: string;
+    filter: UserFilter;
+    sort: UserSort;
+    page: number;
+    size: number;
+  }): Promise<UserList> {
+    const params = new URLSearchParams({
+      q: query.search,
+      filter: query.filter,
+      sort: query.sort,
+      page: String(query.page),
+      size: String(query.size),
+    });
+    return userListFromJson(await this.send('GET', `/api/admin/users?${params}`));
+  }
+
   async stats(): Promise<Stats> {
     return statsFromJson(await this.send('GET', '/api/admin/stats'));
   }
@@ -264,9 +291,7 @@ export class Api {
 
   /** Guarda el QR, a nombre de quién está y los precios. Devuelve lo que quedó guardado. */
   async savePaymentConfig(config: PaymentConfig): Promise<PaymentConfig> {
-    return paymentConfigFromJson(
-      await this.send('PUT', '/api/admin/premium/payment-config', { body: { ...config } }),
-    );
+    return paymentConfigFromJson(await this.send('PUT', '/api/admin/premium/payment-config', { body: { ...config } }));
   }
 
   /** Los comprobantes de pago: los que esperan confirmación, primero. */

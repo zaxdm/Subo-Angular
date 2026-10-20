@@ -2,30 +2,113 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  padding-bottom: 40px;
 }
 
-.metrics {
+.toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 8px;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 18px;
 }
 
-.metrics .card {
-  display: flex;
-  flex-direction: column;
-  width: 190px;
-  padding: 20px 18px;
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--chip);
 }
 
-.metrics strong {
-  margin-top: 8px;
-  font-size: 32px;
-  line-height: 1.2;
+.segmented button {
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--body);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmented button.on {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
 }
 
 .note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.note .mi {
+  font-size: 16px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.metric strong {
+  margin: 6px 0 4px;
+  font-size: 30px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* Subir o bajar no es bueno ni malo por sí solo: la flecha lo dice, sin colores de alarma. */
+.change {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   min-height: 18px;
+  color: var(--muted);
+}
+
+.change .mi {
+  font-size: 14px;
+}
+
+.change.up,
+.change.down {
+  color: var(--ink-soft);
+}
+
+.today {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+
+.today a,
+.today span {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--body);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.today a:hover {
+  background: var(--accent-wash);
+}
+
+.today strong {
+  color: var(--ink);
 }
 
 .block {
@@ -34,26 +117,55 @@
 }
 
 .block .title {
-  margin-bottom: 14px;
-}
-
-.block .title:has(+ .small) {
-  margin-bottom: 0;
+  margin-bottom: 4px;
 }
 
 .block .small {
-  margin-bottom: 14px;
+  margin: 0 0 14px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.share {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--chip);
+}
+
+.head .btn .mi {
+  margin-left: 4px;
+  font-size: 18px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 0 16px;
+}
+
+.sub {
+  margin: 18px 0 10px;
+  font-size: 13px;
+  color: var(--ink-soft);
 }
 
 .bar {
   display: flex;
   align-items: center;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
 .bar > span:first-child {
   flex: none;
-  width: 160px;
+  width: 40%;
+  max-width: 220px;
 }
 
 .track {
@@ -67,19 +179,20 @@
 .track i {
   display: block;
   height: 100%;
-  background: var(--accent);
+  border-radius: 0 4px 4px 0;
+  background: var(--chart-1);
 }
 
 .bar strong {
   flex: none;
-  width: 48px;
+  width: 44px;
   text-align: right;
 }
 
 .hours {
   display: flex;
   align-items: flex-end;
-  height: 130px;
+  height: 150px;
 }
 
 .hours div {
@@ -92,9 +205,9 @@
 }
 
 .hours i {
-  margin: 0 2px;
-  border-radius: 3px;
-  background: var(--accent);
+  margin: 0 1px;
+  border-radius: 3px 3px 0 0;
+  background: var(--chart-1);
 }
 
 .hours span {
@@ -103,4 +216,34 @@
   color: var(--muted);
   font-size: 10px;
   text-align: center;
+}
+
+.people {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.people th {
+  padding: 0 8px 8px 0;
+  color: var(--muted);
+  font-weight: 500;
+  text-align: left;
+}
+
+.people td {
+  padding: 9px 8px 9px 0;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 719px) {
+  .pair {
+    grid-template-columns: 1fr;
+  }
+
+  .people th:nth-child(2),
+  .people td:nth-child(2) {
+    display: none;
+  }
 }

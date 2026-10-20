@@ -31,6 +31,7 @@ export class AdminShell {
     { label: 'Alertas', icon: 'report', path: '/panel/alertas' },
     { label: 'Sugerencias', icon: 'mail', path: '/panel/sugerencias' },
     { label: 'Estadísticas', icon: 'insights', path: '/panel/estadisticas' },
+    { label: 'Usuarios', icon: 'group', path: '/panel/usuarios' },
     // Quién más es administrador lo decide solo el principal.
     ...(this.store.session()?.isSuperAdmin
       ? [

@@ -1,0 +1,73 @@
+@if (series().length > 1) {
+  <ul class="legend">
+    @for (item of series(); track item.key) {
+      <li><i [style.background]="item.color"></i>{{ item.label }}</li>
+    }
+  </ul>
+}
+
+<div class="plot" (mouseleave)="hovered.set(null)">
+  <svg
+    [attr.viewBox]="'0 0 ' + width() + ' ' + height"
+    preserveAspectRatio="none"
+    role="img"
+    [attr.aria-label]="unit() + ' por día'"
+  >
+    @for (guide of guides(); track $index) {
+      <line class="guide" x1="0" [attr.x2]="width()" [attr.y1]="guide.y" [attr.y2]="guide.y" />
+    }
+    @for (column of columns(); track $index; let day = $index) {
+      @for (part of column.parts; track $index) {
+        <rect
+          [attr.x]="column.x"
+          [attr.y]="part.y"
+          [attr.width]="column.width"
+          [attr.height]="part.height"
+          [style.fill]="part.color"
+          [class.dim]="hovered() !== null && hovered() !== day"
+        />
+      }
+    }
+    <!-- Zonas de toque del ancho de todo el día, más grandes que la columna. -->
+    @for (column of columns(); track $index) {
+      <rect
+        class="hit"
+        [attr.x]="$index * slot"
+        y="0"
+        [attr.width]="slot"
+        [attr.height]="height"
+        (mouseenter)="hovered.set($index)"
+      />
+    }
+  </svg>
+
+  <div class="axis">
+    @for (guide of guides(); track $index) {
+      <span [style.top.%]="(guide.y / height) * 100">{{ guide.value }}</span>
+    }
+  </div>
+
+  @if (tip(); as tip) {
+    <div class="tip" [style.left.%]="tip.left">
+      <strong>{{ tip.day }}</strong>
+      @if (tip.rows.length > 1) {
+        @for (row of tip.rows; track row.key) {
+          <span><i [style.background]="row.color"></i>{{ row.label }}: {{ row.value }}</span>
+        }
+        <span class="total">Total: {{ tip.total }} {{ unit() }}</span>
+      } @else {
+        <span>{{ tip.total }} {{ unit() }}</span>
+      }
+    </div>
+  }
+
+  @if (empty()) {
+    <p class="empty muted small">Sin datos en este periodo.</p>
+  }
+</div>
+
+<div class="dates">
+  @for (tick of ticks(); track $index) {
+    <span [style.left.%]="tick.left">{{ tick.label }}</span>
+  }
+</div>

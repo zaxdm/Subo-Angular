@@ -1,65 +1,177 @@
 <app-page-frame
   label="Resumen"
   title="Estadísticas"
-  subtitle="Cómo se está usando la app."
+  subtitle="Quién entra, de dónde y qué se usa."
   [loading]="loading()"
-  [ready]="stats() !== null || failed()"
-  [emptyMessage]="stats() === null && failed() ? 'No se pudieron cargar las estadísticas.' : null"
+  [ready]="data() !== null || failed()"
+  [emptyMessage]="data() === null && failed() ? 'No se pudieron cargar las estadísticas.' : null"
   (refresh)="load()"
 >
+  <div class="toolbar">
+    <div class="segmented" role="group" aria-label="Periodo">
+      @for (period of periods; track period) {
+        <button type="button" [class.on]="days() === period" [disabled]="loading()" (click)="choose(period)">
+          {{ period }} días
+        </button>
+      }
+    </div>
+    @if (trackingNote(); as note) {
+      <p class="small muted note"><span class="mi">info</span>{{ note }}</p>
+    }
+  </div>
+
   <section class="metrics">
     @for (metric of metrics(); track metric.label) {
-      <div class="card">
+      <div class="card metric" [title]="metric.hint">
         <span class="small ellipsis">{{ metric.label }}</span>
         <strong>{{ metric.value }}</strong>
-        <!-- El hueco se guarda aunque no haya nota, para que las tarjetas midan lo mismo. -->
-        <span class="small note">{{ metric.note }}</span>
+        <span class="small change" [class.up]="metric.change.up === true" [class.down]="metric.change.up === false">
+          @if (metric.change.up !== null) {
+            <span class="mi">{{ metric.change.up ? 'arrow_upward' : 'arrow_downward' }}</span>
+          }
+          {{ metric.change.text }}
+        </span>
       </div>
     }
   </section>
 
-  <section class="card block">
-    <h2 class="title">Rutas más consultadas</h2>
-    <p class="small">Veces que se abrió su ficha en los últimos 30 días.</p>
-    @for (bar of topRoutes(); track $index) {
-      <div class="bar">
-        <span class="ellipsis">{{ bar.label }}</span>
-        <span class="track"><i [style.width.%]="bar.percent"></i></span>
-        <strong>{{ bar.value }}</strong>
-      </div>
-    } @empty {
-      <p class="muted">Todavía nadie ha abierto la ficha de una ruta.</p>
+  <section class="today">
+    @for (item of today(); track item.label) {
+      @if (item.link) {
+        <a [routerLink]="item.link"
+          ><strong>{{ item.value }}</strong> {{ item.label }}</a
+        >
+      } @else {
+        <span
+          ><strong>{{ item.value }}</strong> {{ item.label }}</span
+        >
+      }
     }
   </section>
 
   <section class="card block">
-    <h2 class="title">Alertas de la semana, por tipo</h2>
-    @for (bar of byType(); track bar.label) {
-      <div class="bar">
-        <span class="ellipsis">{{ bar.label }}</span>
-        <span class="track"><i [style.width.%]="bar.percent"></i></span>
-        <strong>{{ bar.value }}</strong>
+    <div class="head">
+      <div>
+        <h2 class="title">Visitantes por día</h2>
+        <p class="small">Personas distintas que abrieron la app o la web cada día.</p>
       </div>
-    } @empty {
-      <p class="muted">No se publicó ninguna alerta esta semana.</p>
-    }
+      @if (platformShare(); as share) {
+        <p class="share small">Android {{ share.android }} % · Web {{ share.web }} %</p>
+      }
+    </div>
+    <app-day-chart [series]="visitorSeries" [data]="points()" unit="personas" />
   </section>
 
-  <section class="card block">
-    <h2 class="title">A qué hora se reporta</h2>
-    <p class="small">Alertas de los últimos 30 días, por hora del día.</p>
-    @if (anyHour()) {
-      <div class="hours">
-        @for (hour of hours(); track $index) {
-          <div [title]="$index + ':00 · ' + hour.value + ' alertas'">
-            <i [style.height.px]="hour.percent"></i>
-            <!-- Una de cada tres, para que quepan. -->
-            <span>{{ $index % 3 === 0 ? $index : '' }}</span>
+  <div class="pair">
+    <section class="card block">
+      <h2 class="title">Cuentas nuevas</h2>
+      <p class="small">Registros por día.</p>
+      <app-day-chart [series]="signupSeries" [data]="points()" unit="cuentas" />
+    </section>
+    <section class="card block">
+      <h2 class="title">Descargas de la app</h2>
+      <p class="small">Veces que se pulsó «Descargar» en la web.</p>
+      <app-day-chart [series]="downloadSeries" [data]="points()" unit="descargas" />
+      @if (devices().length > 0) {
+        <h3 class="sub">Desde qué aparato</h3>
+        @for (bar of devices(); track bar.label) {
+          <div class="bar">
+            <span class="ellipsis">{{ bar.label }}</span>
+            <span class="track"><i [style.width.%]="bar.percent"></i></span>
+            <strong>{{ bar.value }}</strong>
           </div>
         }
+      }
+    </section>
+  </div>
+
+  <section class="card block">
+    <div class="head">
+      <div>
+        <h2 class="title">Últimas cuentas</h2>
+        <p class="small">Las 8 más recientes.</p>
       </div>
+      <a class="btn text" routerLink="/panel/usuarios">Ver todas<span class="mi">arrow_forward</span></a>
+    </div>
+    @if (data()?.recentUsers?.length) {
+      <table class="people">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Se registró</th>
+            <th>Última visita</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of data()!.recentUsers; track user.id) {
+            <tr>
+              <td class="ellipsis">{{ user.name }}</td>
+              <td class="ellipsis muted">{{ user.email }}</td>
+              <td>{{ lastSeen(user.createdAt) }}</td>
+              <td>{{ user.lastSeenAt === null ? '—' : lastSeen(user.lastSeenAt) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     } @else {
-      <p class="muted">Aún no hay alertas que contar.</p>
+      <p class="muted">Todavía no hay cuentas.</p>
     }
   </section>
+
+  <div class="pair">
+    <section class="card block">
+      <h2 class="title">Rutas más consultadas</h2>
+      <p class="small">Veces que se abrió su ficha en el periodo.</p>
+      @for (bar of topRoutes(); track $index) {
+        <div class="bar">
+          <span class="ellipsis">{{ bar.label }}</span>
+          <span class="track"><i [style.width.%]="bar.percent"></i></span>
+          <strong>{{ bar.value }}</strong>
+        </div>
+      } @empty {
+        <p class="muted">Nadie abrió la ficha de una ruta en este periodo.</p>
+      }
+    </section>
+
+    <section class="card block">
+      <h2 class="title">Alertas por tipo</h2>
+      <p class="small">Publicadas en el periodo.</p>
+      @for (bar of byType(); track bar.label) {
+        <div class="bar">
+          <span class="ellipsis">{{ bar.label }}</span>
+          <span class="track"><i [style.width.%]="bar.percent"></i></span>
+          <strong>{{ bar.value }}</strong>
+        </div>
+      } @empty {
+        <p class="muted">No se publicó ninguna alerta en este periodo.</p>
+      }
+    </section>
+  </div>
+
+  <div class="pair">
+    <section class="card block">
+      <h2 class="title">Alertas por día</h2>
+      <p class="small">Cuántas se publicaron cada día.</p>
+      <app-day-chart [series]="alertSeries" [data]="points()" unit="alertas" />
+    </section>
+
+    <section class="card block">
+      <h2 class="title">A qué hora se reporta</h2>
+      <p class="small">Alertas del periodo, por hora del día (hora de Perú).</p>
+      @if (anyHour()) {
+        <div class="hours">
+          @for (hour of hours(); track $index) {
+            <div [title]="$index + ':00 · ' + hour.value + ' alertas'">
+              <i [style.height.%]="hour.percent"></i>
+              <!-- Una de cada tres, para que quepan. -->
+              <span>{{ $index % 3 === 0 ? $index : '' }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="muted">Aún no hay alertas que contar.</p>
+      }
+    </section>
+  </div>
 </app-page-frame>

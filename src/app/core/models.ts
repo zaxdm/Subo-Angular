@@ -359,6 +359,182 @@ export function statsFromJson(json: Json): Stats {
   };
 }
 
+/** Un número del periodo y el del periodo anterior, de la misma duración. */
+export interface Compared {
+  value: number;
+  previous: number;
+}
+
+/** Un día del tablero, en hora de Perú. */
+export interface DayStats {
+  day: string;
+  android: number;
+  web: number;
+  signedIn: number;
+  newUsers: number;
+  downloads: number;
+  alerts: number;
+}
+
+/** El tablero de estadísticas para un periodo de días. */
+export interface Dashboard {
+  days: number;
+  /** Desde qué día se cuentan las visitas; antes no hay registro. */
+  trackingSince: string | null;
+  totals: {
+    users: number;
+    newUsers: Compared;
+    activeAccounts: Compared;
+    dailyVisitors: Compared;
+    visitorsToday: number;
+    downloads: Compared;
+    alerts: Compared;
+    assistantQuestions: Compared;
+    premium: number;
+    publishedRoutes: number;
+    pendingRoutes: number;
+    newFeedback: number;
+    ratings: number;
+  };
+  series: DayStats[];
+  platforms: { android: number; web: number };
+  downloadsByDevice: Record<string, number>;
+  topRoutes: { id: string; name: string; letter: string; views: number }[];
+  alertsByType: Record<string, number>;
+  alertsByHour: number[];
+  recentUsers: AdminUser[];
+}
+
+export type Platform = 'android' | 'web';
+
+/** Una cuenta, vista desde el panel. */
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: number;
+  /** La última vez que entró con sesión; `null` si no hay registro. */
+  lastSeenAt: number | null;
+  lastPlatform: Platform | null;
+  isAdmin: boolean;
+  isPremium: boolean;
+  blocked: boolean;
+  emailVerified: boolean;
+  google: boolean;
+  alerts: number;
+  ratings: number;
+}
+
+export const USER_FILTERS = [
+  { code: 'all', label: 'Todas' },
+  { code: 'active', label: 'Activas (30 días)' },
+  { code: 'new', label: 'Nuevas (7 días)' },
+  { code: 'inactive', label: 'Sin actividad' },
+  { code: 'premium', label: 'Premium' },
+  { code: 'unverified', label: 'Sin verificar' },
+  { code: 'blocked', label: 'Bloqueadas' },
+  { code: 'admins', label: 'Administradores' },
+] as const;
+export type UserFilter = (typeof USER_FILTERS)[number]['code'];
+
+export const USER_SORTS = [
+  { code: 'recent', label: 'Más recientes' },
+  { code: 'lastSeen', label: 'Última visita' },
+  { code: 'name', label: 'Nombre' },
+  { code: 'alerts', label: 'Más alertas' },
+] as const;
+export type UserSort = (typeof USER_SORTS)[number]['code'];
+
+export interface UserList {
+  users: AdminUser[];
+  total: number;
+  page: number;
+  pageSize: number;
+  counts: Record<UserFilter, number>;
+}
+
+const compared = (value: unknown): Compared => {
+  const json = (value ?? {}) as Json;
+  return { value: number(json['value']), previous: number(json['previous']) };
+};
+
+const counts = (value: unknown): Record<string, number> =>
+  Object.fromEntries(Object.entries((value ?? {}) as Json).map(([key, count]) => [key, number(count)]));
+
+export function adminUserFromJson(json: Json): AdminUser {
+  const platform = json['lastPlatform'];
+  return {
+    id: text(json['id']),
+    name: text(json['name']),
+    email: text(json['email']),
+    createdAt: number(json['createdAt']),
+    lastSeenAt: optionalNumber(json['lastSeenAt']),
+    lastPlatform: platform === 'android' || platform === 'web' ? platform : null,
+    isAdmin: json['isAdmin'] === true,
+    isPremium: json['isPremium'] === true,
+    blocked: json['blocked'] === true,
+    emailVerified: json['emailVerified'] === true,
+    google: json['google'] === true,
+    alerts: number(json['alerts']),
+    ratings: number(json['ratings']),
+  };
+}
+
+export function dashboardFromJson(json: Json): Dashboard {
+  const totals = (json['totals'] ?? {}) as Json;
+  const platforms = (json['platforms'] ?? {}) as Json;
+  return {
+    days: number(json['days']),
+    trackingSince: optionalText(json['trackingSince']),
+    totals: {
+      users: number(totals['users']),
+      newUsers: compared(totals['newUsers']),
+      activeAccounts: compared(totals['activeAccounts']),
+      dailyVisitors: compared(totals['dailyVisitors']),
+      visitorsToday: number(totals['visitorsToday']),
+      downloads: compared(totals['downloads']),
+      alerts: compared(totals['alerts']),
+      assistantQuestions: compared(totals['assistantQuestions']),
+      premium: number(totals['premium']),
+      publishedRoutes: number(totals['publishedRoutes']),
+      pendingRoutes: number(totals['pendingRoutes']),
+      newFeedback: number(totals['newFeedback']),
+      ratings: number(totals['ratings']),
+    },
+    series: list(json['series']).map((day) => ({
+      day: text(day['day']),
+      android: number(day['android']),
+      web: number(day['web']),
+      signedIn: number(day['signedIn']),
+      newUsers: number(day['newUsers']),
+      downloads: number(day['downloads']),
+      alerts: number(day['alerts']),
+    })),
+    platforms: { android: number(platforms['android']), web: number(platforms['web']) },
+    downloadsByDevice: counts(json['downloadsByDevice']),
+    topRoutes: list(json['topRoutes']).map((route) => ({
+      id: text(route['id']),
+      name: text(route['name']),
+      letter: text(route['letter']),
+      views: number(route['views']),
+    })),
+    alertsByType: counts(json['alertsByType']),
+    alertsByHour: (Array.isArray(json['alertsByHour']) ? json['alertsByHour'] : []).map((count) => number(count)),
+    recentUsers: list(json['recentUsers']).map(adminUserFromJson),
+  };
+}
+
+export function userListFromJson(json: Json): UserList {
+  const all = (json['counts'] ?? {}) as Json;
+  return {
+    users: list(json['users']).map(adminUserFromJson),
+    total: number(json['total']),
+    page: number(json['page']),
+    pageSize: number(json['pageSize'], 25),
+    counts: Object.fromEntries(USER_FILTERS.map(({ code }) => [code, number(all[code])])) as Record<UserFilter, number>,
+  };
+}
+
 /** Una cuenta con acceso al panel. */
 export interface Admin {
   id: string;
