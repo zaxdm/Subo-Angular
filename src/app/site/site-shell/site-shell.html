@@ -34,8 +34,12 @@
       <div class="menu-backdrop" (click)="menuOpen.set(false)"></div>
       <nav class="menu-items" (click)="menuOpen.set(false)">
         @for (page of navPages(); track page.path) {
-          <a [routerLink]="page.path">{{ page.label }}</a>
+          <a [routerLink]="page.path" [class.current]="isCurrent(page)">{{ page.label }}</a>
         }
+        <!-- En el móvil el mapa no lleva franja de pie: lo legal queda aquí. -->
+        <hr class="divider" />
+        <a class="minor" routerLink="/privacidad">Privacidad</a>
+        <a class="minor" routerLink="/terminos">Términos</a>
       </nav>
     }
   </div>

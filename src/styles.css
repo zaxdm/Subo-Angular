@@ -127,29 +127,30 @@ a {
 
 .h-large {
   font-size: 46px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -1px;
   line-height: 1.08;
 }
 .h-medium {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.15;
 }
 .title {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
 }
 .small {
   font-size: 12px;
   color: var(--muted);
 }
+/* Rótulo de sección, como en la app: gris, pequeño, en mayúsculas y con aire entre letras. */
 .kicker {
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  color: var(--accent-text);
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  color: var(--muted);
   text-transform: uppercase;
 }
 .muted {
@@ -162,8 +163,8 @@ a {
 }
 @media (max-width: 719px) {
   .h-large {
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1.15;
   }
@@ -331,18 +332,20 @@ textarea.input {
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 20px;
 }
 
 .pill {
   display: inline-block;
-  padding: 5px 9px;
-  border-radius: 30px;
+  padding: 4px 9px;
+  border-radius: 8px;
   background: var(--accent-soft);
   color: var(--accent-text);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.3px;
   line-height: 1.4;
+  text-transform: uppercase;
 }
 .pill.success {
   background: var(--success-soft);
@@ -355,6 +358,35 @@ textarea.input {
 .pill.danger {
   background: var(--danger-soft);
   color: var(--danger);
+}
+/* El tipo de una alerta, con su color y su fondo suave, como en la app. */
+.pill.t-traffic {
+  background: var(--alert-traffic-soft);
+  color: var(--alert-traffic);
+}
+.pill.t-accident {
+  background: var(--alert-accident-soft);
+  color: var(--alert-accident);
+}
+.pill.t-overcharge {
+  background: var(--alert-overcharge-soft);
+  color: var(--alert-overcharge);
+}
+.pill.t-roadwork {
+  background: var(--alert-roadwork-soft);
+  color: var(--alert-roadwork);
+}
+.pill.t-crowded {
+  background: var(--alert-crowded-soft);
+  color: var(--alert-crowded);
+}
+.pill.t-danger {
+  background: var(--alert-danger-soft);
+  color: var(--alert-danger);
+}
+.pill.t-other {
+  background: var(--alert-other-soft);
+  color: var(--alert-other);
 }
 .pill.hidden {
   background: #f2e5e2;
@@ -476,13 +508,13 @@ textarea.input {
   width: 100%;
   max-width: 420px;
   padding: 24px;
-  border-radius: 26px;
-  background: var(--surface);
-  box-shadow: 0 12px 40px rgb(0 0 0 / 30%);
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 24%);
 }
 .dialog h2 {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 12px;
 }
 .dialog .actions {
@@ -503,7 +535,7 @@ textarea.input {
   width: min(520px, calc(100vw - 32px));
   padding: 12px 10px 12px 18px;
   transform: translateX(-50%);
-  border-radius: 8px;
+  border-radius: 16px;
   background: var(--success);
   color: #fff;
   box-shadow: 0 6px 20px rgb(0 0 0 / 30%);
@@ -512,7 +544,7 @@ textarea.input {
   background: var(--danger);
 }
 .toast.plain {
-  background: #322f28;
+  background: var(--ink);
 }
 .toast p {
   flex: 1;
@@ -534,9 +566,12 @@ textarea.input {
   height: 100%;
   border-radius: 50%;
 }
+/* Las alertas, como en la app: un cuadrito de esquinas redondas con su color suave y el icono del tipo. */
 .mk-alert {
+  border-radius: 10px;
   background: var(--warning-soft);
   border: 1.5px solid var(--warning);
+  box-shadow: 0 1px 4px rgb(21 23 28 / 18%);
   color: var(--warning);
   font-size: 17px;
 }
@@ -582,26 +617,31 @@ textarea.input {
 .mk-pin.mi {
   font-size: 36px;
 }
+/* Los paraderos: un círculo blanco con el borde en el color de la ruta; la llegada, el punto amarillo. */
 .mk-stop {
   background: #fff;
-  border: 2.5px solid var(--ink);
+  border: 2.5px solid var(--route, var(--ink));
 }
 .mk-stop.end {
-  background: var(--ink);
+  background: var(--accent);
+  border: 3px solid var(--ink);
 }
+/* La insignia de la ruta: cuadrito redondeado en su color con la letra en blanco. */
 .mk-letter {
   width: auto;
-  min-width: 28px;
-  height: 28px;
+  min-width: 30px;
+  height: 30px;
   padding: 0 6px;
   border: 2px solid #fff;
-  border-radius: 14px;
+  border-radius: 9px;
+  background: var(--route, var(--ink));
+  box-shadow: 0 1px 4px rgb(21 23 28 / 25%);
   color: #fff;
-  font-size: 12px;
-  font-weight: 900;
-  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
 }
 .mk-favorite {
+  border-radius: 9px;
   background: var(--accent);
   border: 1.5px solid var(--ink);
   color: var(--ink);
@@ -699,22 +739,23 @@ textarea.input {
 }
 .chip-row button {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border: 1px solid var(--field-line);
   border-radius: 999px;
   background: var(--surface);
-  color: var(--body);
+  color: var(--ink);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition:
     background 0.15s,
     border-color 0.15s;
 }
 .chip-row button:hover:not(.on) {
-  border-color: var(--faint);
+  border-color: var(--ink);
 }
 .chip-row button .count {
   min-width: 20px;
@@ -730,6 +771,7 @@ textarea.input {
   border-color: var(--ink);
   background: var(--ink);
   color: #fff;
+  font-weight: 700;
 }
 .chip-row button.on .count {
   background: var(--accent);
@@ -771,7 +813,7 @@ textarea.input {
 }
 .section-head h2 {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 800;
 }
 .section-head p {
   font-size: 13px;
@@ -785,25 +827,27 @@ textarea.input {
   align-items: center;
   gap: 8px;
   padding: 48px 24px;
-  border: 1.5px dashed var(--field-line);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
   color: var(--muted);
   text-align: center;
 }
 .empty-state .mi {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 64px;
+  height: 64px;
   margin-bottom: 4px;
   border-radius: 50%;
-  background: var(--chip);
-  color: var(--faint);
-  font-size: 26px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 28px;
 }
 .empty-state strong {
   color: var(--ink);
-  font-size: 15px;
+  font-size: 17px;
+  font-weight: 800;
 }
 
 /* La inicial de una persona en un círculo, cuando no hay foto. */
@@ -814,9 +858,9 @@ textarea.input {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  font-weight: 700;
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 800;
 }
 
 /* Un icono en un cuadrito de color suave, para encabezar una cifra o un bloque. */
@@ -827,8 +871,8 @@ textarea.input {
   width: 38px;
   height: 38px;
   border-radius: 11px;
-  background: var(--accent-wash);
-  color: var(--accent-text);
+  background: var(--accent-soft);
+  color: var(--ink);
 }
 .icon-tile .mi {
   font-size: 20px;
@@ -864,4 +908,134 @@ textarea.input {
 }
 .rows > *:first-child {
   border-top: 0;
+}
+
+/* Cada tipo de alerta deja su color a mano, para el punto, el cuadro o la pastilla que lo pinte. */
+.t-traffic {
+  --type: var(--alert-traffic);
+  --type-soft: var(--alert-traffic-soft);
+}
+.t-accident {
+  --type: var(--alert-accident);
+  --type-soft: var(--alert-accident-soft);
+}
+.t-overcharge {
+  --type: var(--alert-overcharge);
+  --type-soft: var(--alert-overcharge-soft);
+}
+.t-roadwork {
+  --type: var(--alert-roadwork);
+  --type-soft: var(--alert-roadwork-soft);
+}
+.t-crowded {
+  --type: var(--alert-crowded);
+  --type-soft: var(--alert-crowded-soft);
+}
+.t-danger {
+  --type: var(--alert-danger);
+  --type-soft: var(--alert-danger-soft);
+}
+.t-other {
+  --type: var(--alert-other);
+  --type-soft: var(--alert-other-soft);
+}
+
+/* --- Piezas de la guía de estilo de la app --- */
+
+/* El pasaje en su pastilla amarilla suave: «S/ 2.50». */
+.price {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* La etiqueta fuerte: amarilla, en mayúsculas, como «SUBES AQUÍ». */
+.here-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* La insignia de una ruta: cuadrito redondeado de su color con la letra en blanco. */
+.route-badge {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+.route-badge.sm {
+  min-width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.route-badge.lg {
+  min-width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  font-size: 22px;
+}
+
+/* Un menú como el del perfil de la app: filas con su icono en un cuadro amarillo suave y la flecha al final. */
+.menu-list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.menu-list > a,
+.menu-list > button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.menu-list > :first-child {
+  border-top: 0;
+}
+.menu-list > a:hover,
+.menu-list > button:hover {
+  background: var(--accent-wash);
+}
+.menu-list .grow {
+  flex: 1;
+  min-width: 0;
+}
+.menu-list .chevron {
+  color: var(--faint);
+}
+.menu-list .danger {
+  color: var(--danger);
+}
+.menu-list .danger .icon-tile {
+  background: var(--danger-soft);
+  color: var(--danger);
 }

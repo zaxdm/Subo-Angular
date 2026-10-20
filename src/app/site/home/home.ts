@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 
 import { Api } from '../../core/api';
@@ -28,6 +29,7 @@ import {
 import { Fix, currentLocation } from '../../core/locate';
 import {
   ApiError,
+  alertLabel,
   BusRoute,
   CityAlert,
   Destination,
@@ -38,11 +40,40 @@ import {
   safeUrl,
 } from '../../core/models';
 import { directionsOf } from '../../core/directions';
-import { metersToLine } from '../../core/nearby';
+import { metersToLine, spotOnLine } from '../../core/nearby';
 import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
 
 type Tab = 'lines' | 'assistant' | 'alerts';
+
+/** Las dos listas de rutas: las que pasan cerca de quien mira o todas. */
+type LineFilter = 'near' | 'all';
+
+/** Una ruta de la lista, con lo que hay que andar hasta ella si se sabe. */
+interface LineRow {
+  route: BusRoute;
+  meters: number | null;
+}
+
+/** Los tipos de alerta, en el orden de la app, para filtrar la lista. */
+const ALERT_TYPES = ['TRAFFIC', 'ACCIDENT', 'OVERCHARGE', 'ROADWORK', 'CROWDED', 'DANGER', 'OTHER'];
+
+/** El icono de cada tipo de alerta, como en la app. */
+const ALERT_ICONS: Record<string, string> = {
+  TRAFFIC: 'traffic',
+  ACCIDENT: 'car_crash',
+  OVERCHARGE: 'payments',
+  ROADWORK: 'construction',
+  CROWDED: 'groups',
+  DANGER: 'flag',
+  OTHER: 'more_horiz',
+};
+
+/** Lo que se considera «cerca de ti» en la lista de rutas. */
+const NEAR_ME_METERS = 1500;
+
+/** Lo que anda una persona en un minuto, más o menos. */
+const WALK_METERS_PER_MINUTE = 80;
 
 /** Un mensaje de la conversación con el asistente. */
 interface Message {
@@ -97,16 +128,16 @@ const NEAR_METERS = 300;
 /** Un color por línea, para distinguirlas en el mapa. */
 const LINE_COLORS = ['#0f766e', '#c2410c', '#1d4ed8', '#a21caf', '#15803d', '#6d28d9', '#8a6100', '#0f4c5c'];
 
-const INK = '#15171c';
 const MAP_BLUE = '#1a73e8';
 
 const latLng = (point: GeoPoint): L.LatLngTuple => [point.latitude, point.longitude];
 
-/** Una marca del mapa hecha con HTML: un círculo con un texto o un icono dentro. */
-function badge(className: string, text = '', size = 30): L.DivIcon {
+/** Una marca del mapa hecha con HTML: un círculo o un cuadrito con un texto o un icono dentro, y su color si lo lleva. */
+function badge(className: string, text = '', size = 30, color?: string): L.DivIcon {
   const element = document.createElement('div');
   element.className = `mk ${className}`;
   element.textContent = text;
+  if (color) element.style.setProperty('--route', color);
   return L.divIcon({ className: '', html: element, iconSize: [size, size] });
 }
 
@@ -118,7 +149,7 @@ function badge(className: string, text = '', size = 30): L.DivIcon {
  * asistente pide sesión.
  */
 @Component({
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   selector: 'app-home',
   styleUrl: './home.css',
   templateUrl: './home.html',
@@ -133,11 +164,14 @@ export class Home implements OnDestroy {
 
   private readonly mapElement = viewChild.required<ElementRef<HTMLElement>>('map');
 
-  protected readonly tabs: { id: Tab; label: string }[] = [
-    { id: 'lines', label: 'Líneas' },
-    { id: 'assistant', label: 'Asistente' },
-    { id: 'alerts', label: 'Alertas' },
+  protected readonly tabs: { id: Tab; label: string; icon: string }[] = [
+    { id: 'lines', label: 'Rutas', icon: 'directions_bus' },
+    { id: 'assistant', label: 'Asistente', icon: 'chat_bubble_outline' },
+    { id: 'alerts', label: 'Alertas', icon: 'warning_amber' },
   ];
+  protected readonly alertTypes = ALERT_TYPES;
+  protected readonly alertLabel = alertLabel;
+  protected readonly nearMeMeters = NEAR_ME_METERS;
   protected readonly ideas = [
     '¿Qué micro va a Huanchaco?',
     '¿Cuál es el pasaje más barato?',
@@ -157,6 +191,10 @@ export class Home implements OnDestroy {
   protected readonly safeUrl = safeUrl;
 
   protected readonly tab = signal<Tab>('lines');
+  protected readonly lineFilter = signal<LineFilter>('all');
+
+  /** El tipo de alerta que se está mirando; `null` para verlas todas. */
+  protected readonly alertType = signal<string | null>(null);
   protected readonly search = signal('');
 
   /** El sitio al que va quien escribió en el buscador, si sale en el mapa. */
@@ -234,6 +272,35 @@ export class Home implements OnDestroy {
     }),
   );
 
+  /** Las rutas de la lista elegida: con «Cerca de ti», solo las que pasan cerca, la más cercana primero. */
+  protected readonly rows = computed<LineRow[]>(() => {
+    const me = this.me();
+    if (this.lineFilter() === 'all' || me === null) return this.visible().map((route) => ({ route, meters: null }));
+    return this.visible()
+      .map((route) => ({ route, meters: metersToLine(me, this.linePoints().get(route) ?? []) }))
+      .filter((row) => row.meters <= NEAR_ME_METERS)
+      .sort((a, b) => a.meters - b.meters);
+  });
+
+  /** El paradero de la ruta abierta más cercano a quien mira, si se sabe dónde está. */
+  protected readonly boarding = computed(() => {
+    const route = this.selected();
+    const me = this.me();
+    if (route === null || me === null || route.stops.length === 0) return null;
+    let best = { index: 0, meters: Infinity };
+    route.stops.forEach((stop, index) => {
+      const meters = spotOnLine(me, [stop]).meters;
+      if (meters < best.meters) best = { index, meters };
+    });
+    return { ...best, stop: route.stops[best.index] };
+  });
+
+  /** Las alertas del tipo elegido. */
+  protected readonly shownAlerts = computed(() => {
+    const type = this.alertType();
+    return type === null ? this.alerts() : this.alerts().filter((alert) => alert.type === type);
+  });
+
   /** Las líneas que pasan cerca del sitio marcado, la más cercana primero. */
   protected readonly near = computed(() => {
     const pin = this.pin();
@@ -268,8 +335,33 @@ export class Home implements OnDestroy {
 
   protected readonly greeting = computed(() => {
     const name = this.store.session()?.name.trim().split(' ')[0] ?? '';
-    return name === '' ? '¿A dónde vas hoy?' : `Hola, ${name}. ¿A dónde vas hoy?`;
+    return name === '' ? '' : `Hola, ${name} · `;
   });
+
+  /** Los minutos andando para [meters], al menos uno. */
+  protected walkMinutes(meters: number): number {
+    return Math.max(1, Math.round(meters / WALK_METERS_PER_MINUTE));
+  }
+
+  protected alertIcon(type: string): string {
+    return ALERT_ICONS[type] ?? ALERT_ICONS['OTHER'];
+  }
+
+  /** «Cerca de ti» necesita saber dónde está quien mira: si no se sabe, se pregunta. */
+  protected showNear(): void {
+    this.lineFilter.set('near');
+    if (this.me() === null) void this.locate();
+  }
+
+  /** Copia el enlace de la ruta abierta para mandarlo. */
+  protected async share(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      this.ui.notify('Enlace copiado. Pégalo donde quieras compartirlo.', 'plain');
+    } catch {
+      this.ui.notify('No se pudo copiar el enlace. Cópialo de la barra de direcciones.', 'plain');
+    }
+  }
 
   // --- El mapa ---
 
@@ -400,7 +492,8 @@ export class Home implements OnDestroy {
     if (selected === null) return;
     const points = (this.linePoints().get(selected) ?? []).map(latLng);
     if (points.length < 2) return;
-    L.polyline(points, { weight: 9, color: INK, opacity: 1, interactive: false }).addTo(this.lineLayer);
+    // Como en la app: la línea en su color, con un borde blanco que la separa de las calles.
+    L.polyline(points, { weight: 10, color: '#fff', opacity: 1, interactive: false }).addTo(this.lineLayer);
     L.polyline(points, { weight: 6, color: this.colorOf(selected), opacity: 1 })
       .bindTooltip(routeTitle(selected), { sticky: true, className: 'line-tip', direction: 'right', offset: [12, 12] })
       .addTo(this.lineLayer);
@@ -426,14 +519,18 @@ export class Home implements OnDestroy {
     for (const alert of this.alerts()) {
       add(
         alert,
-        badge(`mk-alert mi t-${alert.type.toLowerCase()}`, 'warning_amber'),
+        badge(`mk-alert mi t-${alert.type.toLowerCase()}`, this.alertIcon(alert.type)),
         [alert.label, alert.placeName].filter(Boolean).join(' · '),
       );
     }
     if (selected !== null) {
+      const color = this.colorOf(selected);
+      const last = selected.stops.length - 1;
       selected.stops.forEach((stop, index) => {
-        const end = index === 0 || index === selected.stops.length - 1;
-        add(stop, badge(end ? 'mk-stop end' : 'mk-stop', '', 20), stop.name);
+        // La salida lleva la insignia de la ruta; la llegada, el punto amarillo; los demás, un círculo en su color.
+        if (index === 0) add(stop, badge('mk-letter', selected.letter || '·', 30, color), stop.name);
+        else if (index === last) add(stop, badge('mk-stop end', '', 20), stop.name);
+        else add(stop, badge('mk-stop', '', 16, color), stop.name);
       });
     }
     for (const place of this.favorites()) {

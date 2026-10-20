@@ -28,14 +28,15 @@ table {
   font-size: 13px;
 }
 
+/* Como la tabla de Premium de la app: cabecera blanca con rótulos grises en mayúsculas. */
 th {
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
-  background: #f9f8f5;
+  background: var(--surface);
   color: var(--muted);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   text-align: left;
   text-transform: uppercase;
   white-space: nowrap;
@@ -105,18 +106,20 @@ tr.blocked td:first-child {
 }
 
 .tag {
-  padding: 1px 8px;
+  padding: 2px 8px;
   border-radius: 6px;
   background: var(--chip);
   color: var(--ink-soft);
-  font-size: 10.5px;
+  font-size: 10px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
 
 .tag.gold {
-  background: var(--accent-soft);
-  color: var(--accent-text);
+  background: var(--accent);
+  color: var(--ink);
 }
 
 .tag.warn {

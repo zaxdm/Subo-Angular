@@ -17,29 +17,28 @@
 }
 
 h1 {
-  margin: 8px 0 24px;
+  margin-bottom: 20px;
 }
 
 .account {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 24px;
+  gap: 16px;
 }
 
+/* La inicial en el círculo amarillo, con el lápiz para cambiar la foto. */
 .avatar {
   position: relative;
   display: grid;
   place-items: center;
   flex: none;
-  width: 68px;
-  height: 68px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  font-size: 26px;
-  font-weight: 700;
-  overflow: hidden;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 800;
 }
 
 .avatar img {
@@ -47,7 +46,27 @@ h1 {
   inset: 0;
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   object-fit: cover;
+}
+
+.avatar-edit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+}
+
+.avatar-edit .mi {
+  font-size: 13px;
 }
 
 .who {
@@ -57,17 +76,61 @@ h1 {
   font-size: 13px;
 }
 
-.who .kicker {
-  margin-top: 8px;
+.who strong {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+/* La tarjeta tinta de la cuenta. */
+.role {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.role-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.role .grow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 12px;
+  color: rgb(255 255 255 / 75%);
+}
+
+.role strong {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.section {
+  margin: 24px 0 10px;
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .edit {
-  margin: 16px 0 24px;
-  padding: 24px;
+  padding: 18px;
 }
 
 .edit .field {
-  margin: 16px 0;
+  margin-bottom: 16px;
 }
 
 .actions {
@@ -80,4 +143,15 @@ h1 {
 .done {
   color: var(--success);
   font-size: 12px;
+}
+
+.menu-list {
+  margin-top: 16px;
+}
+
+.foot {
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
 }

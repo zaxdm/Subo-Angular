@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { Api } from '../../core/api';
 import { ApiError, MAX_IMAGE_BYTES, Session, imageTypeOf } from '../../core/models';
@@ -10,7 +11,7 @@ import { Store } from '../../core/store';
  * administrador. Deja cambiar el nombre y la foto, y cerrar sesión.
  */
 @Component({
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   selector: 'app-profile',
   styleUrl: './profile.css',
   templateUrl: './profile.html',

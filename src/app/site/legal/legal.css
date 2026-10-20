@@ -8,14 +8,30 @@
 }
 
 .switch {
-  display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 28px;
 }
 
-.switch .btn {
-  font-weight: 400;
+/* Las pastillas del panel, aquí como enlaces. */
+.switch a {
+  padding: 8px 16px;
+  border: 1px solid var(--field-line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.switch a:hover:not(.on) {
+  border-color: var(--ink);
+}
+
+.switch a.on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
 }
 
 .lead {
@@ -32,28 +48,28 @@
   gap: 56px;
 }
 
+/* El índice en una tarjeta blanca, como los menús de la app. */
 .index {
   position: sticky;
   top: 88px;
   display: flex;
   flex-direction: column;
   flex: none;
-  width: 240px;
-  border-left: 2px solid var(--line);
+  width: 250px;
+  padding: 14px 8px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
 }
 
 .index span {
-  padding: 0 16px 8px;
-  color: var(--faint);
-  font-size: 13px;
+  padding: 0 10px 8px;
 }
 
 .index button {
-  /* La marca amarilla tapa la línea gris del índice. */
-  margin-left: -2px;
-  padding: 8px 16px;
+  padding: 9px 10px;
   border: 0;
-  border-left: 2px solid transparent;
+  border-radius: 12px;
   background: none;
   color: var(--muted);
   font-size: 15px;
@@ -61,10 +77,14 @@
   cursor: pointer;
 }
 
+.index button:hover:not(.current) {
+  background: var(--chip);
+}
+
 .index button.current {
-  border-left-color: var(--accent);
+  background: var(--accent-soft);
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 article {
@@ -74,27 +94,32 @@ article {
 
 .summary {
   margin-bottom: 36px;
-  padding: 22px 24px 14px;
-  border-radius: 18px;
-  background: var(--accent-wash);
+  padding: 20px 22px 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
 }
 
 .summary strong {
-  display: block;
-  margin-bottom: 10px;
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .summary p {
   margin-bottom: 8px;
-  color: var(--accent-text);
+  color: var(--body);
   font-size: 15px;
   line-height: 1.55;
 }
 
 article h2 {
   margin-bottom: 10px;
-  font-size: 21px;
+  font-size: 20px;
+  font-weight: 800;
   /* Al saltar desde el índice, el título no queda bajo la barra de arriba. */
   scroll-margin-top: 88px;
 }

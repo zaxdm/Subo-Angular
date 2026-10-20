@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 16px 18px;
+  padding: 18px;
 }
 
 .head h1 {
@@ -26,15 +26,17 @@
   line-height: 1.2;
 }
 
+/* «● En vivo», como en las alertas de la app: pastilla blanca con el punto verde. */
 .live {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   align-self: flex-start;
-  padding: 3px 10px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--surface);
+  color: var(--ink);
   font-size: 12px;
   font-weight: 700;
 }
@@ -43,16 +45,17 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #37d67a;
+  background: var(--success);
   animation: pulse 1.6s ease-in-out infinite;
 }
 
 .live.off {
-  background: var(--body);
+  background: var(--chip);
+  color: var(--muted);
 }
 
 .live.off .dot {
-  background: #fff;
+  background: var(--faint);
   animation: none;
 }
 
@@ -62,8 +65,14 @@
   }
 }
 
+/* Cómo va el viaje, en la tarjeta petróleo de la app. */
 .status {
-  font-weight: 600;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--petrol);
+  color: #fff;
+  font-weight: 700;
 }
 
 .problem {
@@ -74,11 +83,12 @@
 .app {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   align-self: flex-start;
-  margin-top: 4px;
+  margin-top: 6px;
   color: var(--body);
   font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -87,7 +97,14 @@
 }
 
 .app .mi {
-  font-size: 18px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 17px;
 }
 
 .map-area {
@@ -96,7 +113,8 @@
   /* En un teléfono, con la cabecera encima, el mapa sigue teniendo sitio. */
   min-height: 55vh;
   overflow: hidden;
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
 }
 
 .map-area.hidden {

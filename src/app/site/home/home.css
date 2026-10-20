@@ -15,19 +15,21 @@
   inset: 0;
 }
 
+/* La hoja de la app: fondo arena, con tarjetas blancas encima. */
 .panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: none;
-  width: 400px;
+  width: 420px;
   border-left: 1px solid var(--line);
-  background: var(--surface);
+  background: var(--paper);
   overflow: hidden;
 }
 
 /* --- Lo que flota sobre el mapa --- */
 
-.favorites,
+.map-top,
 .street-view,
 .nearby,
 .map-buttons,
@@ -36,37 +38,122 @@
   z-index: 1000;
 }
 
+.map-top {
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 440px;
+  pointer-events: none;
+}
+
+.map-top > * {
+  pointer-events: auto;
+}
+
+/* El buscador de la app: una pastilla blanca con el alfiler amarillo. */
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+  cursor: text;
+}
+
+.search-pill:focus-within {
+  border-color: var(--ink);
+}
+
+.search-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.search-pill input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.search-pill input::placeholder {
+  color: var(--muted);
+}
+
+.search-pill > .mi {
+  font-size: 22px;
+}
+
+.round-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+  cursor: pointer;
+}
+
+.round-btn .mi {
+  font-size: 22px;
+}
+
 .favorites {
-  top: 0;
-  left: 0;
-  right: 0;
   display: flex;
   gap: 6px;
-  padding: 10px;
+  max-width: 100%;
   overflow-x: auto;
-  pointer-events: none;
+  scrollbar-width: none;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
   flex: none;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
   background: var(--surface);
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 4px rgb(21 23 28 / 8%);
   font-size: 13px;
-  font-weight: 500;
-  pointer-events: auto;
+  font-weight: 600;
 }
 
 .chip-main {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 7px 12px;
   border: 0;
   background: none;
+}
+
+.chip.chip-main {
+  border: 1px solid var(--line);
+}
+
+.chip.hint {
+  color: var(--muted);
+  font-weight: 500;
 }
 
 button.chip-main:not(:disabled) {
@@ -80,7 +167,7 @@ button.chip-main:not(:disabled) {
 
 .chip-remove {
   display: grid;
-  padding: 8px 8px 8px 0;
+  padding: 7px 10px 7px 0;
   border: 0;
   background: none;
   color: var(--muted);
@@ -91,65 +178,72 @@ button.chip-main:not(:disabled) {
   font-size: 15px;
 }
 
-.chip.flat {
-  border: 1px solid var(--field-line);
-  background: var(--surface);
-  box-shadow: none;
-}
-
-.dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-}
-
 .street-view {
-  left: 10px;
+  left: 12px;
   bottom: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  width: 64px;
-  height: 64px;
-  border: 0;
-  border-radius: 12px;
+  width: 60px;
+  height: 60px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   background: var(--surface);
-  box-shadow: var(--shadow);
+  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
   font-size: 10px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .street-view .mi {
-  font-size: 28px;
+  font-size: 26px;
   color: var(--accent-text);
 }
 
 /* Entre el botón de la calle y los del mapa. */
 .nearby {
   left: 84px;
-  right: 62px;
-  bottom: 34px;
+  right: 66px;
+  bottom: 30px;
   max-width: 460px;
   margin: 0 auto;
-  padding: 8px 12px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
   background: var(--surface);
-  box-shadow: var(--shadow);
+  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+}
+
+.nearby .small {
+  font-weight: 600;
 }
 
 .nearby-lines {
   display: flex;
   gap: 6px;
-  padding-top: 4px;
+  padding-top: 6px;
   overflow-x: auto;
 }
 
+.mini-line {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .map-buttons {
-  right: 10px;
-  bottom: 34px;
+  right: 12px;
+  bottom: 30px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -157,16 +251,16 @@ button.chip-main:not(:disabled) {
 
 .map-button,
 .zoom {
-  border: 0;
+  border: 1px solid var(--line);
   background: var(--surface);
-  box-shadow: var(--shadow);
+  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
 }
 
 .map-button {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -180,16 +274,23 @@ button.chip-main:not(:disabled) {
   color: var(--map-blue);
 }
 
+/* Ubicarse, en amarillo, como en la app. */
+.map-button.locate {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--ink);
+}
+
 .zoom {
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-radius: 21px;
+  border-radius: 22px;
   overflow: hidden;
 }
 
 .zoom button {
-  width: 42px;
+  width: 44px;
   height: 40px;
   border: 0;
   background: none;
@@ -206,8 +307,13 @@ button.chip-main:not(:disabled) {
 
 .map-button:hover,
 .zoom button:hover,
-.street-view:hover {
+.street-view:hover,
+.round-btn:hover {
   background: var(--chip);
+}
+
+.map-button.locate:hover {
+  background: var(--accent-dark);
 }
 
 .credit {
@@ -220,91 +326,141 @@ button.chip-main:not(:disabled) {
   font-size: 10px;
 }
 
-/* --- El panel --- */
+/* --- La hoja --- */
 
+.grabber {
+  display: none;
+}
+
+/* Las secciones como la barra de la app: icono con su pastilla amarilla al elegirlo. */
 .tabs {
   display: flex;
-  gap: 4px;
   flex: none;
-  margin: 16px 16px 0;
-  padding: 4px;
-  border-radius: 12px;
-  background: var(--chip);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .tabs button {
   flex: 1;
-  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 0;
   border: 0;
-  border-radius: 9px;
   background: none;
   color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.tabs button.active {
-  background: var(--surface);
-  color: var(--ink);
-  font-weight: 500;
+.tab-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 28px;
+  border-radius: 999px;
+  transition: background 0.15s;
 }
 
+.tab-icon .mi {
+  font-size: 20px;
+}
+
+.tabs button.active {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.tabs button.active .tab-icon {
+  background: var(--accent);
+}
+
+.tabs button:hover:not(.active) .tab-icon {
+  background: var(--chip);
+}
+
+.scroll,
+.chat {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Lo que se ve cuando una lista no tiene nada: el icono en un círculo amarillo suave. */
 .empty {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 28px;
+  gap: 10px;
+  padding: 32px 28px;
   color: var(--muted);
+  font-size: 13px;
   text-align: center;
 }
 
-.empty > .mi {
-  font-size: 30px;
+.empty strong {
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 800;
 }
+
+.empty p {
+  max-width: 300px;
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.empty-icon .mi {
+  font-size: 28px;
+}
+
+/* --- La lista de rutas --- */
 
 .lines-head {
-  flex: none;
-  padding: 20px 16px 6px;
+  padding: 20px 16px 0;
 }
 
-.lines-head h2 {
-  margin-bottom: 12px;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.search {
-  position: relative;
-  display: block;
-}
-
-.search .mi {
-  position: absolute;
-  top: 50%;
-  left: 12px;
-  transform: translateY(-50%);
-  font-size: 20px;
-  color: var(--muted);
-}
-
-.search .input {
-  padding-left: 40px;
-  border-radius: 12px;
-  background: var(--surface);
+.lines-head h2,
+.alerts-head h2,
+.assistant-head h2 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
 }
 
 .sign-in-note {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 12px;
-  padding: 10px 10px 10px 14px;
-  border-radius: 12px;
-  background: var(--accent-wash);
+  margin: 14px 16px 0;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
   color: var(--body);
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -312,89 +468,77 @@ button.chip-main:not(:disabled) {
   flex: 1;
 }
 
-.columns-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 18px;
-  color: var(--faint);
-  font-size: 13px;
-}
-
-.lines,
-.alerts,
-.chat,
-.detail {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.lines {
-  padding: 0 8px 16px;
-}
-
-/* El título de cada grupo de la lista: las que llevan a un sitio y las que lo nombran. */
-.group {
-  padding: 10px 8px 4px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.line {
-  display: flex;
-  /* La foto del micro, si la hay, ocupa una fila entera encima. */
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 8px;
-  border: 0;
-  border-radius: 12px;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-}
-
-.line-photo,
-.detail-photo {
-  width: 100%;
-  border-radius: 12px;
-  object-fit: cover;
-  background: var(--chip);
-}
-
-.line-photo {
-  flex: none;
-  height: 140px;
-}
-
-.detail-photo {
-  height: 190px;
-  margin-bottom: 14px;
-}
-
-.line-photo[hidden],
-.detail-photo[hidden] {
-  display: none;
-}
-
-.line:hover {
-  background: var(--accent-wash);
-}
-
-/* La letra con la que se conoce a la línea en la calle, en su color. */
-.letter {
+.tile {
   display: grid;
   place-items: center;
   flex: none;
-  min-width: 38px;
-  height: 38px;
-  padding: 0 6px;
-  border-radius: 10px;
-  color: #fff;
-  font-weight: 900;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.tile .mi {
+  font-size: 19px;
+}
+
+/* Pastillas de filtro: la elegida en tinta, las demás blancas con borde. */
+.pills {
+  flex-wrap: nowrap;
+  gap: 8px;
+  padding: 14px 16px 4px;
+}
+
+.pills.scroll-x {
+  flex: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 16px 20px;
+}
+
+/* El título de cada grupo de la lista: rótulo gris en mayúsculas. */
+.group,
+.label {
+  padding: 8px 2px 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Cada ruta en su tarjeta blanca, como en la app. */
+.line {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.line:hover {
+  border-color: var(--ink);
+}
+
+.line-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
 .line-text {
@@ -410,17 +554,14 @@ button.chip-main:not(:disabled) {
 .line-text strong {
   color: var(--ink);
   font-size: 15px;
-  font-weight: 500;
-}
-
-.arrow {
-  font-size: 12px;
+  font-weight: 800;
 }
 
 .line-fare {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  flex: none;
   color: var(--muted);
   font-size: 13px;
 }
@@ -428,34 +569,65 @@ button.chip-main:not(:disabled) {
 .line-fare strong {
   color: var(--ink);
   font-size: 15px;
+  font-weight: 800;
 }
+
+/* La franja de caminata, en la arena suave, debajo de la ruta. */
+.walk-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--body);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.walk-strip .mi {
+  font-size: 16px;
+  color: var(--muted);
+}
+
+/* --- La ficha de una ruta --- */
 
 .detail {
-  padding: 12px 20px 28px;
-}
-
-.back {
-  margin: 0 0 8px -12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px 28px;
 }
 
 .detail-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
+  gap: 14px;
 }
 
-.detail-title h2 {
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.2;
+.detail-name {
+  min-width: 0;
 }
 
+.detail-name h2 {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+}
+
+.detail-name p {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Las tres casillas: recorrido, pasaje (en amarillo suave) y horario. */
 .facts {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin: 18px 0 14px;
 }
 
 .facts div {
@@ -465,70 +637,240 @@ button.chip-main:not(:disabled) {
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--paper);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.facts div.fare {
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
 }
 
 .facts span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .facts strong {
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 800;
 }
 
-.fact-line {
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-
-.fact-line .mi {
-  margin-right: 4px;
-  font-size: 15px;
-  color: var(--muted);
-}
-
-.description {
-  margin-top: 14px;
-}
-
-.detail h3 {
-  margin: 24px 0 4px;
-}
-
-.stops {
-  margin-top: 10px;
-}
-
-.stops button {
+/* La tarjeta petróleo de la caminata. */
+.walk-card {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 7px 0;
+  padding: 14px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 18px;
+  background: var(--petrol);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.walk-card:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.walk-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 14%);
+  color: var(--accent);
+}
+
+.walk-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 12px;
+  color: rgb(255 255 255 / 80%);
+}
+
+.walk-text strong {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.detail-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.detail-actions .btn {
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.detail-photo {
+  width: 100%;
+  height: 180px;
+  border-radius: 18px;
+  object-fit: cover;
+  background: var(--chip);
+}
+
+.detail-photo[hidden] {
+  display: none;
+}
+
+/* Un bloque de la ficha: tarjeta blanca de borde finísimo. */
+.box {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.box h3,
+.section {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.section {
+  margin-top: 8px;
+}
+
+/* Por dónde pasa: los paraderos unidos por la línea en el color de la ruta. */
+.timeline {
+  margin-top: 10px;
+}
+
+.timeline button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 0;
+  border: 0;
   background: none;
   text-align: left;
   cursor: pointer;
 }
 
-.stops button:hover {
-  background: var(--chip);
+/* El tramo que une un paradero con el siguiente. */
+.timeline button:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  width: 2px;
+  height: 100%;
+  background: var(--route, var(--ink));
 }
 
 .stop-dot {
+  position: relative;
+  z-index: 1;
   flex: none;
-  width: 10px;
-  height: 10px;
-  border: 2px solid var(--ink);
+  width: 14px;
+  height: 14px;
+  border: 2.5px solid var(--route, var(--ink));
   border-radius: 50%;
   background: #fff;
 }
 
-.stop-dot.end {
+.timeline .end .stop-dot {
+  background: var(--route, var(--ink));
+}
+
+.stop-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.timeline .end .stop-name {
+  font-weight: 800;
+}
+
+.timeline button:hover .stop-name {
+  text-decoration: underline;
+}
+
+/* La etiqueta de la guía: amarilla, en mayúsculas y gruesa. */
+.here {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.rows-block {
+  padding: 0 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.row strong {
+  font-weight: 800;
+  text-align: right;
+}
+
+.description {
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.description:first-child {
+  border-top: 0;
+}
+
+/* --- El asistente --- */
+
+.assistant-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  padding: 18px 16px 6px;
+}
+
+.assistant-head h2 {
+  font-size: 20px;
+}
+
+.ink-tile {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   background: var(--ink);
+  color: var(--accent);
 }
 
 .chat {
@@ -539,125 +881,363 @@ button.chip-main:not(:disabled) {
   padding: 16px;
 }
 
+/* La conversación se apoya abajo, junto al campo, sin cortar lo de arriba al crecer. */
+.chat > :first-child {
+  margin-top: auto;
+}
+
+.chat .label {
+  padding: 6px 0 0;
+}
+
 .idea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  justify-content: flex-start;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
   text-align: left;
+  cursor: pointer;
+}
+
+.idea span:nth-child(2) {
+  flex: 1;
+}
+
+.idea:hover {
+  background: #ffe59a;
 }
 
 .bubble {
-  max-width: 300px;
-  padding: 12px;
+  max-width: 320px;
+  padding: 12px 14px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--paper);
+  border-radius: 18px 18px 18px 6px;
+  background: var(--surface);
+  font-size: 14px;
   line-height: 1.45;
   white-space: pre-wrap;
 }
 
 .bubble.mine {
   align-self: flex-end;
-  background: var(--accent-soft);
+  border-color: var(--ink);
+  border-radius: 18px 18px 6px 18px;
+  background: var(--ink);
+  color: #fff;
 }
 
-.bubble .btn {
-  /* Con varias líneas recomendadas, una debajo de otra. */
+/* Cada ruta recomendada, una debajo de otra, con su insignia. */
+.bubble-line {
   display: flex;
-  margin: 8px 0 0 -12px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 8px 6px 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 13px;
+  font-weight: 700;
   text-align: left;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.bubble-line .ellipsis {
+  flex: 1;
+}
+
+.ai-note {
+  flex: none;
+  padding: 0 16px 6px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
 }
 
 .ask {
   display: flex;
+  align-items: center;
   gap: 8px;
   flex: none;
-  padding: 12px;
-  border-top: 1px solid var(--line);
+  padding: 8px 16px 14px;
+}
+
+.ask-input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  outline: none;
+}
+
+.ask-input:focus {
+  border-color: var(--ink);
 }
 
 .send {
   display: grid;
   place-items: center;
   flex: none;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border: 0;
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
 }
 
+.send:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
 .send:disabled {
   opacity: 0.45;
 }
 
-.alerts {
-  padding: 8px 0;
+/* --- Las alertas --- */
+
+.alerts-head {
+  flex: none;
+  padding: 20px 16px 0;
 }
 
-.alerts button {
+.alerts-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+/* «En vivo»: pastilla blanca con el punto verde. */
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.live .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--type, var(--alert-other));
+}
+
+.type-dot.all {
+  background: var(--accent);
+}
+
+/* El vacío de las alertas: el aviso en un círculo amarillo suave con el visto verde. */
+.calm {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.calm > .mi {
+  font-size: 40px;
+}
+
+.calm-check {
+  position: absolute;
+  right: 8px;
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--paper);
+  border-radius: 8px;
+  background: var(--success);
+  color: #fff;
+}
+
+.calm-check .mi {
+  font-size: 16px;
+}
+
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.alert {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   width: 100%;
-  padding: 12px 16px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: none;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
   text-align: left;
   cursor: pointer;
 }
 
-.alerts button:hover {
-  background: var(--chip);
+.alert:hover {
+  border-color: var(--ink);
 }
 
-.alerts button > .mi {
+/* El tipo de alerta en su cuadro de color suave. */
+.alert-tile {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--type-soft, var(--alert-other-soft));
+  color: var(--type, var(--alert-other));
+}
+
+.alert-tile .mi {
   font-size: 20px;
-  color: var(--warning);
 }
 
-.alerts button > span:last-child {
+.alert-text {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  min-width: 0;
+}
+
+.alert-text strong {
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .comment {
   font-size: 13px;
 }
 
-/* --- La ventana de los favoritos --- */
-
-.kinds {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
+.chevron {
+  align-self: center;
+  color: var(--faint);
 }
 
-.kind {
-  display: inline-flex;
+.report {
+  flex: none;
+  padding: 10px 16px 16px;
+}
+
+.plus {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.plus .mi {
+  font-size: 18px;
+}
+
+/* --- La ventana de los favoritos, como «¿Qué está pasando?» de la app --- */
+
+.dialog-head {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border: 1px solid var(--field-line);
-  border-radius: 8px;
-  background: var(--surface);
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dialog-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--chip);
   cursor: pointer;
 }
 
-.kind .mi {
-  font-size: 16px;
-  color: var(--accent-text);
+.dialog .note {
+  margin: 2px 0 16px;
+}
+
+.kinds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.kind {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kind-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.kind-icon .mi {
+  font-size: 18px;
 }
 
 .kind.chosen {
-  border-color: var(--accent-dark);
-  background: var(--accent-soft);
+  border: 1.5px solid var(--ink);
 }
 
-/* En pantallas estrechas el mapa va arriba y el panel debajo. */
+/* En pantallas estrechas, como en la app: el mapa arriba, la hoja encima y la barra de secciones abajo. */
 @media (max-width: 859px) {
   :host {
     flex-direction: column;
@@ -665,33 +1245,69 @@ button.chip-main:not(:disabled) {
 
   .map-area {
     flex: none;
-    height: 42%;
+    height: 44%;
   }
 
   .panel {
     flex: 1;
     width: auto;
+    margin-top: -20px;
+    z-index: 1001;
+    border: 0;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -2px 12px rgb(21 23 28 / 8%);
+  }
+
+  .grabber {
+    display: block;
+    flex: none;
+    width: 40px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 2px;
+    background: var(--field-line);
+  }
+
+  .tabs {
+    order: 10;
+    padding: 6px 8px 10px;
     border-top: 1px solid var(--line);
-    border-left: 0;
+    border-bottom: 0;
+  }
+
+  .street-view,
+  .nearby,
+  .map-buttons {
+    bottom: 50px;
+  }
+
+  .credit {
+    bottom: 26px;
   }
 
   .zoom {
     display: none;
   }
+
+  .lines-head,
+  .alerts-head {
+    padding-top: 10px;
+  }
 }
 
-/* El sentido de la línea: la ida y la vuelta tienen el mismo nombre y la misma foto. */
+/* El sentido de la ruta: la ida y la vuelta tienen el mismo nombre y la misma foto. */
 .way {
   display: inline-block;
   margin-right: 4px;
   padding: 0 7px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: var(--accent-soft);
   color: var(--accent-text);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   line-height: 16px;
   border: 1px solid transparent;
+  text-transform: uppercase;
   vertical-align: 1px;
 }
 

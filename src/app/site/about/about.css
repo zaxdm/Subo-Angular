@@ -29,7 +29,7 @@
 .intro h1 {
   margin: 20px 0;
   font-size: 58px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1.04;
 }
@@ -108,9 +108,11 @@
 .phone-field {
   display: flex;
   flex-direction: column;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #efece5;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  font-weight: 700;
 }
 
 .phone-field small,
@@ -121,8 +123,10 @@
 
 .serve {
   margin-top: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 .phone-line {
@@ -130,20 +134,27 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #e8e5dd;
-  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
   font-size: 12px;
 }
 
+/* La insignia de la ruta, como en la app: cuadrito de su color con la letra en blanco. */
 .phone-letter {
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: var(--accent);
-  font-weight: 900;
+  display: grid;
+  place-items: center;
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 800;
 }
 
 .phone-letter.second {
-  background: #ffe89a;
+  background: #c2410c;
 }
 
 .phone-text {
@@ -155,12 +166,15 @@
 
 .phone-text strong {
   color: var(--ink);
+  font-weight: 800;
 }
 
 .phone-alert {
   padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--accent-wash);
+  border-radius: 14px;
+  background: var(--alert-roadwork-soft);
+  color: var(--alert-roadwork);
+  font-weight: 700;
   font-size: 12px;
   line-height: 1.4;
 }
@@ -192,7 +206,7 @@
 .stat strong {
   display: block;
   font-size: 30px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.5px;
   line-height: 1.1;
 }
@@ -216,7 +230,7 @@
   gap: 24px;
   min-height: 230px;
   padding: 28px;
-  border-radius: 26px;
+  border-radius: 20px;
 }
 
 .showcase.wash {
@@ -230,11 +244,12 @@
 
 .showcase h3 {
   margin-bottom: 8px;
-  font-size: 21px;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .showcase p {
-  color: var(--accent-text);
+  color: var(--body);
   font-size: 15px;
   line-height: 1.6;
 }
@@ -353,7 +368,7 @@
 .promises h2 {
   padding-right: 12px;
   font-size: 34px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -1px;
   line-height: 1.08;
 }

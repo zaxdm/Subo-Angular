@@ -1,7 +1,8 @@
 <div class="page">
-  <nav class="switch">
-    <a class="btn small-btn" routerLink="/privacidad" [class.outline]="page() !== 'privacy'">Privacidad</a>
-    <a class="btn small-btn" routerLink="/terminos" [class.outline]="page() !== 'terms'">Términos de uso</a>
+  <!-- Las dos páginas en pastillas: la que se lee va en tinta. -->
+  <nav class="chip-row switch">
+    <a routerLink="/privacidad" [class.on]="page() === 'privacy'">Privacidad</a>
+    <a routerLink="/terminos" [class.on]="page() === 'terms'">Términos de uso</a>
   </nav>
 
   <h1 class="h-large">{{ text().title }}</h1>
@@ -9,7 +10,7 @@
 
   <div class="body">
     <nav class="index">
-      <span>En esta página</span>
+      <span class="kicker">En esta página</span>
       @for (section of text().sections; track section.title) {
         <button type="button" [class.current]="$index === current()" (click)="jump($index)">
           {{ section.title }}
@@ -20,7 +21,9 @@
     <article>
       @if (text().summary.length > 0) {
         <div class="summary">
-          <strong>En corto</strong>
+          <strong
+            ><span class="icon-tile"><span class="mi">bolt</span></span> En corto</strong
+          >
           @for (line of text().summary; track line) {
             <p>{{ line }}</p>
           }
@@ -33,7 +36,7 @@
       <hr class="divider" />
       <div class="doubt">
         <span>¿Te quedó alguna duda?</span>
-        <a class="btn small-btn" routerLink="/contacto">Escríbenos</a>
+        <a class="btn accent small-btn" routerLink="/contacto">Escríbenos</a>
       </div>
     </article>
   </div>

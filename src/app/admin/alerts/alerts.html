@@ -17,7 +17,7 @@
         }
         <div class="body">
           <div class="tags">
-            <span class="pill">{{ item.alert.label }}</span>
+            <span class="pill" [class]="'pill t-' + item.alert.type.toLowerCase()">{{ item.alert.label }}</span>
             @if (item.reputation === 'TRUSTED') {
               <span class="pill success">Suele acertar</span>
             }

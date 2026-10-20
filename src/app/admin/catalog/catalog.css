@@ -139,7 +139,7 @@ h1 {
   background: var(--ink);
   color: var(--accent);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 800;
   text-align: center;
   box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
 }
