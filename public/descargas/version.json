@@ -1,7 +1,7 @@
 {
-  "versionCode": 7,
-  "versionName": "1.6",
+  "versionCode": 8,
+  "versionName": "1.7",
   "url": "subo.apk",
-  "notes": "• Diseño nuevo: letra más clara, colores más limpios y botones más fáciles de tocar.\n• Cada tipo de alerta tiene su propio color, en la lista y en el mapa.",
-  "notes_en": "• New look: clearer type, cleaner colors and easier-to-tap buttons.\n• Each alert type has its own color, in the list and on the map."
+  "notes": "• Diseño completamente nuevo en todas las pantallas.\n• Nueva pestaña Asistente en la barra de abajo.\n• Lista de rutas más clara, con pasaje, minutos y cuánto caminas.",
+  "notes_en": "• Completely new design on every screen.\n• New Assistant tab in the bottom bar.\n• Clearer route list with fare, minutes and walking distance."
 }
