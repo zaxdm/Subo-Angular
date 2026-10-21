@@ -256,6 +256,17 @@ export class Home implements OnDestroy {
   /** El sitio que alguien marcó tocando el mapa, para ver su calle. */
   protected readonly pin = signal<GeoPoint | null>(null);
 
+  /** El favorito que se está guardando: el próximo toque en el mapa marca dónde queda. */
+  protected readonly savingKind = signal<FavoriteKind | null>(null);
+
+  /** Casa, Trabajo y Otro, como en la app; los que ya están guardados no se ofrecen, salvo Otro. */
+  protected readonly quickKinds = computed(() => {
+    const used = new Set(this.favorites().map((place) => place.kind.code));
+    return FAVORITE_KINDS.filter(
+      (kind) => kind === OTHER_KIND || ((kind.code === 'HOME' || kind.code === 'WORK') && !used.has(kind.code)),
+    );
+  });
+
   /** La ventana que pregunta qué lugar es el que se va a guardar. */
   protected readonly choosingFavorite = signal(false);
   protected readonly favoriteKind = signal<FavoriteKind | null>(null);
@@ -489,6 +500,9 @@ export class Home implements OnDestroy {
     event.preventDefault();
   }
 
+  /** La altura de la hoja antes de abrir el asistente, para dejarla igual al salir. */
+  private sheetBeforeChat: 'low' | 'mid' | 'high' | null = null;
+
   protected toggleSheet(): void {
     this.setSheet(this.sheet() === 'high' ? 'low' : this.sheet() === 'mid' ? 'high' : 'mid');
   }
@@ -534,7 +548,7 @@ export class Home implements OnDestroy {
       this.lineLayer.addTo(map);
       this.walkLayer.addTo(map);
       this.markerLayer.addTo(map);
-      map.on('click', (event) => this.pin.set({ latitude: event.latlng.lat, longitude: event.latlng.lng }));
+      map.on('click', (event) => this.onMapClick({ latitude: event.latlng.lat, longitude: event.latlng.lng }));
       this.map = map;
       // Al subir o bajar la hoja el mapa cambia de alto, y Leaflet tiene que volver a medirse.
       this.resize = new ResizeObserver(() => map.invalidateSize());
@@ -619,6 +633,20 @@ export class Home implements OnDestroy {
         if (current) this.walkPath.set(path);
       });
       onCleanup(() => (current = false));
+    });
+
+    // En el celular, el asistente es una pantalla más: la hoja sube del todo.
+    effect(() => {
+      const chatting = this.tab() === 'assistant';
+      untracked(() => {
+        if (chatting && this.sheetBeforeChat === null) {
+          this.sheetBeforeChat = this.sheet();
+          this.setSheet('high');
+        } else if (!chatting && this.sheetBeforeChat !== null) {
+          this.setSheet(this.sheetBeforeChat);
+          this.sheetBeforeChat = null;
+        }
+      });
     });
 
     // Al salir de la cuenta, la conversación se va con ella.
@@ -916,6 +944,29 @@ export class Home implements OnDestroy {
   protected removeFavorite(place: FavoritePlace): void {
     this.favorites.update((places) => places.filter((other) => other !== place));
     storeFavorites(this.favorites());
+  }
+
+  /** Un toque en el mapa: guarda el favorito que se estaba marcando o, si no, deja la marca. */
+  private onMapClick(point: GeoPoint): void {
+    const kind = this.savingKind();
+    this.pin.set(point);
+    if (kind === null) return;
+    this.savingKind.set(null);
+    if (kind === OTHER_KIND) {
+      // «Otro» pregunta qué lugar es y su nombre.
+      this.chooseFavorite();
+      return;
+    }
+    this.favorites.update((places) => [...places, { ...point, kind, name: '' }]);
+    storeFavorites(this.favorites());
+    this.ui.notify(`${kind.label} guardado.`, 'plain');
+  }
+
+  /** Empieza a guardar un favorito: la hoja se baja para que se vea el mapa. */
+  protected startSaving(kind: FavoriteKind): void {
+    this.pin.set(null);
+    this.savingKind.set(kind);
+    this.setSheet('low');
   }
 
   /** Antes de guardar el sitio marcado se pregunta qué lugar es. */

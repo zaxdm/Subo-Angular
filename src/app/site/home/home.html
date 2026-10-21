@@ -80,11 +80,23 @@
           <span class="mi">star_border</span>
           {{ favorites().length >= maxFavorites ? 'Máximo ' + maxFavorites + ' favoritos: quita uno' : 'Guardar aquí' }}
         </button>
-      } @else if (favorites().length === 0 && !selected()) {
-        <span class="chip chip-main hint">
-          <span class="mi">star_border</span>
-          Toca el mapa para guardar tu casa, tu trabajo…
+      } @else if (savingKind(); as kind) {
+        <!-- Se está guardando un favorito: el próximo toque en el mapa es el sitio. -->
+        <span class="chip chip-main saving">
+          <span class="mi">touch_app</span>
+          Toca el mapa donde queda {{ kind.code === 'OTHER' ? 'ese lugar' : 'tu ' + kind.label.toLowerCase() }}
+          <button type="button" class="chip-remove" title="Cancelar" (click)="savingKind.set(null)">
+            <span class="mi">close</span>
+          </button>
         </span>
+      } @else if (!selected() && favorites().length < maxFavorites) {
+        <!-- Como en la app: Casa, Trabajo y Otro, que llevan a tocar el sitio en el mapa. -->
+        @for (kind of quickKinds(); track kind.code) {
+          <button type="button" class="chip chip-main add" (click)="startSaving(kind)">
+            <span class="mi">add</span>
+            {{ kind.label }}
+          </button>
+        }
       }
     </div>
   </div>
@@ -437,44 +449,60 @@
                   </span>
                   <button type="button" class="link-btn" (click)="clearSearch()">Quitar</button>
                 </div>
+                <!-- Cada forma de llegar, como en la app: la foto del micro en la cabecera y los pasos debajo. -->
                 @for (item of reaching(); track item.route.id) {
-                  <button type="button" class="line" (click)="store.selectLine(item.route.id)">
-                    <span class="line-main">
-                      <span class="thumb">
-                        @if (photoOf(item.route); as photo) {
-                          <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                  <button type="button" class="journey" (click)="store.selectLine(item.route.id)">
+                    <span class="journey-head" [style.background]="colorOf(item.route)">
+                      @if (photoOf(item.route); as photo) {
+                        <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                      }
+                      <span class="journey-top">
+                        <span class="route-badge sm">{{ item.route.letter || '·' }}</span>
+                        @if (item.route.durationMinutes > 0) {
+                          <span class="journey-pill"
+                            ><span class="mi">schedule</span> {{ item.route.durationMinutes }} min</span
+                          >
                         }
-                        <span class="route-badge" [style.background]="colorOf(item.route)">{{
-                          item.route.letter || '·'
-                        }}</span>
                       </span>
-                      <span class="line-text">
-                        <strong class="ellipsis">{{ item.route.name }}</strong>
-                        <span class="ellipsis">
+                      <span class="journey-name">
+                        <strong>{{ item.route.name }}</strong>
+                        <span class="journey-sub">
+                          <span class="ellipsis">
+                            <span class="mi">directions_walk</span>
+                            {{ walk((item.boardMeters ?? 0) + item.alightMeters) }} a pie
+                          </span>
+                          <strong>S/ {{ item.route.fare.toFixed(2) }}</strong>
+                        </span>
+                      </span>
+                    </span>
+                    <span class="journey-steps" [style.--route]="colorOf(item.route)">
+                      @if (item.boardMeters !== null) {
+                        <span class="step">
+                          <span class="step-icon"><span class="mi">directions_walk</span></span>
+                          <span class="step-text">Camina {{ walk(item.boardMeters) }} hasta el paradero</span>
+                          <span class="step-min">{{ walkMinutes(item.boardMeters) }} min</span>
+                        </span>
+                      }
+                      <span class="step">
+                        <span class="step-icon ride">{{ item.route.letter || '·' }}</span>
+                        <span class="step-text">
+                          Toma {{ item.route.name }}
                           @if (directions().get(item.route); as way) {
                             <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
                           }
-                          {{ item.route.origin }} — {{ item.route.destination }}
+                          @if (item.wrongWay) {
+                            <small>Da toda la vuelta antes de llegar</small>
+                          }
                         </span>
                       </span>
-                      <span class="line-fare">
-                        <strong>S/ {{ item.route.fare.toFixed(2) }}</strong>
-                        @if (item.route.durationMinutes > 0) {
-                          <span>{{ item.route.durationMinutes }} min</span>
-                        }
+                      <span class="step">
+                        <span class="step-icon"><span class="mi">directions_walk</span></span>
+                        <span class="step-text">Baja y camina {{ walk(item.alightMeters) }}</span>
+                        <span class="step-min">{{ walkMinutes(item.alightMeters) }} min</span>
                       </span>
-                    </span>
-                    <!-- La franja de caminata: lo que se anda para subir y al bajar. -->
-                    <span class="walk-strip">
-                      <span class="mi">directions_walk</span>
-                      <span class="ellipsis">
-                        @if (item.boardMeters !== null) {
-                          Subes a {{ walk(item.boardMeters) }} ·
-                        }
-                        te deja a {{ walk(item.alightMeters) }}
-                        @if (item.wrongWay) {
-                          · da toda la vuelta
-                        }
+                      <span class="step">
+                        <span class="step-icon end"><span class="mi">location_on</span></span>
+                        <span class="step-text">Llegas a {{ destination()?.name }}</span>
                       </span>
                     </span>
                   </button>

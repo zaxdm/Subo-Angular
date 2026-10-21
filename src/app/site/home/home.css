@@ -1592,3 +1592,195 @@ button.chip-main:not(:disabled) {
   overflow: visible;
   padding: 24px 28px;
 }
+
+/* --- Cada forma de llegar al sitio buscado, como la tarjeta de la app --- */
+.journey {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.journey:hover {
+  border-color: var(--ink);
+}
+
+.journey-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 132px;
+  padding: 12px 14px;
+  color: #fff;
+}
+
+.journey-head img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* El velo oscuro que deja leer el texto encima de la foto. */
+.journey-head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 15%), rgb(0 0 0 / 65%));
+}
+
+.journey-top,
+.journey-name {
+  position: relative;
+  z-index: 1;
+}
+
+.journey-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.journey-top .route-badge {
+  background: rgb(0 0 0 / 45%);
+}
+
+.journey-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.journey-pill .mi {
+  font-size: 15px;
+}
+
+.journey-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.journey-name > strong {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.journey-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.journey-sub .mi {
+  font-size: 15px;
+  vertical-align: -3px;
+}
+
+.journey-sub strong {
+  flex: none;
+  font-size: 15px;
+}
+
+.journey-steps {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 14px 10px;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* La línea que une un paso con el siguiente. */
+.step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 30px;
+  bottom: -10px;
+  border-left: 2px dotted var(--field-line);
+}
+
+.step-icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--chip);
+  color: var(--ink);
+}
+
+.step-icon .mi {
+  font-size: 17px;
+}
+
+.step-icon.ride {
+  background: var(--route, var(--ink));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.step-icon.end {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.step-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.step-text small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.step-min {
+  flex: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Los atajos para guardar Casa, Trabajo u Otro. */
+.chip.add {
+  border-style: dashed;
+}
+
+.chip.saving {
+  border-color: var(--ink);
+  background: var(--accent-soft);
+  padding-right: 0;
+}
