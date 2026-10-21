@@ -1,7 +1,7 @@
 {
-  "versionCode": 10,
-  "versionName": "1.9",
+  "versionCode": 11,
+  "versionName": "2.0",
   "url": "subo.apk",
-  "notes": "• Premium: al llegar a tu parada, Subo puede avisar por SMS a quien elijas, aunque no tengas internet. Actívalo en Ajustes.\n• Si el SMS no sale (sin saldo o sin señal), te avisamos para reintentarlo o mandarlo por WhatsApp.",
-  "notes_en": "• Premium: when you reach your stop, Subo can text whoever you choose, even without internet. Turn it on in Settings.\n• If the SMS fails (no credit or no signal), we let you know so you can retry or send it by WhatsApp."
+  "notes": "• El asistente se abre como una pantalla más, no como ventana.\n• La foto del micro sale en cada forma de llegar.\n• Para guardar tu casa o trabajo, ahora tocas el sitio en el mapa.\n• Nueva sección «Nosotros» en tu perfil.",
+  "notes_en": "• The assistant opens as its own screen, not a pop-up.\n• The bus photo shows on each way to get there.\n• To save your home or work, now you tap the spot on the map.\n• New «About us» section in your profile."
 }
