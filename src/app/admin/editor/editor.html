@@ -131,6 +131,9 @@
       @if (mode() === 'stops') {
         Haz clic en el mapa para añadir puntos de referencia en el orden del recorrido. Arrástralos para corregirlos.
         Con «Trazar por las calles» el recorrido se dibuja solo entre ellos.
+      } @else if (mode() === 'guide') {
+        Haz clic en la salida y luego en cada esquina donde gira el micro, en orden: la línea sigue las calles sola. Si
+        un tramo se desvía, arrastra la esquina o pon otra en medio. Si ya hay un trazado, sigue desde su final.
       } @else {
         Marca las esquinas y calles en el orden de circulación. Sin trazado, la app lo estima entre puntos de
         referencia.
@@ -152,7 +155,12 @@
         }
         {{ tracing() ? 'Trazando…' : 'Trazar por las calles' }}
       </button>
-      <button type="button" class="btn outline" [disabled]="locked()" (click)="undo()">Deshacer último punto</button>
+      <button type="button" class="btn outline" [disabled]="locked()" (click)="undo()">
+        {{ mode() === 'guide' ? 'Deshacer última esquina' : 'Deshacer último punto' }}
+      </button>
+      @if (mode() === 'guide' && tracing()) {
+        <span class="small tracing"><span class="spinner"></span> Siguiendo las calles…</span>
+      }
       @if (path().length > 0) {
         <button type="button" class="btn outline" [disabled]="locked()" (click)="clearPath()">Borrar trazado</button>
       }

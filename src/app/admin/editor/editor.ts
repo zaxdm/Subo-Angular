@@ -30,8 +30,11 @@ import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
 import { RoutePhoto } from '../../shared/route-photo/route-photo';
 
-/** Qué añade un clic en el mapa. */
-type MapMode = 'stops' | 'path';
+/**
+ * Qué añade un clic en el mapa: un punto de referencia, una esquina por la que
+ * pasa (y el tramo se dibuja solo por las calles) o un punto del trazado a mano.
+ */
+type MapMode = 'stops' | 'guide' | 'path';
 
 /** Los datos de la ruta que se escriben en un campo de texto. */
 type Key =
@@ -104,8 +107,9 @@ export class Editor implements OnInit, OnDestroy {
 
   protected readonly statuses = ROUTE_STATUSES;
   protected readonly modes: { id: MapMode; label: string }[] = [
-    { id: 'stops', label: 'Añadir puntos de referencia' },
-    { id: 'path', label: 'Dibujar recorrido' },
+    { id: 'stops', label: 'Puntos de referencia' },
+    { id: 'guide', label: 'Trazar siguiendo calles' },
+    { id: 'path', label: 'Dibujar a mano' },
   ];
 
   /** Los datos del micro, fila a fila. */
@@ -163,6 +167,17 @@ export class Editor implements OnInit, OnDestroy {
   protected readonly path = signal<GeoPoint[]>([]);
 
   protected readonly mode = signal<MapMode>('stops');
+
+  /**
+   * Las esquinas marcadas en «Trazar siguiendo calles», y el tramo por las
+   * calles entre cada una y la siguiente. Solo sirven mientras se dibuja: lo
+   * que se guarda es el trazado que sale de ellas.
+   */
+  protected readonly guides = signal<GeoPoint[]>([]);
+  private segments: GeoPoint[][] = [];
+
+  /** El trazado que ya había al empezar a marcar esquinas: lo nuevo sigue desde su final. */
+  private prefix: GeoPoint[] = [];
   protected readonly busy = signal(false);
   protected readonly uploading = signal(false);
   protected readonly tracing = signal(false);
@@ -230,6 +245,13 @@ export class Editor implements OnInit, OnDestroy {
       if (!this.ready()) return;
       this.drawLine();
       this.drawStops();
+      this.drawGuides();
+    });
+
+    // Al cambiar de modo, las esquinas se olvidan; el trazado se queda y se puede seguir desde su final.
+    effect(() => {
+      this.mode();
+      this.resetGuides();
     });
   }
 
@@ -289,7 +311,10 @@ export class Editor implements OnInit, OnDestroy {
     };
   }
 
-  protected setValue(field: Field | { key: Key; only?: undefined }, element: HTMLInputElement | HTMLTextAreaElement): void {
+  protected setValue(
+    field: Field | { key: Key; only?: undefined },
+    element: HTMLInputElement | HTMLTextAreaElement,
+  ): void {
     let value = element.value;
     if (field.only === 'digits') value = value.replace(/\D/g, '');
     if (field.only === 'decimal') value = value.replace(/[^0-9.,]/g, '');
@@ -310,6 +335,10 @@ export class Editor implements OnInit, OnDestroy {
 
   private onMapClick(point: L.LatLng): void {
     if (this.locked()) return;
+    if (this.mode() === 'guide') {
+      void this.addGuide({ latitude: point.lat, longitude: point.lng });
+      return;
+    }
     if (this.mode() === 'path') {
       if (this.path().length >= MAX_PATH_POINTS) return;
       this.path.update((path) => [...path, { latitude: point.lat, longitude: point.lng }]);
@@ -321,6 +350,89 @@ export class Editor implements OnInit, OnDestroy {
       ]);
     }
     this.dirty = true;
+  }
+
+  // --- Trazar siguiendo calles ---
+
+  private resetGuides(): void {
+    this.guides.set([]);
+    this.segments = [];
+    this.prefix = [];
+  }
+
+  /** Una esquina nueva: el tramo desde la anterior se dibuja por las calles. */
+  private async addGuide(point: GeoPoint): Promise<void> {
+    const guides = this.guides();
+    if (guides.length === 0) {
+      // Con un trazado ya hecho, se sigue desde su final; si no, esta es la salida.
+      this.prefix = this.path();
+      const last = this.prefix[this.prefix.length - 1];
+      if (last === undefined) {
+        this.guides.set([point]);
+        return;
+      }
+      this.guides.set([last, point]);
+    } else {
+      this.guides.set([...guides, point]);
+    }
+    const all = this.guides();
+    this.segments.push(await this.streetSegment(all[all.length - 2], point));
+    this.rebuildPath();
+  }
+
+  /** El tramo por las calles entre dos esquinas; si el servicio no contesta, la línea recta. */
+  private async streetSegment(from: GeoPoint, to: GeoPoint): Promise<GeoPoint[]> {
+    this.tracing.set(true);
+    const traced = await traceStreets([from, to]);
+    this.tracing.set(false);
+    if (traced !== null) return traced.points;
+    this.ui.notify(
+      'No se pudo seguir las calles en ese tramo: quedó en línea recta. Prueba con una esquina más cerca.',
+    );
+    return [from, to];
+  }
+
+  private rebuildPath(): void {
+    const path = [...this.prefix];
+    for (const segment of this.segments) path.push(...(path.length === 0 ? segment : segment.slice(1)));
+    this.path.set(path.slice(0, MAX_PATH_POINTS));
+    this.dirty = true;
+  }
+
+  /** Se movió una esquina: se rehacen los dos tramos que la tocan. */
+  private async moveGuide(index: number, point: GeoPoint): Promise<void> {
+    const guides = [...this.guides()];
+    guides[index] = point;
+    this.guides.set(guides);
+    if (index > 0) this.segments[index - 1] = await this.streetSegment(guides[index - 1], point);
+    if (index < guides.length - 1) {
+      // El servicio pide no pasar de una petición por segundo.
+      if (index > 0) await new Promise((resolve) => setTimeout(resolve, 1000));
+      this.segments[index] = await this.streetSegment(point, guides[index + 1]);
+    }
+    this.rebuildPath();
+  }
+
+  private drawGuides(): void {
+    if (this.mode() !== 'guide') return;
+    const draggable = !this.locked();
+    this.guides().forEach((guide, index) => {
+      // La primera, si es el final de un trazado anterior, no se mueve: ahí empieza lo nuevo.
+      const fixed = index === 0 && this.prefix.length > 0;
+      const element = document.createElement('div');
+      element.className = 'mk mk-guide';
+      const marker = L.marker(latLng(guide), {
+        icon: L.divIcon({ className: '', html: element, iconSize: [16, 16] }),
+        title: fixed ? 'Final del trazado anterior' : 'Arrástrala para corregir el tramo',
+        draggable: draggable && !fixed,
+        zIndexOffset: 500,
+      });
+      marker.on('dragend', () => {
+        const { lat, lng } = marker.getLatLng();
+        void this.moveGuide(index, { latitude: lat, longitude: lng });
+      });
+      marker.addTo(this.markerLayer);
+    });
   }
 
   private drawLine(): void {
@@ -383,6 +495,16 @@ export class Editor implements OnInit, OnDestroy {
   }
 
   protected undo(): void {
+    if (this.mode() === 'guide') {
+      const guides = this.guides();
+      if (guides.length === 0) return;
+      this.segments.pop();
+      // Sin tramos ya no queda nada de esta tanda: se vuelve al trazado de antes.
+      const rest = guides.slice(0, -1);
+      this.guides.set(rest.length === 1 && this.prefix.length > 0 ? [] : rest);
+      this.rebuildPath();
+      return;
+    }
     const points = this.mode() === 'path' ? this.path : this.stops;
     if (points().length === 0) return;
     (points as typeof this.path).update((list) => list.slice(0, -1));
@@ -397,6 +519,7 @@ export class Editor implements OnInit, OnDestroy {
       action: 'Borrar trazado',
     });
     if (!confirmed) return;
+    this.resetGuides();
     this.path.set([]);
     this.dirty = true;
   }
@@ -423,6 +546,7 @@ export class Editor implements OnInit, OnDestroy {
       this.store.onError(new ApiError('No se pudo trazar por las calles. Inténtalo de nuevo en un momento.'));
       return;
     }
+    this.resetGuides();
     this.path.set(traced.points);
     this.dirty = true;
     this.ui.notify(
