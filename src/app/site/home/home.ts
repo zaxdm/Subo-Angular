@@ -12,7 +12,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 
 import { Api } from '../../core/api';
@@ -41,6 +40,7 @@ import {
 } from '../../core/models';
 import { directionsOf } from '../../core/directions';
 import { metersToLine, spotOnLine } from '../../core/nearby';
+import { PlaceSuggestion, StreetPath, suggestPlaces, walkingPath } from '../../core/street';
 import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
 
@@ -115,8 +115,8 @@ const TRUJILLO: L.LatLngTuple = [-8.112, -79.0288];
 const MIN_ZOOM = 10;
 const MAX_ZOOM = 19;
 
-/** Lo que se espera a que alguien deje de escribir antes de buscar a dónde va. */
-const SEARCH_PAUSE_MS = 600;
+/** Lo que se espera a que alguien deje de escribir antes de sugerirle lugares. */
+const SEARCH_PAUSE_MS = 400;
 
 /** Una distancia a pie, como se dice: «250 m» o «1,4 km». */
 const walk = (meters: number): string =>
@@ -149,7 +149,7 @@ function badge(className: string, text = '', size = 30, color?: string): L.DivIc
  * asistente pide sesión.
  */
 @Component({
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule],
   selector: 'app-home',
   styleUrl: './home.css',
   templateUrl: './home.html',
@@ -190,6 +190,24 @@ export class Home implements OnDestroy {
   protected readonly directions = computed(() => directionsOf(this.store.lines()));
   protected readonly safeUrl = safeUrl;
 
+  /**
+   * La foto de cada micro: la ida y la vuelta son el mismo micro, así que si
+   * solo una tiene foto, la otra la toma prestada.
+   */
+  private readonly photos = computed(() => {
+    const byName = new Map<string, string>();
+    for (const route of this.store.lines()) {
+      const photo = safeUrl(route.imageUrl);
+      const key = route.name.trim().toLowerCase();
+      if (photo !== null && !byName.has(key)) byName.set(key, photo);
+    }
+    return byName;
+  });
+
+  protected photoOf(route: BusRoute): string | null {
+    return safeUrl(route.imageUrl) ?? this.photos().get(route.name.trim().toLowerCase()) ?? null;
+  }
+
   protected readonly tab = signal<Tab>('lines');
   protected readonly lineFilter = signal<LineFilter>('all');
 
@@ -197,9 +215,29 @@ export class Home implements OnDestroy {
   protected readonly alertType = signal<string | null>(null);
   protected readonly search = signal('');
 
+  /** Lo escrito en el buscador de micros de la lista: nombre, letra o empresa. */
+  protected readonly lineQuery = signal('');
+
+  /** Los lugares que sugiere el buscador del mapa mientras se escribe. */
+  protected readonly suggestions = signal<PlaceSuggestion[]>([]);
+  protected readonly suggesting = signal(false);
+
+  /** La lista de sugerencias está abierta (el buscador tiene el foco). */
+  protected readonly suggestOpen = signal(false);
+
   /** El sitio al que va quien escribió en el buscador, si sale en el mapa. */
   protected readonly destination = signal<Destination | null>(null);
   protected readonly searchingPlace = signal(false);
+
+  /** El camino a pie hasta el paradero de la ruta abierta, por las calles. */
+  protected readonly walkPath = signal<StreetPath | null>(null);
+
+  /** La ventana para reportar una alerta desde la web. */
+  protected readonly reporting = signal(false);
+  protected readonly reportType = signal<string | null>(null);
+  protected readonly reportPlace = signal('');
+  protected readonly reportComment = signal('');
+  protected readonly sendingReport = signal(false);
   protected readonly question = signal('');
   protected readonly messages = signal<Message[]>([]);
   protected readonly asking = signal(false);
@@ -246,7 +284,7 @@ export class Home implements OnDestroy {
   );
 
   protected readonly visible = computed(() => {
-    const query = this.search().trim().toLowerCase();
+    const query = this.lineQuery().trim().toLowerCase();
     return this.store
       .lines()
       .filter((route) =>
@@ -338,6 +376,24 @@ export class Home implements OnDestroy {
     return name === '' ? '' : `Hola, ${name} · `;
   });
 
+  /** Lo que hay que andar hasta el paradero: por las calles si se sabe el camino, en línea recta si no. */
+  protected readonly walkMeters = computed(() => {
+    const board = this.boarding();
+    if (board === null) return null;
+    return this.walkPath()?.meters ?? board.meters;
+  });
+
+  /** Dónde se pone la alerta que se reporta: el sitio marcado, donde está quien mira o el centro del mapa. */
+  protected reportSpot(): { point: GeoPoint; where: string } | null {
+    const pin = this.pin();
+    if (pin !== null) return { point: pin, where: 'En el sitio que marcaste en el mapa' };
+    const me = this.me();
+    if (me !== null) return { point: { latitude: me.latitude, longitude: me.longitude }, where: 'Donde estás ahora' };
+    const center = this.map?.getCenter();
+    if (center) return { point: { latitude: center.lat, longitude: center.lng }, where: 'En el centro del mapa' };
+    return null;
+  }
+
   /** Los minutos andando para [meters], al menos uno. */
   protected walkMinutes(meters: number): number {
     return Math.max(1, Math.round(meters / WALK_METERS_PER_MINUTE));
@@ -370,6 +426,10 @@ export class Home implements OnDestroy {
   private tiles?: L.TileLayer;
   private readonly lineLayer = L.layerGroup();
   private readonly markerLayer = L.layerGroup();
+  private readonly walkLayer = L.layerGroup();
+
+  /** El nombre del lugar elegido: al ponerlo en el buscador no se vuelve a sugerir. */
+  private chosenName: string | null = null;
   private framed = false;
 
   /** La línea que se está abriendo viene del asistente: la pestaña no cambia. */
@@ -393,6 +453,7 @@ export class Home implements OnDestroy {
       });
       L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
       this.lineLayer.addTo(map);
+      this.walkLayer.addTo(map);
       this.markerLayer.addTo(map);
       map.on('click', (event) => this.pin.set({ latitude: event.latlng.lat, longitude: event.latlng.lng }));
       this.map = map;
@@ -419,6 +480,10 @@ export class Home implements OnDestroy {
       if (this.ready()) this.drawMarkers();
     });
 
+    effect(() => {
+      if (this.ready()) this.drawWalk();
+    });
+
     // Al abrir o cerrar una línea, o al llegar el catálogo, el mapa la encuadra.
     effect(() => {
       this.id();
@@ -437,25 +502,41 @@ export class Home implements OnDestroy {
       });
     });
 
-    // Lo escrito en el buscador se busca también como un sitio del mapa, cuando
-    // se deja de escribir: así «Tecsup» da las líneas que llevan hasta allí.
+    // Mientras se escribe en el buscador del mapa se sugieren lugares, como en
+    // la app: así se elige el sitio correcto en vez de adivinarlo por el nombre.
     effect((onCleanup) => {
       const query = this.search().trim();
+      if (query === this.chosenName) return;
+      this.chosenName = null;
       this.destination.set(null);
-      this.searchingPlace.set(query.length >= 3);
-      if (query.length < 3) return;
+      this.searchingPlace.set(false);
+      this.suggestions.set([]);
+      this.suggesting.set(query.length >= 2);
+      if (query.length < 2) return;
       let current = true;
       const timer = setTimeout(async () => {
-        const destination = await this.api.destination(query, untracked(this.me)).catch(() => null);
+        const places = await suggestPlaces(query, untracked(this.me));
         if (!current) return;
-        this.searchingPlace.set(false);
-        this.destination.set(destination);
-        if (destination !== null) this.showDestination(destination);
+        this.suggesting.set(false);
+        this.suggestions.set(places ?? []);
       }, SEARCH_PAUSE_MS);
       onCleanup(() => {
         current = false;
         clearTimeout(timer);
       });
+    });
+
+    // El camino a pie hasta el paradero, por las calles, como en la app.
+    effect((onCleanup) => {
+      const board = this.boarding();
+      const me = this.me();
+      this.walkPath.set(null);
+      if (board === null || me === null) return;
+      let current = true;
+      void walkingPath(me, board.stop).then((path) => {
+        if (current) this.walkPath.set(path);
+      });
+      onCleanup(() => (current = false));
     });
 
     // Al salir de la cuenta, la conversación se va con ella.
@@ -497,6 +578,33 @@ export class Home implements OnDestroy {
     L.polyline(points, { weight: 6, color: this.colorOf(selected), opacity: 1 })
       .bindTooltip(routeTitle(selected), { sticky: true, className: 'line-tip', direction: 'right', offset: [12, 12] })
       .addTo(this.lineLayer);
+  }
+
+  /** La guía a pie: puntos azules desde quien mira hasta su paradero, como en Google Maps. */
+  private drawWalk(): void {
+    this.walkLayer.clearLayers();
+    const board = this.boarding();
+    const me = this.me();
+    if (board === null || me === null) return;
+    const path = this.walkPath()?.points ?? [];
+    // El camino empieza y acaba en la calle más cercana: se une con quien mira y con el paradero.
+    const line = [me, ...path, board.stop].map(latLng);
+    L.polyline(line, { weight: 8, color: '#fff', opacity: 0.9, interactive: false }).addTo(this.walkLayer);
+    L.polyline(line, { weight: 5, color: MAP_BLUE, opacity: 1, dashArray: '2 9' })
+      .bindTooltip(`Camina ${walk(this.walkMeters() ?? board.meters)} hasta ${board.stop.name}`, {
+        sticky: true,
+        className: 'line-tip',
+      })
+      .addTo(this.walkLayer);
+  }
+
+  /** Enseña en el mapa el camino a pie desde quien mira hasta el paradero. */
+  protected showWalk(): void {
+    const board = this.boarding();
+    const me = this.me();
+    if (board === null || me === null || this.map === undefined) return;
+    const points = [me, board.stop, ...(this.walkPath()?.points ?? [])].map(latLng);
+    this.map.flyToBounds(L.latLngBounds(points), { padding: [80, 80], maxZoom: 18, duration: 0.45 });
   }
 
   private drawMarkers(): void {
@@ -613,6 +721,99 @@ export class Home implements OnDestroy {
       viewpoint: `${point.latitude},${point.longitude}`,
     });
     window.open(`https://www.google.com/maps/@?${query}`, '_blank', 'noopener');
+  }
+
+  // --- El buscador del mapa ---
+
+  /** Elige un lugar de las sugerencias: lo marca y busca las rutas que llevan hasta él. */
+  protected async choosePlace(place: PlaceSuggestion): Promise<void> {
+    this.chosenName = place.name;
+    this.search.set(place.name);
+    this.suggestions.set([]);
+    this.suggesting.set(false);
+    this.suggestOpen.set(false);
+    this.tab.set('lines');
+    this.showDestination(place);
+    await this.findDestination(place.name, place);
+  }
+
+  /** Con Intro sin elegir: la primera sugerencia o, si no hay, lo que diga el servidor por el nombre. */
+  protected async searchPlace(): Promise<void> {
+    const first = this.suggestions()[0];
+    if (first) return this.choosePlace(first);
+    const query = this.search().trim();
+    if (query.length < 3) return;
+    this.chosenName = query;
+    this.suggestOpen.set(false);
+    this.tab.set('lines');
+    const destination = await this.findDestination(query, null);
+    if (destination !== null) this.showDestination(destination);
+  }
+
+  private async findDestination(name: string, to: GeoPoint | null): Promise<Destination | null> {
+    this.searchingPlace.set(true);
+    this.destination.set(null);
+    const destination = await this.api.destination(name, this.me(), to).catch(() => null);
+    // Mientras tanto se escribió o se eligió otra cosa.
+    if (this.chosenName !== name) return null;
+    this.searchingPlace.set(false);
+    this.destination.set(destination);
+    if (destination === null) this.ui.notify('No se encontró ese lugar en el mapa. Prueba con otro nombre.', 'plain');
+    return destination;
+  }
+
+  /** Vacía el buscador del mapa y quita el lugar buscado. */
+  protected clearSearch(): void {
+    if (this.pinIsDestination()) this.pin.set(null);
+    this.chosenName = null;
+    this.search.set('');
+    this.destination.set(null);
+    this.searchingPlace.set(false);
+    this.suggestions.set([]);
+  }
+
+  /** La lista se cierra un poco después de perder el foco, para que el toque en una sugerencia llegue. */
+  protected closeSuggestions(): void {
+    setTimeout(() => this.suggestOpen.set(false), 200);
+  }
+
+  // --- Reportar una alerta ---
+
+  protected openReport(): void {
+    if (this.store.session() === null) {
+      this.store.openLogin();
+      return;
+    }
+    this.reportType.set(null);
+    this.reportPlace.set('');
+    this.reportComment.set('');
+    this.reporting.set(true);
+  }
+
+  protected async sendReport(): Promise<void> {
+    const type = this.reportType();
+    const spot = this.reportSpot();
+    if (type === null || spot === null || this.sendingReport()) return;
+    this.sendingReport.set(true);
+    try {
+      const alert = await this.api.reportAlert({
+        type,
+        ...spot.point,
+        placeName: this.reportPlace().trim() || null,
+        comment: this.reportComment().trim() || null,
+      });
+      this.reporting.set(false);
+      this.alerts.update((alerts) => [alert, ...alerts.filter((other) => other.id !== alert.id)]);
+      this.alertType.set(null);
+      this.tab.set('alerts');
+      this.glideTo(alert, 16);
+      this.ui.notify('Gracias. Tu alerta ya se ve en el mapa.', 'plain');
+    } catch (error) {
+      this.ui.notify(messageOf(error, 'No se pudo publicar la alerta. Inténtalo de nuevo.'), 'plain');
+      if (error instanceof ApiError && error.unauthorized) this.store.onError(error);
+    } finally {
+      this.sendingReport.set(false);
+    }
   }
 
   // --- Favoritos ---

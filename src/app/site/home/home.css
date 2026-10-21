@@ -1316,3 +1316,239 @@ button.chip-main:not(:disabled) {
   color: var(--ink-soft);
   border: 1px dashed currentColor;
 }
+
+/* --- La foto del micro en la lista: la insignia de la ruta va en su esquina. --- */
+.thumb {
+  position: relative;
+  flex: none;
+  width: 64px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--chip);
+  overflow: hidden;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb .route-badge {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 4px;
+  border-radius: 7px;
+  border: 1.5px solid #fff;
+  font-size: 11px;
+}
+
+/* Sin foto, la insignia ocupa el sitio entero, como antes. */
+.thumb:not(:has(img:not([hidden]))) .route-badge {
+  inset: 0;
+  min-width: 0;
+  height: auto;
+  border: 0;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+.thumb.sm {
+  width: 52px;
+  height: 38px;
+  border-radius: 10px;
+}
+
+.mini-line .mini-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  max-width: 180px;
+  min-width: 0;
+}
+
+.mini-line {
+  padding: 4px 12px 4px 4px;
+  border-radius: 14px;
+}
+
+/* --- El buscador del mapa y sus sugerencias --- */
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+.pill-clear {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--chip);
+  cursor: pointer;
+}
+
+.pill-clear .mi {
+  font-size: 18px;
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  max-height: 340px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px rgb(21 23 28 / 14%);
+  overflow-y: auto;
+}
+
+.suggest-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.suggestion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  background: var(--paper);
+}
+
+.suggestion > .mi {
+  flex: none;
+  color: var(--muted);
+  font-size: 20px;
+}
+
+.suggestion-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.suggestion-text strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+/* --- Buscar un micro en la lista --- */
+.line-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 16px 0;
+  padding: 0 8px 0 12px;
+  height: 44px;
+  border: 1px solid var(--field-line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.line-search:focus-within {
+  border-color: var(--ink);
+}
+
+.line-search > .mi {
+  color: var(--muted);
+  font-size: 20px;
+}
+
+.line-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font-size: 14px;
+}
+
+/* Los filtros de alertas bajan de línea en vez de cortarse. */
+.pills.wrap {
+  flex: none;
+  flex-wrap: wrap;
+}
+
+.group-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.link-btn {
+  flex: none;
+  padding: 2px 6px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.detail-close {
+  margin-left: auto;
+  flex: none;
+}
+
+.kind .alert-tile {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.report-where {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--body);
+  font-size: 13px;
+}
+
+.report-where .mi {
+  font-size: 18px;
+  color: var(--accent-text);
+}
+
+.report-where small {
+  color: var(--muted);
+}
+
+.dialog .field + .field {
+  margin-top: 10px;
+}
+
+.dialog textarea {
+  resize: vertical;
+}

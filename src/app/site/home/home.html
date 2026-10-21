@@ -8,17 +8,53 @@
         <span class="mi">arrow_back</span>
       </button>
     } @else {
-      <label class="search-pill">
-        <span class="search-icon"><span class="mi">place</span></span>
-        <input
-          type="search"
-          placeholder="¿A dónde vas?"
-          aria-label="Busca un lugar, una zona o una ruta"
-          [(ngModel)]="search"
-          (focus)="tab.set('lines')"
-        />
-        <span class="mi">search</span>
-      </label>
+      <div class="search-box">
+        <form class="search-pill" (ngSubmit)="searchPlace()">
+          <span class="search-icon"><span class="mi">place</span></span>
+          <input
+            name="place"
+            placeholder="¿A dónde vas?"
+            aria-label="Busca un lugar o una zona"
+            autocomplete="off"
+            [(ngModel)]="search"
+            (focus)="suggestOpen.set(true); tab.set('lines')"
+            (blur)="closeSuggestions()"
+          />
+          @if (search()) {
+            <button type="button" class="pill-clear" title="Borrar la búsqueda" (click)="clearSearch()">
+              <span class="mi">close</span>
+            </button>
+          } @else {
+            <span class="mi">search</span>
+          }
+        </form>
+        <!-- Los lugares que coinciden, para elegir el correcto, como en la app. -->
+        @if (suggestOpen() && search().trim().length >= 2 && !destination()) {
+          <div class="suggestions">
+            @if (suggesting()) {
+              <p class="suggest-note"><span class="spinner"></span> Buscando lugares…</p>
+            } @else if (suggestions().length === 0) {
+              <p class="suggest-note">No hay lugares con ese nombre. Prueba con otro o pulsa Intro.</p>
+            }
+            @for (place of suggestions(); track $index) {
+              <button
+                type="button"
+                class="suggestion"
+                (mousedown)="$event.preventDefault()"
+                (click)="choosePlace(place)"
+              >
+                <span class="mi">location_on</span>
+                <span class="suggestion-text">
+                  <strong class="ellipsis">{{ place.name }}</strong>
+                  @if (place.detail) {
+                    <span class="ellipsis">{{ place.detail }}</span>
+                  }
+                </span>
+              </button>
+            }
+          </div>
+        }
+      </div>
     }
 
     <!-- Los favoritos y, con un sitio marcado, el botón de guardarlo. -->
@@ -80,8 +116,18 @@
         <div class="nearby-lines">
           @for (route of near(); track route.id) {
             <button type="button" class="mini-line" (click)="store.selectLine(route.id)">
-              <span class="route-badge sm" [style.background]="colorOf(route)">{{ route.letter || '·' }}</span>
-              {{ route.name }}
+              <span class="thumb sm">
+                @if (photoOf(route); as photo) {
+                  <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                }
+                <span class="route-badge" [style.background]="colorOf(route)">{{ route.letter || '·' }}</span>
+              </span>
+              <span class="mini-text">
+                <strong class="ellipsis">{{ route.name }}</strong>
+                @if (directions().get(route); as way) {
+                  <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
+                }
+              </span>
             </button>
           }
         </div>
@@ -168,6 +214,9 @@
                 {{ route.origin }} → {{ route.destination }}
               </p>
             </div>
+            <button type="button" class="close detail-close" title="Quitar esta ruta" (click)="store.selectLine(null)">
+              <span class="mi">close</span>
+            </button>
           </div>
 
           <!-- Las tres casillas de la ficha: el pasaje va en el amarillo suave. -->
@@ -188,11 +237,13 @@
 
           <!-- La tarjeta petróleo: lo que hay que andar hasta el paradero, o el botón para saberlo. -->
           @if (boarding(); as board) {
-            <button type="button" class="walk-card" (click)="glideTo(board.stop, 17)">
+            <button type="button" class="walk-card" title="Ver el camino en el mapa" (click)="showWalk()">
               <span class="walk-icon"><span class="mi">directions_walk</span></span>
               <span class="walk-text">
-                <strong>Camina {{ walk(board.meters) }} hasta tu paradero</strong>
-                <span class="ellipsis">{{ board.stop.name }} · {{ walkMinutes(board.meters) }} min a pie</span>
+                <strong>Camina {{ walk(walkMeters() ?? board.meters) }} hasta tu paradero</strong>
+                <span class="ellipsis"
+                  >{{ board.stop.name }} · {{ walkMinutes(walkMeters() ?? board.meters) }} min a pie · ver camino</span
+                >
               </span>
               <span class="mi">chevron_right</span>
             </button>
@@ -218,7 +269,7 @@
             </button>
           </div>
 
-          @if (safeUrl(route.imageUrl); as photo) {
+          @if (photoOf(route); as photo) {
             <img class="detail-photo" [src]="photo" alt="" (error)="hide($event)" />
           }
 
@@ -320,6 +371,22 @@
             </div>
           }
 
+          <!-- Buscar un micro por su nombre, su letra, su empresa o una calle por la que pasa. -->
+          <label class="line-search">
+            <span class="mi">directions_bus</span>
+            <input
+              type="search"
+              placeholder="Buscar micro: nombre, letra o empresa"
+              aria-label="Buscar micro"
+              [(ngModel)]="lineQuery"
+            />
+            @if (lineQuery()) {
+              <button type="button" class="pill-clear" title="Borrar" (click)="lineQuery.set('')">
+                <span class="mi">close</span>
+              </button>
+            }
+          </label>
+
           <!-- Las pastillas de la lista: la elegida va en tinta. -->
           <div class="chip-row pills">
             <button type="button" [class.on]="lineFilter() === 'near'" [disabled]="locating()" (click)="showNear()">
@@ -330,7 +397,7 @@
             </button>
           </div>
 
-          @if (rows().length === 0 && reaching().length === 0 && !searchingPlace()) {
+          @if (rows().length === 0 && !destination() && !searchingPlace()) {
             <div class="empty">
               <span class="empty-icon"><span class="mi">search_off</span></span>
               <strong>Nada por aquí</strong>
@@ -350,16 +417,24 @@
             <div class="lines">
               <!-- Lo escrito también se busca como un sitio: primero, las rutas que llevan hasta él. -->
               @if (destination(); as place) {
-                <p class="group">
-                  {{ place.far ? 'Ninguna ruta deja cerca de ' : 'Para llegar a ' }}{{ place.name
-                  }}{{ place.far ? '. Las que más se acercan:' : '' }}
-                </p>
+                <div class="group group-row">
+                  <span>
+                    {{ place.far ? 'Ninguna ruta deja cerca de ' : 'Para llegar a ' }}{{ place.name
+                    }}{{ place.far ? '. Las que más se acercan:' : '' }}
+                  </span>
+                  <button type="button" class="link-btn" (click)="clearSearch()">Quitar</button>
+                </div>
                 @for (item of reaching(); track item.route.id) {
                   <button type="button" class="line" (click)="store.selectLine(item.route.id)">
                     <span class="line-main">
-                      <span class="route-badge" [style.background]="colorOf(item.route)">{{
-                        item.route.letter || '·'
-                      }}</span>
+                      <span class="thumb">
+                        @if (photoOf(item.route); as photo) {
+                          <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                        }
+                        <span class="route-badge" [style.background]="colorOf(item.route)">{{
+                          item.route.letter || '·'
+                        }}</span>
+                      </span>
                       <span class="line-text">
                         <strong class="ellipsis">{{ item.route.name }}</strong>
                         <span class="ellipsis">
@@ -392,7 +467,7 @@
                   </button>
                 }
                 @if (rows().length > 0) {
-                  <p class="group">Rutas que nombran «{{ search().trim() }}»</p>
+                  <p class="group">Todas las rutas</p>
                 }
               } @else if (searchingPlace()) {
                 <p class="group">Buscando ese lugar en el mapa…</p>
@@ -400,9 +475,14 @@
               @for (row of rows(); track row.route.id) {
                 <button type="button" class="line" (click)="store.selectLine(row.route.id)">
                   <span class="line-main">
-                    <span class="route-badge" [style.background]="colorOf(row.route)">{{
-                      row.route.letter || '·'
-                    }}</span>
+                    <span class="thumb">
+                      @if (photoOf(row.route); as photo) {
+                        <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                      }
+                      <span class="route-badge" [style.background]="colorOf(row.route)">{{
+                        row.route.letter || '·'
+                      }}</span>
+                    </span>
                     <span class="line-text">
                       <strong class="ellipsis">{{ row.route.name }}</strong>
                       <span class="ellipsis">
@@ -512,7 +592,7 @@
         <p class="note">Lo que pasa ahora en las calles. Las ven todos los usuarios y cada alerta caduca sola.</p>
       </header>
       <!-- Los filtros por tipo: cada uno con el punto de su color. -->
-      <div class="chip-row pills scroll-x">
+      <div class="chip-row pills wrap">
         <button type="button" [class.on]="alertType() === null" (click)="alertType.set(null)">
           <span class="type-dot all"></span>
           Todas
@@ -531,7 +611,7 @@
             <span class="calm-check"><span class="mi">check</span></span>
           </span>
           <strong>Todo tranquilo por ahora</strong>
-          <p>¿Ves tráfico, un choque u obras? Avisa a los demás desde la app y aparecerá en el mapa.</p>
+          <p>¿Ves tráfico, un choque u obras? Avisa a los demás y aparecerá en el mapa.</p>
         </div>
       } @else {
         <div class="scroll alerts">
@@ -558,10 +638,10 @@
         </div>
       }
       <div class="report">
-        <a class="btn block" routerLink="/descargar">
+        <button type="button" class="btn block" (click)="openReport()">
           <span class="plus"><span class="mi">add</span></span>
-          Reportar algo desde la app
-        </a>
+          {{ store.session() ? 'Reportar algo' : 'Entra para reportar algo' }}
+        </button>
       </div>
     }
   }
@@ -595,6 +675,57 @@
       <div class="actions">
         <button type="button" class="btn outline" (click)="choosingFavorite.set(false)">Cancelar</button>
         <button type="submit" class="btn accent" [disabled]="!favoriteKind()">Guardar</button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- Reportar una alerta: qué pasa y dónde. Se ve al momento en el mapa de todos. -->
+@if (reporting()) {
+  <div class="overlay" (click)="reporting.set(false)">
+    <form class="dialog" (click)="$event.stopPropagation()" (ngSubmit)="sendReport()">
+      <div class="dialog-head">
+        <h2>¿Qué está pasando?</h2>
+        <button type="button" class="close" title="Cerrar" (click)="reporting.set(false)">
+          <span class="mi">close</span>
+        </button>
+      </div>
+      <p class="note">Tu alerta la verán todos en el mapa y caduca sola.</p>
+      <div class="kinds">
+        @for (type of alertTypes; track type) {
+          <button type="button" class="kind" [class.chosen]="reportType() === type" (click)="reportType.set(type)">
+            <span [class]="'alert-tile t-' + type.toLowerCase()"
+              ><span class="mi">{{ alertIcon(type) }}</span></span
+            >
+            {{ alertLabel(type) }}
+          </button>
+        }
+      </div>
+      @if (reportSpot(); as spot) {
+        <p class="report-where">
+          <span class="mi">location_on</span>
+          <span>{{ spot.where }}. <small>Para otro sitio, cierra y toca el mapa donde pasa.</small></span>
+        </p>
+      }
+      <label class="field">
+        <span>Lugar (opcional)</span>
+        <input
+          class="input"
+          name="placeName"
+          maxlength="120"
+          placeholder="Ej.: Av. España con Pizarro"
+          [(ngModel)]="reportPlace"
+        />
+      </label>
+      <label class="field">
+        <span>Comentario (opcional)</span>
+        <textarea class="input" name="comment" maxlength="280" rows="2" [(ngModel)]="reportComment"></textarea>
+      </label>
+      <div class="actions">
+        <button type="button" class="btn outline" (click)="reporting.set(false)">Cancelar</button>
+        <button type="submit" class="btn accent" [disabled]="!reportType() || sendingReport()">
+          {{ sendingReport() ? 'Publicando…' : 'Publicar' }}
+        </button>
       </div>
     </form>
   </div>

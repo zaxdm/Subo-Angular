@@ -345,8 +345,17 @@ export class Api {
    * con [here], también cuánto hay que andar para subirse. `null` si el sitio
    * no sale en el mapa. No pide sesión.
    */
-  async destination(query: string, here: GeoPoint | null = null): Promise<Destination | null> {
+  async destination(
+    query: string,
+    here: GeoPoint | null = null,
+    to: GeoPoint | null = null,
+  ): Promise<Destination | null> {
     const params = new URLSearchParams({ q: query.trim() });
+    // El sitio elegido de las sugerencias: el servidor no lo vuelve a buscar por el nombre.
+    if (to !== null) {
+      params.set('toLat', String(to.latitude));
+      params.set('toLon', String(to.longitude));
+    }
     if (here !== null) {
       params.set('lat', String(here.latitude));
       params.set('lon', String(here.longitude));
@@ -399,6 +408,20 @@ export class Api {
       text: typeof data['answer'] === 'string' ? data['answer'] : '',
       routeIds: Array.isArray(routeIds) ? routeIds.filter((id) => typeof id === 'string') : [],
     };
+  }
+
+  /** Publica una alerta en el mapa, para todos. Pide sesión. */
+  async reportAlert(alert: {
+    type: string;
+    latitude: number;
+    longitude: number;
+    placeName: string | null;
+    comment: string | null;
+  }): Promise<CityAlert> {
+    const body: Json = { type: alert.type, latitude: alert.latitude, longitude: alert.longitude };
+    if (alert.placeName) body['placeName'] = alert.placeName;
+    if (alert.comment) body['comment'] = alert.comment;
+    return alertFromJson(await this.send('POST', '/api/alerts', { body }));
   }
 
   /** Manda un mensaje al buzón del equipo. Pide sesión. */
