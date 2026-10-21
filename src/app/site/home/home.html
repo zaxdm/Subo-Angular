@@ -108,8 +108,8 @@
   </button>
 
   <!-- Las líneas que pasan cerca del sitio marcado, para abrirlas desde ahí. -->
-  <!-- Si la marca es el sitio buscado, sus líneas ya están en la lista. -->
-  @if (pin() && !pinIsDestination()) {
+  <!-- Si la marca es el sitio buscado (o se está buscando), sus líneas van en la lista de la derecha. -->
+  @if (pin() && !pinIsDestination() && !searchingPlace()) {
     <div class="nearby">
       <p class="small">
         @switch (near().length) {
