@@ -1245,7 +1245,22 @@ button.chip-main:not(:disabled) {
 
   .map-area {
     flex: none;
-    height: 44%;
+    height: var(--map-h, 44%);
+    transition: height 0.25s ease;
+  }
+
+  /* Con la hoja arriba queda una franja de mapa: solo el buscador. */
+  :host(.sheet-high) .street-view,
+  :host(.sheet-high) .map-buttons,
+  :host(.sheet-high) .nearby,
+  :host(.sheet-high) .credit,
+  :host(.sheet-high) .favorites {
+    display: none;
+  }
+
+  /* Mientras se arrastra, la hoja sigue al dedo sin retraso. */
+  :host(.dragging) .map-area {
+    transition: none;
   }
 
   .panel {
@@ -1258,14 +1273,27 @@ button.chip-main:not(:disabled) {
     box-shadow: 0 -2px 12px rgb(21 23 28 / 8%);
   }
 
+  /* El asa: la zona que se toca es ancha, aunque la raya sea corta. */
   .grabber {
-    display: block;
+    display: grid;
+    place-items: center;
     flex: none;
-    width: 40px;
-    height: 4px;
-    margin: 8px auto 0;
-    border-radius: 2px;
+    height: 22px;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .grabber span {
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
     background: var(--field-line);
+  }
+
+  /* Filtros de alerta más compactos para que quepan en menos filas. */
+  .alerts-scroll .chip-row button {
+    padding: 5px 11px;
+    font-size: 12px;
   }
 
   .tabs {
@@ -1551,4 +1579,16 @@ button.chip-main:not(:disabled) {
 
 .dialog textarea {
   resize: vertical;
+}
+
+/* Alertas: encabezado, filtros y lista se desplazan juntos. */
+.alerts-scroll {
+  display: flex;
+  flex-direction: column;
+}
+
+.alerts-scroll .empty {
+  flex: none;
+  overflow: visible;
+  padding: 24px 28px;
 }

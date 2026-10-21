@@ -184,7 +184,20 @@
 
 <aside class="panel">
   <!-- El asa de la hoja, como en la app. -->
-  <span class="grabber" aria-hidden="true"></span>
+  <!-- En el celular se arrastra para subir o bajar la hoja; un toque la cambia de altura. -->
+  <div
+    class="grabber"
+    role="button"
+    tabindex="0"
+    [attr.aria-label]="sheet() === 'high' ? 'Bajar la hoja' : 'Subir la hoja'"
+    (pointerdown)="dragStart($event)"
+    (pointermove)="dragMove($event)"
+    (pointerup)="dragEnd($event)"
+    (pointercancel)="dragEnd($event)"
+    (keydown.enter)="toggleSheet()"
+  >
+    <span></span>
+  </div>
 
   <!-- Las tres secciones: en el móvil van abajo, como la barra de la app; la elegida lleva el amarillo. -->
   <nav class="tabs">
@@ -584,59 +597,62 @@
     }
 
     @case ('alerts') {
-      <header class="alerts-head">
-        <div class="alerts-title">
-          <h2>Alertas</h2>
-          <span class="live"><span class="dot"></span> En vivo</span>
-        </div>
-        <p class="note">Lo que pasa ahora en las calles. Las ven todos los usuarios y cada alerta caduca sola.</p>
-      </header>
-      <!-- Los filtros por tipo: cada uno con el punto de su color. -->
-      <div class="chip-row pills wrap">
-        <button type="button" [class.on]="alertType() === null" (click)="alertType.set(null)">
-          <span class="type-dot all"></span>
-          Todas
-        </button>
-        @for (type of alertTypes; track type) {
-          <button type="button" [class.on]="alertType() === type" (click)="alertType.set(type)">
-            <span class="type-dot" [class]="'type-dot t-' + type.toLowerCase()"></span>
-            {{ alertLabel(type) }}
+      <!-- Todo se desplaza junto: en el celular no queda sitio para fijar el encabezado y los filtros. -->
+      <div class="scroll alerts-scroll">
+        <header class="alerts-head">
+          <div class="alerts-title">
+            <h2>Alertas</h2>
+            <span class="live"><span class="dot"></span> En vivo</span>
+          </div>
+          <p class="note">Lo que pasa ahora en las calles. Las ven todos los usuarios y cada alerta caduca sola.</p>
+        </header>
+        <!-- Los filtros por tipo: cada uno con el punto de su color. -->
+        <div class="chip-row pills wrap">
+          <button type="button" [class.on]="alertType() === null" (click)="alertType.set(null)">
+            <span class="type-dot all"></span>
+            Todas
           </button>
-        }
-      </div>
-      @if (shownAlerts().length === 0) {
-        <div class="empty">
-          <span class="calm">
-            <span class="mi">warning_amber</span>
-            <span class="calm-check"><span class="mi">check</span></span>
-          </span>
-          <strong>Todo tranquilo por ahora</strong>
-          <p>¿Ves tráfico, un choque u obras? Avisa a los demás y aparecerá en el mapa.</p>
-        </div>
-      } @else {
-        <div class="scroll alerts">
-          @for (alert of shownAlerts(); track alert.id) {
-            <button type="button" class="alert" (click)="glideTo(alert, 16)">
-              <span class="alert-tile" [class]="'alert-tile t-' + alert.type.toLowerCase()">
-                <span class="mi">{{ alertIcon(alert.type) }}</span>
-              </span>
-              <span class="alert-text">
-                <strong>{{ alert.label }}</strong>
-                @if (alert.placeName) {
-                  <span class="note">{{ alert.placeName }}</span>
-                }
-                @if (alert.comment) {
-                  <span class="comment">{{ alert.comment }}</span>
-                }
-                @if (alert.confirmations > 0) {
-                  <span class="note">{{ alert.confirmations }} dicen que sigue ahí</span>
-                }
-              </span>
-              <span class="mi chevron">chevron_right</span>
+          @for (type of alertTypes; track type) {
+            <button type="button" [class.on]="alertType() === type" (click)="alertType.set(type)">
+              <span class="type-dot" [class]="'type-dot t-' + type.toLowerCase()"></span>
+              {{ alertLabel(type) }}
             </button>
           }
         </div>
-      }
+        @if (shownAlerts().length === 0) {
+          <div class="empty">
+            <span class="calm">
+              <span class="mi">warning_amber</span>
+              <span class="calm-check"><span class="mi">check</span></span>
+            </span>
+            <strong>Todo tranquilo por ahora</strong>
+            <p>¿Ves tráfico, un choque u obras? Avisa a los demás y aparecerá en el mapa.</p>
+          </div>
+        } @else {
+          <div class="alerts">
+            @for (alert of shownAlerts(); track alert.id) {
+              <button type="button" class="alert" (click)="glideTo(alert, 16)">
+                <span class="alert-tile" [class]="'alert-tile t-' + alert.type.toLowerCase()">
+                  <span class="mi">{{ alertIcon(alert.type) }}</span>
+                </span>
+                <span class="alert-text">
+                  <strong>{{ alert.label }}</strong>
+                  @if (alert.placeName) {
+                    <span class="note">{{ alert.placeName }}</span>
+                  }
+                  @if (alert.comment) {
+                    <span class="comment">{{ alert.comment }}</span>
+                  }
+                  @if (alert.confirmations > 0) {
+                    <span class="note">{{ alert.confirmations }} dicen que sigue ahí</span>
+                  }
+                </span>
+                <span class="mi chevron">chevron_right</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
       <div class="report">
         <button type="button" class="btn block" (click)="openReport()">
           <span class="plus"><span class="mi">add</span></span>

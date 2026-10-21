@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  HostBinding,
   OnDestroy,
   afterNextRender,
   computed,
@@ -108,6 +109,9 @@ const SATELLITE: MapBase = {
   credit: 'Imágenes © Esri, Maxar, Earthstar Geographics',
   maxNativeZoom: 18,
 };
+
+/** En el celular, qué parte de la pantalla ocupa el mapa con la hoja baja, a media altura o alta. */
+const SHEET_MAP_SHARE = { low: 0.72, mid: 0.44, high: 0.14 };
 
 const TRUJILLO: L.LatLngTuple = [-8.112, -79.0288];
 
@@ -419,9 +423,84 @@ export class Home implements OnDestroy {
     }
   }
 
+  // --- La hoja del celular: se arrastra entre tres alturas ---
+
+  /** Cuánto mapa se ve encima de la hoja: mucho (hoja baja), la mitad o poco (hoja alta). */
+  protected readonly sheet = signal<'low' | 'mid' | 'high'>('mid');
+
+  /** Mientras se arrastra, la altura del mapa en píxeles; `null` si no. */
+  private readonly dragHeight = signal<number | null>(null);
+  private dragFrom: { y: number; height: number; moved: boolean } | null = null;
+
+  /** La altura del mapa en el celular, que lee el CSS. */
+  @HostBinding('style.--map-h')
+  protected get mapHeight(): string {
+    const dragging = this.dragHeight();
+    if (dragging !== null) return `${dragging}px`;
+    return `${SHEET_MAP_SHARE[this.sheet()] * 100}%`;
+  }
+
+  @HostBinding('class.sheet-high')
+  protected get sheetHigh(): boolean {
+    return this.sheet() === 'high';
+  }
+
+  @HostBinding('class.dragging')
+  protected get dragging(): boolean {
+    return this.dragHeight() !== null;
+  }
+
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  protected dragStart(event: PointerEvent): void {
+    const map = this.host.nativeElement.querySelector<HTMLElement>('.map-area');
+    if (map === null) return;
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    this.dragFrom = { y: event.clientY, height: map.getBoundingClientRect().height, moved: false };
+  }
+
+  protected dragMove(event: PointerEvent): void {
+    const from = this.dragFrom;
+    if (from === null) return;
+    const shift = event.clientY - from.y;
+    if (!from.moved && Math.abs(shift) < 6) return;
+    from.moved = true;
+    const total = this.host.nativeElement.clientHeight;
+    this.dragHeight.set(Math.min(total * 0.85, Math.max(total * 0.08, from.height + shift)));
+  }
+
+  protected dragEnd(event: PointerEvent): void {
+    const from = this.dragFrom;
+    this.dragFrom = null;
+    if (from === null) return;
+    const height = this.dragHeight();
+    this.dragHeight.set(null);
+    if (!from.moved || height === null) {
+      // Un toque, sin arrastrar: sube la hoja o, si ya está arriba, la baja.
+      this.toggleSheet();
+      return;
+    }
+    // Se queda en la altura más cercana a donde se soltó.
+    const share = height / this.host.nativeElement.clientHeight;
+    const nearest = (Object.keys(SHEET_MAP_SHARE) as ('low' | 'mid' | 'high')[]).reduce((best, key) =>
+      Math.abs(SHEET_MAP_SHARE[key] - share) < Math.abs(SHEET_MAP_SHARE[best] - share) ? key : best,
+    );
+    this.setSheet(nearest);
+    event.preventDefault();
+  }
+
+  protected toggleSheet(): void {
+    this.setSheet(this.sheet() === 'high' ? 'low' : this.sheet() === 'mid' ? 'high' : 'mid');
+  }
+
+  private setSheet(sheet: 'low' | 'mid' | 'high'): void {
+    this.sheet.set(sheet);
+  }
+
   // --- El mapa ---
 
   private map?: L.Map;
+  private resize?: ResizeObserver;
   private readonly ready = signal(false);
   private tiles?: L.TileLayer;
   private readonly lineLayer = L.layerGroup();
@@ -457,6 +536,9 @@ export class Home implements OnDestroy {
       this.markerLayer.addTo(map);
       map.on('click', (event) => this.pin.set({ latitude: event.latlng.lat, longitude: event.latlng.lng }));
       this.map = map;
+      // Al subir o bajar la hoja el mapa cambia de alto, y Leaflet tiene que volver a medirse.
+      this.resize = new ResizeObserver(() => map.invalidateSize());
+      this.resize.observe(this.mapElement().nativeElement);
       this.ready.set(true);
     });
 
@@ -546,6 +628,7 @@ export class Home implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.resize?.disconnect();
     this.map?.remove();
   }
 
