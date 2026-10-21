@@ -1,7 +1,7 @@
 {
-  "versionCode": 9,
-  "versionName": "1.8",
+  "versionCode": 10,
+  "versionName": "1.9",
   "url": "subo.apk",
-  "notes": "• Vuelve la letra de siempre.\n• Las rutas que pasan cerca de ti se ven otra vez en tarjetas con foto.\n• La foto del micro sale arriba en su ficha.",
-  "notes_en": "• The usual font is back.\n• Routes near you show again as photo cards.\n• The bus photo is at the top of its page."
+  "notes": "• Premium: al llegar a tu parada, Subo puede avisar por SMS a quien elijas, aunque no tengas internet. Actívalo en Ajustes.\n• Si el SMS no sale (sin saldo o sin señal), te avisamos para reintentarlo o mandarlo por WhatsApp.",
+  "notes_en": "• Premium: when you reach your stop, Subo can text whoever you choose, even without internet. Turn it on in Settings.\n• If the SMS fails (no credit or no signal), we let you know so you can retry or send it by WhatsApp."
 }
