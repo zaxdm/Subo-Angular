@@ -42,6 +42,7 @@ import {
 import { directionsOf } from '../../core/directions';
 import { metersToLine, spotOnLine } from '../../core/nearby';
 import { PlaceSuggestion, StreetPath, suggestPlaces, walkingPath } from '../../core/street';
+import { load, save } from '../../core/storage';
 import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
 
@@ -109,6 +110,11 @@ const SATELLITE: MapBase = {
   credit: 'Imágenes © Esri, Maxar, Earthstar Geographics',
   maxNativeZoom: 18,
 };
+
+/** Dónde se recuerda el ancho del panel, y lo mínimo que se deja al panel y al mapa. */
+const PANEL_WIDTH_KEY = 'panel_width';
+const PANEL_MIN_WIDTH = 340;
+const MAP_MIN_WIDTH = 320;
 
 /** En el celular, qué parte de la pantalla ocupa el mapa con la hoja baja, a media altura o alta. */
 const SHEET_MAP_SHARE = { low: 0.72, mid: 0.44, high: 0.14 };
@@ -442,6 +448,52 @@ export class Home implements OnDestroy {
   /** Mientras se arrastra, la altura del mapa en píxeles; `null` si no. */
   private readonly dragHeight = signal<number | null>(null);
   private dragFrom: { y: number; height: number; moved: boolean } | null = null;
+
+  // --- El ancho del panel en la computadora: se arrastra su borde izquierdo ---
+
+  /** El ancho elegido en píxeles; `null` para el de siempre. Se recuerda en este navegador. */
+  private readonly panelWidth = signal<number | null>(Number(load(PANEL_WIDTH_KEY)) || null);
+  private resizeFrom: { x: number; width: number } | null = null;
+
+  @HostBinding('style.--panel-w')
+  protected get panelWidthCss(): string | null {
+    const width = this.panelWidth();
+    return width === null ? null : `${width}px`;
+  }
+
+  @HostBinding('class.resizing')
+  protected get resizing(): boolean {
+    return this.resizeFrom !== null;
+  }
+
+  protected resizeStart(event: PointerEvent): void {
+    const panel = (event.currentTarget as HTMLElement).parentElement;
+    if (panel === null) return;
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    this.resizeFrom = { x: event.clientX, width: panel.getBoundingClientRect().width };
+    event.preventDefault();
+  }
+
+  protected resizeMove(event: PointerEvent): void {
+    const from = this.resizeFrom;
+    if (from === null) return;
+    // El panel está a la derecha: arrastrar hacia la izquierda lo ensancha.
+    const total = this.host.nativeElement.clientWidth;
+    const max = Math.max(PANEL_MIN_WIDTH, total - MAP_MIN_WIDTH);
+    this.panelWidth.set(Math.round(Math.min(max, Math.max(PANEL_MIN_WIDTH, from.width + from.x - event.clientX))));
+  }
+
+  protected resizeEnd(): void {
+    if (this.resizeFrom === null) return;
+    this.resizeFrom = null;
+    const width = this.panelWidth();
+    save(PANEL_WIDTH_KEY, width === null ? null : String(width));
+  }
+
+  protected resetPanelWidth(): void {
+    this.panelWidth.set(null);
+    save(PANEL_WIDTH_KEY, null);
+  }
 
   /** La altura del mapa en el celular, que lee el CSS. */
   @HostBinding('style.--map-h')

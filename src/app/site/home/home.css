@@ -21,7 +21,7 @@
   display: flex;
   flex-direction: column;
   flex: none;
-  width: 420px;
+  width: var(--panel-w, 420px);
   border-left: 1px solid var(--line);
   background: var(--paper);
   overflow: hidden;
@@ -1237,6 +1237,42 @@ button.chip-main:not(:disabled) {
   border: 1.5px solid var(--ink);
 }
 
+/* El borde que se arrastra para cambiar el ancho del panel: una franja invisible que se marca al pasar. */
+.panel-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  z-index: 5;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.panel-resizer::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 4px;
+  height: 44px;
+  border-radius: 2px;
+  background: var(--field-line);
+  transform: translateY(-50%);
+  transition: background 0.15s;
+}
+
+.panel-resizer:hover::after,
+:host(.resizing) .panel-resizer::after {
+  background: var(--ink);
+}
+
+/* Mientras se arrastra, no se selecciona texto ni se interrumpe con el mapa. */
+:host(.resizing) {
+  cursor: col-resize;
+  user-select: none;
+}
+
 /* En pantallas estrechas, como en la app: el mapa arriba, la hoja encima y la barra de secciones abajo. */
 @media (max-width: 859px) {
   :host {
@@ -1261,6 +1297,10 @@ button.chip-main:not(:disabled) {
   /* Mientras se arrastra, la hoja sigue al dedo sin retraso. */
   :host(.dragging) .map-area {
     transition: none;
+  }
+
+  .panel-resizer {
+    display: none;
   }
 
   .panel {
@@ -1775,8 +1815,16 @@ button.chip-main:not(:disabled) {
 }
 
 /* Los atajos para guardar Casa, Trabajo u Otro. */
-.chip.add {
-  border-style: dashed;
+/* Sobre el mapa necesitan su fondo blanco para leerse. */
+.chip.chip-main.add,
+.chip.chip-main:not(.saving) {
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgb(21 23 28 / 10%);
+}
+
+.chip.chip-main.add {
+  border: 1px dashed var(--field-line);
+  font-weight: 700;
 }
 
 .chip.saving {

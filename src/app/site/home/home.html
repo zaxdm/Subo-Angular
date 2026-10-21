@@ -195,6 +195,19 @@
 </section>
 
 <aside class="panel">
+  <!-- En la computadora, el borde izquierdo se arrastra para ensanchar o estrechar el panel. Doble clic: ancho normal. -->
+  <div
+    class="panel-resizer"
+    role="separator"
+    aria-orientation="vertical"
+    aria-label="Arrastra para cambiar el ancho del panel"
+    title="Arrastra para cambiar el ancho · doble clic para dejarlo como estaba"
+    (pointerdown)="resizeStart($event)"
+    (pointermove)="resizeMove($event)"
+    (pointerup)="resizeEnd()"
+    (pointercancel)="resizeEnd()"
+    (dblclick)="resetPanelWidth()"
+  ></div>
   <!-- El asa de la hoja, como en la app. -->
   <!-- En el celular se arrastra para subir o bajar la hoja; un toque la cambia de altura. -->
   <div
