@@ -62,6 +62,7 @@ export class AdminShell {
         { label: 'Rutas y micros', icon: 'directions_bus', path: '/panel', badge: this.pending() },
         { label: 'Alertas', icon: 'campaign', path: '/panel/alertas' },
         { label: 'Sugerencias', icon: 'forum', path: '/panel/sugerencias' },
+        { label: 'Asistente', icon: 'chat_bubble_outline', path: '/panel/asistente' },
       ],
     },
     {

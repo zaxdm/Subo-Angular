@@ -45,6 +45,7 @@ import { PlaceSuggestion, StreetPath, suggestPlaces, walkingPath } from '../../c
 import { load, save } from '../../core/storage';
 import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
+import { AssistantVoice } from './assistant-voice';
 
 type Tab = 'lines' | 'assistant' | 'alerts';
 
@@ -251,6 +252,12 @@ export class Home implements OnDestroy {
   protected readonly question = signal('');
   protected readonly messages = signal<Message[]>([]);
   protected readonly asking = signal(false);
+  protected readonly voice = new AssistantVoice(
+    (text) => {
+      void this.ask(text);
+    },
+    (message) => this.ui.notify(message, 'plain'),
+  );
   protected readonly alerts = signal<CityAlert[]>([]);
   protected readonly favorites = signal<FavoritePlace[]>(loadFavorites());
   protected readonly satellite = signal(false);
@@ -691,6 +698,7 @@ export class Home implements OnDestroy {
     effect(() => {
       const chatting = this.tab() === 'assistant';
       untracked(() => {
+        if (!chatting) this.voice.stop();
         if (chatting && this.sheetBeforeChat === null) {
           this.sheetBeforeChat = this.sheet();
           this.setSheet('high');
@@ -703,11 +711,15 @@ export class Home implements OnDestroy {
 
     // Al salir de la cuenta, la conversación se va con ella.
     effect(() => {
-      if (this.store.session() === null) this.messages.set([]);
+      if (this.store.session() === null) {
+        this.messages.set([]);
+        this.voice.stop();
+      }
     });
   }
 
   ngOnDestroy(): void {
+    this.voice.stop();
     this.resize?.disconnect();
     this.map?.remove();
   }
@@ -1042,6 +1054,7 @@ export class Home implements OnDestroy {
   protected async ask(preset?: string): Promise<void> {
     const question = (preset ?? this.question()).trim();
     if (question === '' || this.asking()) return;
+    this.voice.stop();
     const history = this.messages()
       .filter((message) => !message.failed)
       .map(({ mine, text }) => ({ mine, text }));
@@ -1052,6 +1065,7 @@ export class Home implements OnDestroy {
       const answer = await this.api.ask(question, await this.whereAmI(), history);
       const routes = answer.routeIds.flatMap((id) => this.store.lines().find((candidate) => candidate.id === id) ?? []);
       this.say({ text: answer.text, mine: false, routes });
+      if (this.tab() === 'assistant' && this.store.session() !== null) this.voice.speak(answer.text);
     } catch (error) {
       this.say({
         text: messageOf(error, 'El asistente no respondió. Inténtalo de nuevo.'),

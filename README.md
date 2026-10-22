@@ -10,6 +10,14 @@ comparten un solo acceso:
 
 Habla con el mismo servidor que la app (la función `server` de Supabase, en `../backend`).
 
+En `/panel/asistente`, un administrador puede responder las preguntas pendientes más repetidas,
+crear respuestas guardadas con variantes, buscarlas, editarlas y activarlas o desactivarlas.
+El servidor consulta esas respuestas antes del respaldo de IA.
+
+El asistente de pasajeros admite dictado cuando el navegador ofrece reconocimiento de voz y puede
+leer las respuestas en español. El botón de sonido permite silenciarlo; la preferencia se conserva.
+Si no hay reconocimiento, se puede escribir y seguir escuchando las respuestas.
+
 ## Para trabajar
 
 ```bash
@@ -23,14 +31,14 @@ Las piezas nuevas se crean con el CLI: `ng generate component site/mi-pagina`.
 
 ## Dónde está cada cosa
 
-| Carpeta | Qué hay |
-| --- | --- |
-| `src/app/core` | El cliente del servidor (`api.ts`), los datos (`models.ts`), el estado compartido (`store.ts`) y los avisos (`ui.ts`). |
-| `src/app/site` | Las páginas de los pasajeros y su marco (barra de arriba y pie). |
-| `src/app/admin` | Las secciones del panel y su marco (barra lateral). |
-| `src/app/shared` | Lo que usan las dos partes: el acceso, Mi perfil, el logo… |
-| `src/styles.css` | La paleta de Subo y las piezas comunes: botones, campos, tarjetas. |
-| `public` | Lo que se copia tal cual: iconos, letras, las fotos de `nosotros/` y la app en `descargas/subo.apk`. |
+| Carpeta          | Qué hay                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `src/app/core`   | El cliente del servidor (`api.ts`), los datos (`models.ts`), el estado compartido (`store.ts`) y los avisos (`ui.ts`). |
+| `src/app/site`   | Las páginas de los pasajeros y su marco (barra de arriba y pie).                                                       |
+| `src/app/admin`  | Las secciones del panel y su marco (barra lateral).                                                                    |
+| `src/app/shared` | Lo que usan las dos partes: el acceso, Mi perfil, el logo…                                                             |
+| `src/styles.css` | La paleta de Subo y las piezas comunes: botones, campos, tarjetas.                                                     |
+| `public`         | Lo que se copia tal cual: iconos, letras, las fotos de `nosotros/` y la app en `descargas/subo.apk`.                   |
 
 ## Qué se cambia a menudo
 

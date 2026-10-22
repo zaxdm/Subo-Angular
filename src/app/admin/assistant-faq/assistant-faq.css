@@ -1,0 +1,112 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.filters,
+.toolbar,
+.note + .list {
+  margin-bottom: 18px;
+}
+
+.toolbar,
+.top,
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.toolbar .input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  align-items: start;
+  gap: 14px;
+}
+
+.card {
+  padding: 18px;
+  border-left: 4px solid var(--success);
+}
+
+.card.pending {
+  border-left-color: var(--accent);
+}
+
+.card.inactive {
+  border-left-color: var(--field-line);
+}
+
+.top {
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+h3 {
+  font-size: 15px;
+}
+
+.answer,
+.variants {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+
+details {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+summary {
+  cursor: pointer;
+}
+
+.actions {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.card .btn {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+}
+
+.dialog {
+  max-width: 600px;
+}
+
+.dialog label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 13px;
+}
+
+.dialog .check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 479px) {
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

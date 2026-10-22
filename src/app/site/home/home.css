@@ -862,6 +862,11 @@ button.chip-main:not(:disabled) {
   font-size: 20px;
 }
 
+.assistant-head .mute {
+  margin-left: auto;
+  flex: none;
+}
+
 .ink-tile {
   display: grid;
   place-items: center;
@@ -1004,6 +1009,18 @@ button.chip-main:not(:disabled) {
 
 .send:disabled {
   opacity: 0.45;
+}
+
+.microphone {
+  width: 40px;
+  height: 40px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.microphone.listening {
+  background: var(--ink);
+  color: var(--accent);
 }
 
 /* --- Las alertas --- */

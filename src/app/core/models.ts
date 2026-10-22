@@ -248,6 +248,56 @@ export interface Destination extends GeoPoint {
 export interface AssistantAnswer {
   text: string;
   routeIds: string[];
+  remaining?: number;
+  source?: 'reglas' | 'faq' | 'ia' | 'nada';
+}
+
+/** Una respuesta que el equipo mantiene para el asistente. */
+export interface AssistantFaqItem {
+  id: string;
+  question: string;
+  variants: string[];
+  answer: string;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type AssistantFaqDraft = Pick<AssistantFaqItem, 'question' | 'variants' | 'answer' | 'active'>;
+
+export function assistantFaqFromJson(json: Json): AssistantFaqItem {
+  return {
+    id: text(json['id']),
+    question: text(json['question']),
+    variants: Array.isArray(json['variants'])
+      ? json['variants'].filter((item): item is string => typeof item === 'string')
+      : [],
+    answer: text(json['answer']),
+    active: json['active'] !== false,
+    createdAt: new Date(number(json['createdAt'])),
+    updatedAt: new Date(number(json['updatedAt'])),
+  };
+}
+
+/** Una pregunta que todavía necesita una respuesta guardada. */
+export interface AssistantMiss {
+  id: string;
+  question: string;
+  normalized: string;
+  times: number;
+  lastAt: Date;
+  answered: boolean;
+}
+
+export function assistantMissFromJson(json: Json): AssistantMiss {
+  return {
+    id: text(json['id']),
+    question: text(json['question']),
+    normalized: text(json['normalized']),
+    times: number(json['times']),
+    lastAt: new Date(number(json['lastAt'])),
+    answered: json['answered'] === true,
+  };
 }
 
 /** En qué va una sugerencia del buzón, con el código que guarda el servidor. */

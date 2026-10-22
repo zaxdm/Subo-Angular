@@ -4,6 +4,11 @@ import {
   Admin,
   ApiError,
   AssistantAnswer,
+  AssistantFaqDraft,
+  AssistantFaqItem,
+  AssistantMiss,
+  assistantFaqFromJson,
+  assistantMissFromJson,
   BusRoute,
   CityAlert,
   Destination,
@@ -202,6 +207,26 @@ export class Api {
 
   async deleteFeedback(id: string): Promise<void> {
     await this.send('DELETE', `/api/admin/feedback/${encodeURIComponent(id)}`);
+  }
+
+  async assistantFaqs(): Promise<AssistantFaqItem[]> {
+    return items((await this.send('GET', '/api/admin/assistant/faq'))['items']).map(assistantFaqFromJson);
+  }
+
+  async assistantMisses(): Promise<AssistantMiss[]> {
+    return items((await this.send('GET', '/api/admin/assistant/misses'))['items']).map(assistantMissFromJson);
+  }
+
+  async saveAssistantFaq(draft: AssistantFaqDraft, id: string | null = null): Promise<AssistantFaqItem> {
+    const path = '/api/admin/assistant/faq' + (id === null ? '' : `/${encodeURIComponent(id)}`);
+    return assistantFaqFromJson(await this.send(id === null ? 'POST' : 'PUT', path, { body: { ...draft } }));
+  }
+
+  /** Guarda la respuesta y deja atendida la pregunta pendiente. */
+  async answerAssistantMiss(id: string, draft: AssistantFaqDraft): Promise<AssistantFaqItem> {
+    return assistantFaqFromJson(
+      await this.send('POST', `/api/admin/assistant/misses/${encodeURIComponent(id)}/answer`, { body: { ...draft } }),
+    );
   }
 
   /** Cambia el estado de una sugerencia y, si se quiere, la contesta. */
@@ -404,9 +429,12 @@ export class Api {
     });
     // Un servidor sin actualizar manda solo `routeId`, la única línea que recomendaba.
     const routeIds = data['routeIds'] ?? [data['routeId']];
+    const source = data['source'];
     return {
       text: typeof data['answer'] === 'string' ? data['answer'] : '',
       routeIds: Array.isArray(routeIds) ? routeIds.filter((id) => typeof id === 'string') : [],
+      ...(typeof data['remaining'] === 'number' ? { remaining: data['remaining'] } : {}),
+      ...(source === 'reglas' || source === 'faq' || source === 'ia' || source === 'nada' ? { source } : {}),
     };
   }
 

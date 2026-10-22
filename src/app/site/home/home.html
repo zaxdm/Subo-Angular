@@ -576,6 +576,18 @@
           <h2>Asistente Subo</h2>
           <p class="note">Pregúntame qué micro tomar</p>
         </div>
+        @if (voice.canSpeak) {
+          <button
+            type="button"
+            class="icon-btn mute"
+            [title]="voice.muted() ? 'Activar voz' : 'Silenciar'"
+            [attr.aria-label]="voice.muted() ? 'Activar voz' : 'Silenciar'"
+            [attr.aria-pressed]="voice.muted()"
+            (click)="voice.toggleMuted()"
+          >
+            <span class="mi">{{ voice.muted() ? 'volume_off' : 'volume_up' }}</span>
+          </button>
+        }
       </header>
       @if (!store.session()) {
         <div class="empty">
@@ -619,7 +631,9 @@
             }
           }
         </div>
-        <p class="ai-note">Respuestas generadas por IA. Confirma los horarios antes de viajar.</p>
+        <p class="ai-note" aria-live="polite">
+          {{ voice.listening() ? 'Te escucho… Toca otra vez para detener.' : 'Confirma los horarios antes de viajar.' }}
+        </p>
         <form class="ask" (ngSubmit)="ask()">
           <input
             class="ask-input"
@@ -630,7 +644,27 @@
             [disabled]="asking()"
             [(ngModel)]="question"
           />
-          <button type="submit" class="send" title="Preguntar" [disabled]="asking()">
+          @if (voice.canListen) {
+            <button
+              type="button"
+              class="send microphone"
+              [class.listening]="voice.listening()"
+              [title]="voice.listening() ? 'Detener micrófono' : 'Preguntar con voz'"
+              [attr.aria-label]="voice.listening() ? 'Detener micrófono' : 'Preguntar con voz'"
+              [attr.aria-pressed]="voice.listening()"
+              [disabled]="asking()"
+              (click)="voice.toggleListening()"
+            >
+              <span class="mi">{{ voice.listening() ? 'mic_off' : 'mic' }}</span>
+            </button>
+          }
+          <button
+            type="submit"
+            class="send"
+            title="Preguntar"
+            aria-label="Enviar pregunta"
+            [disabled]="asking() || !question().trim()"
+          >
             <span class="mi">send</span>
           </button>
         </form>
