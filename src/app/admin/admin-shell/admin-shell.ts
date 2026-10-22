@@ -54,7 +54,13 @@ export class AdminShell {
   protected readonly groups = computed<Group[]>(() => [
     {
       title: 'General',
-      sections: [{ label: 'Estadísticas', icon: 'insights', path: '/panel/estadisticas' }],
+      sections: [
+        { label: 'Estadísticas', icon: 'insights', path: '/panel/estadisticas' },
+        // El dinero lo ve solo el principal, como los pagos de Premium.
+        ...(this.store.session()?.isSuperAdmin
+          ? [{ label: 'Finanzas', icon: 'account_balance_wallet', path: '/panel/finanzas' }]
+          : []),
+      ],
     },
     {
       title: 'Contenido',

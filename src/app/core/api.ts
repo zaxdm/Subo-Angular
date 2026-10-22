@@ -38,6 +38,11 @@ import {
   userListFromJson,
   UserSort,
   suggestionFromJson,
+  FinanceEntry,
+  FinanceEntryDraft,
+  FinanceSummary,
+  financeEntryFromJson,
+  financeSummaryFromJson,
 } from './models';
 import { SiteInfo } from './site-info';
 import { load, save } from './storage';
@@ -329,6 +334,21 @@ export class Api {
     await this.send('POST', `/api/admin/premium/payments/${encodeURIComponent(id)}/review`, {
       body: { approved, note },
     });
+  }
+
+  /** Ingresos, gastos y ganancia de los últimos `months` meses, con los movimientos anotados. */
+  async finance(months: number): Promise<FinanceSummary> {
+    return financeSummaryFromJson(await this.send('GET', `/api/admin/finance?months=${months}`));
+  }
+
+  /** Anota un movimiento nuevo o corrige uno (`id`). */
+  async saveFinanceEntry(id: string | null, draft: FinanceEntryDraft): Promise<FinanceEntry> {
+    const path = '/api/admin/finance/entries' + (id === null ? '' : `/${encodeURIComponent(id)}`);
+    return financeEntryFromJson(await this.send(id === null ? 'POST' : 'PUT', path, { body: { ...draft } }));
+  }
+
+  async deleteFinanceEntry(id: string): Promise<void> {
+    await this.send('DELETE', `/api/admin/finance/entries/${encodeURIComponent(id)}`);
   }
 
   /** Sube la foto de una ruta y devuelve su dirección pública. */

@@ -1,0 +1,202 @@
+<app-page-frame
+  label="Negocio"
+  title="Finanzas"
+  subtitle="Lo que entra, lo que sale y lo que queda. Los pagos por Yape confirmados cuentan solos."
+  emptyIcon="cloud_off"
+  [loading]="loading()"
+  [ready]="data() !== null || failed()"
+  [emptyMessage]="data() === null && failed() ? 'No se pudieron cargar las finanzas.' : null"
+  (refresh)="load()"
+>
+  <div actions class="segmented" role="group" aria-label="Periodo">
+    @for (period of periods; track period.months) {
+      <button
+        type="button"
+        [class.on]="months() === period.months"
+        [disabled]="loading()"
+        (click)="choose(period.months)"
+      >
+        {{ period.label }}
+      </button>
+    }
+  </div>
+
+  @if (data(); as summary) {
+    <section class="metrics">
+      @for (metric of metrics(); track metric.label) {
+        <div class="card metric">
+          <span class="icon-tile" [class]="metric.tone"
+            ><span class="mi">{{ metric.icon }}</span></span
+          >
+          <strong [class.negative]="metric.label === 'Pérdida'">{{ metric.value }}</strong>
+          <span class="label">{{ metric.label }}</span>
+          <span class="hint">{{ metric.hint }}</span>
+        </div>
+      }
+    </section>
+
+    <div class="section-head">
+      <h2>Mes a mes</h2>
+      <p class="legend">
+        <span><i class="swatch income"></i>Ingresos</span>
+        <span><i class="swatch costs"></i>Costos</span>
+      </p>
+    </div>
+    <div class="card months">
+      @for (month of bars(); track month.month) {
+        <div class="month">
+          <span class="month-name">{{ month.label }}</span>
+          <div class="month-bars">
+            <div class="bar-line">
+              <span class="bar income" [style.width.%]="month.incomeWidth"></span>
+              <span class="amount">{{ formatSoles(month.income) }}</span>
+            </div>
+            <div class="bar-line">
+              <span class="bar costs" [style.width.%]="month.costsWidth"></span>
+              <span class="amount">{{ formatSoles(month.costs) }}</span>
+            </div>
+          </div>
+          <strong class="month-profit" [class.negative]="month.profit < 0">{{ formatSoles(month.profit) }}</strong>
+        </div>
+      }
+    </div>
+
+    <div class="pair">
+      <div class="card block">
+        <h3>En qué se gasta</h3>
+        @for (row of costsByCategory(); track row.category) {
+          <div class="share">
+            <span>{{ row.label }}</span>
+            <span class="share-amount">{{ formatSoles(row.amount) }} · {{ row.share }} %</span>
+          </div>
+        } @empty {
+          <p class="muted">Sin gastos en este periodo.</p>
+        }
+      </div>
+      <div class="card block">
+        <h3>De dónde entra</h3>
+        @for (row of incomeByCategory(); track row.category) {
+          <div class="share">
+            <span>{{ row.label }}</span>
+            <span class="share-amount">{{ formatSoles(row.amount) }} · {{ row.share }} %</span>
+          </div>
+        } @empty {
+          <p class="muted">Sin ingresos en este periodo.</p>
+        }
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>{{ editing() === null ? 'Anotar un movimiento' : 'Corregir el movimiento' }}</h2>
+      <p>Lo mensual se repite cada mes sin volver a anotarlo, como el servidor o el dominio.</p>
+    </div>
+    <form class="card entry-form" (ngSubmit)="save()">
+      <div class="segmented" role="group" aria-label="Tipo">
+        <button type="button" [class.on]="kind() === 'EXPENSE'" (click)="setKind('EXPENSE')">Gasto</button>
+        <button type="button" [class.on]="kind() === 'INCOME'" (click)="setKind('INCOME')">Ingreso</button>
+      </div>
+      <div class="fields">
+        <label class="field wide">
+          Concepto
+          <input
+            class="input"
+            name="concept"
+            maxlength="80"
+            placeholder="Por ejemplo: Supabase, volantes, Gemini"
+            [ngModel]="concept()"
+            (ngModelChange)="concept.set($event)"
+          />
+        </label>
+        <label class="field">
+          Categoría
+          <select class="input" name="category" [ngModel]="category()" (ngModelChange)="category.set($event)">
+            @for (item of categories(); track item.id) {
+              <option [value]="item.id">{{ item.label }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          Monto (S/)
+          <input
+            class="input"
+            name="amount"
+            inputmode="decimal"
+            placeholder="0.00"
+            [ngModel]="amount()"
+            (ngModelChange)="amount.set($event)"
+          />
+        </label>
+        <label class="field">
+          {{ monthly() ? 'Desde' : 'Fecha' }}
+          <input class="input" name="day" type="date" required [ngModel]="day()" (ngModelChange)="day.set($event)" />
+        </label>
+        <label class="check">
+          <input type="checkbox" name="monthly" [ngModel]="monthly()" (ngModelChange)="monthly.set($event)" />
+          Se repite cada mes
+        </label>
+        @if (monthly()) {
+          <label class="field">
+            Hasta (vacío si sigue)
+            <input
+              class="input"
+              name="endMonth"
+              type="month"
+              [ngModel]="endMonth()"
+              (ngModelChange)="endMonth.set($event)"
+            />
+          </label>
+        }
+        <label class="field wide">
+          Nota
+          <input
+            class="input"
+            name="note"
+            maxlength="200"
+            placeholder="Opcional"
+            [ngModel]="note()"
+            (ngModelChange)="note.set($event)"
+          />
+        </label>
+      </div>
+      @if (problem(); as text) {
+        <p class="problem">{{ text }}</p>
+      }
+      <div class="form-actions">
+        @if (editing() !== null) {
+          <button type="button" class="btn text" (click)="reset()">Cancelar</button>
+        }
+        <button type="submit" class="btn small-btn" [disabled]="saving()">
+          {{ editing() === null ? 'Anotar' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+
+    <div class="section-head">
+      <h2>Movimientos anotados</h2>
+      <p>{{ summary.entries.length }} {{ summary.entries.length === 1 ? 'movimiento' : 'movimientos' }}</p>
+    </div>
+    <div class="card rows">
+      @for (entry of summary.entries; track entry.id) {
+        <div class="entry" [class.editing]="editing() === entry.id">
+          <span class="icon-tile" [class]="entry.kind === 'INCOME' ? 'green' : 'orange'"
+            ><span class="mi">{{ entry.kind === 'INCOME' ? 'south_west' : 'north_east' }}</span></span
+          >
+          <div class="entry-text">
+            <strong>{{ entry.concept }}</strong>
+            <span class="muted"
+              >{{ categoryLabel(entry.kind, entry.category) }} · {{ when(entry)
+              }}{{ entry.note ? ' · ' + entry.note : '' }}</span
+            >
+          </div>
+          <strong class="entry-amount" [class.negative]="entry.kind === 'EXPENSE'">
+            {{ entry.kind === 'EXPENSE' ? '−' : '+' }}{{ formatSoles(entry.amount) }}
+          </strong>
+          <button type="button" class="btn text" (click)="edit(entry)">Corregir</button>
+          <button type="button" class="btn text remove" (click)="remove(entry)">Borrar</button>
+        </div>
+      } @empty {
+        <p class="muted">Todavía no anotaste ningún gasto ni ingreso.</p>
+      }
+    </div>
+  }
+</app-page-frame>

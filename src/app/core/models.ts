@@ -698,3 +698,89 @@ export function imageTypeOf(file: File): string | null {
 }
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+// --- Finanzas del panel ---
+
+export type FinanceKind = 'INCOME' | 'EXPENSE';
+
+/** Un ingreso o un gasto anotado a mano; los mensuales se repiten cada mes desde `day`. */
+export interface FinanceEntry {
+  id: string;
+  kind: FinanceKind;
+  concept: string;
+  category: string;
+  amount: number;
+  /** "2026-10-22". */
+  day: string;
+  monthly: boolean;
+  /** "2026-12", el último mes de uno mensual; `null` si sigue. */
+  endMonth: string | null;
+  note: string;
+}
+
+export type FinanceEntryDraft = Omit<FinanceEntry, 'id'>;
+
+export interface FinanceMonth {
+  /** "2026-10". */
+  month: string;
+  income: number;
+  /** La parte de los ingresos que llegó por Yape (Premium). */
+  yape: number;
+  costs: number;
+  profit: number;
+}
+
+export interface FinanceSummary {
+  months: FinanceMonth[];
+  income: number;
+  yape: number;
+  yapePayments: number;
+  costs: number;
+  profit: number;
+  costsByCategory: { category: string; amount: number }[];
+  incomeByCategory: { category: string; amount: number }[];
+  entries: FinanceEntry[];
+}
+
+export function financeEntryFromJson(json: Json): FinanceEntry {
+  return {
+    id: text(json['id']),
+    kind: json['kind'] === 'INCOME' ? 'INCOME' : 'EXPENSE',
+    concept: text(json['concept']),
+    category: text(json['category'], 'otros'),
+    amount: number(json['amount']),
+    day: text(json['day']),
+    monthly: json['monthly'] === true,
+    endMonth: optionalText(json['endMonth']),
+    note: text(json['note']),
+  };
+}
+
+const categoryTotals = (value: unknown) =>
+  list(value).map((row) => ({ category: text(row['category'], 'otros'), amount: number(row['amount']) }));
+
+export function financeSummaryFromJson(json: Json): FinanceSummary {
+  return {
+    months: list(json['months']).map((row) => ({
+      month: text(row['month']),
+      income: number(row['income']),
+      yape: number(row['yape']),
+      costs: number(row['costs']),
+      profit: number(row['profit']),
+    })),
+    income: number(json['income']),
+    yape: number(json['yape']),
+    yapePayments: number(json['yapePayments']),
+    costs: number(json['costs']),
+    profit: number(json['profit']),
+    costsByCategory: categoryTotals(json['costsByCategory']),
+    incomeByCategory: categoryTotals(json['incomeByCategory']),
+    entries: list(json['entries']).map(financeEntryFromJson),
+  };
+}
+
+/** "S/ 1,234.50": soles como se escriben en Perú. */
+export function formatSoles(amount: number): string {
+  const sign = amount < 0 ? '−' : '';
+  return `${sign}S/ ${Math.abs(amount).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}

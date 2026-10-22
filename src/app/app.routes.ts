@@ -68,6 +68,11 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/team/team').then((m) => m.Team),
       },
       {
+        path: 'finanzas',
+        canActivate: [principalOnly],
+        loadComponent: () => import('./admin/finance/finance').then((m) => m.Finance),
+      },
+      {
         path: 'premium',
         canActivate: [principalOnly],
         loadComponent: () => import('./admin/premium/premium').then((m) => m.Premium),

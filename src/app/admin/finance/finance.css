@@ -1,0 +1,305 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.negative {
+  color: var(--danger);
+}
+
+/* --- Cifras del periodo --- */
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px 18px;
+}
+
+.metric .icon-tile {
+  margin-bottom: 14px;
+}
+
+.metric strong {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.metric .label {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.metric .hint {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* --- Mes a mes --- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.swatch.income,
+.bar.income {
+  background: var(--chart-1);
+}
+
+.swatch.costs,
+.bar.costs {
+  background: var(--chart-2);
+}
+
+.months {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+}
+
+.month {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 110px;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+.month + .month {
+  border-top: 1px solid var(--line);
+}
+
+.month-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.month-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bar-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bar {
+  flex: none;
+  min-width: 2px;
+  max-width: calc(100% - 96px);
+  height: 10px;
+  border-radius: 0 4px 4px 0;
+}
+
+.amount {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.month-profit {
+  font-size: 14px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* --- Por categoría --- */
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.block {
+  padding: 16px 18px;
+}
+
+.block h3 {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.share {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 13px;
+}
+
+.share + .share {
+  border-top: 1px solid var(--line);
+}
+
+.share-amount {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* --- Anotar --- */
+
+.entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.entry-form .segmented {
+  align-self: flex-start;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.fields .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.fields .field.wide {
+  grid-column: span 2;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  /* A la altura de los campos, que llevan su rótulo encima. */
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.problem {
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* --- Movimientos --- */
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.entry.editing {
+  background: var(--accent-wash);
+}
+
+.entry-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.entry-text strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.entry-amount {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.remove {
+  color: var(--danger);
+}
+
+@media (max-width: 900px) {
+  .metrics,
+  .fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .pair,
+  .fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fields .field.wide {
+    grid-column: auto;
+  }
+
+  .check {
+    margin-top: 0;
+  }
+
+  .month {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .month-profit {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  /* El concepto ocupa la fila; el monto y los botones van debajo. */
+  .entry {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .entry-text {
+    flex: 1 1 calc(100% - 60px);
+  }
+
+  .entry-amount {
+    flex: 1;
+    padding-left: 50px;
+  }
+}
