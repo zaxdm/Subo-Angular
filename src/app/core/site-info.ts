@@ -38,7 +38,7 @@ export const SiteInfo = {
    * instalador nuevo hay que poner también su versión en
    * `public/descargas/version.json`: de ahí saca la app que hay una actualización.
    */
-  apkVersion: '2.0',
+  apkVersion: '2.1',
   apkSize: '4 MB',
 };
 

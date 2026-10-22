@@ -1,7 +1,7 @@
 {
-  "versionCode": 11,
-  "versionName": "2.0",
+  "versionCode": 12,
+  "versionName": "2.1",
   "url": "subo.apk",
-  "notes": "• El asistente se abre como una pantalla más, no como ventana.\n• La foto del micro sale en cada forma de llegar.\n• Para guardar tu casa o trabajo, ahora tocas el sitio en el mapa.\n• Nueva sección «Nosotros» en tu perfil.",
-  "notes_en": "• The assistant opens as its own screen, not a pop-up.\n• The bus photo shows on each way to get there.\n• To save your home or work, now you tap the spot on the map.\n• New «About us» section in your profile."
+  "notes": "• El asistente responde rutas, pasajes, horarios y preguntas frecuentes al instante.\n• Si le preguntas cómo llegar, parte desde donde estás.\n• Recuerda lo que le preguntaste antes en la conversación.\n• Puede recomendarte varias rutas a la vez.",
+  "notes_en": "• The assistant instantly answers about routes, fares, schedules and common questions.\n• When you ask how to get somewhere, it starts from where you are.\n• It remembers what you asked earlier in the conversation.\n• It can suggest several routes at once."
 }
