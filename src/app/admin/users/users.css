@@ -55,7 +55,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background: #faf9f6;
+  background: var(--hover);
 }
 
 tr:last-child td {
@@ -64,7 +64,7 @@ tr:last-child td {
 
 /* Una cuenta bloqueada se marca con una raya roja, además de su etiqueta. */
 tr.blocked td {
-  background: #fff8f6;
+  background: var(--danger-soft);
 }
 
 tr.blocked td:first-child {
@@ -119,7 +119,7 @@ tr.blocked td:first-child {
 
 .tag.gold {
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
 .tag.warn {

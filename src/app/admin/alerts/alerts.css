@@ -25,7 +25,7 @@
 }
 
 .card.flagged {
-  border-color: #f0d9a8;
+  border-color: var(--warning);
 }
 
 img {

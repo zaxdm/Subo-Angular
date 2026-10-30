@@ -13,6 +13,16 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.json">
 
+  <!-- El modo oscuro antes de pintar nada, para no parpadear en claro (lo mantiene core/theme.ts). -->
+  <script>
+    (function () {
+      var choice = null;
+      try { choice = localStorage.getItem('subo.theme'); } catch (e) {}
+      var dark = choice === 'dark' || (choice !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+
   <!-- El acceso con Google: pinta su botón en la ventana de iniciar sesión. -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>

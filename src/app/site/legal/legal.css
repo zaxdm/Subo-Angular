@@ -28,9 +28,9 @@
 }
 
 .switch a.on {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: #fff;
+  border-color: var(--strong);
+  background: var(--strong);
+  color: var(--on-strong);
   font-weight: 700;
 }
 
@@ -126,7 +126,7 @@ article h2 {
 
 article h2 + p {
   margin-bottom: 36px;
-  color: #3f434c;
+  color: var(--body);
   font-size: 16px;
   line-height: 1.75;
 }

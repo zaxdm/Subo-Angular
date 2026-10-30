@@ -70,7 +70,7 @@
   margin-top: 4px;
   padding: 12px 14px;
   border-radius: 16px;
-  background: var(--petrol);
+  background: var(--petrol-fill);
   color: #fff;
   font-weight: 700;
 }
@@ -103,7 +103,7 @@
   height: 28px;
   border-radius: 9px;
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
   font-size: 17px;
 }
 
@@ -133,7 +133,7 @@
   z-index: 1000;
   padding: 1px 6px;
   border-radius: 6px;
-  background: rgb(255 255 255 / 80%);
+  background: var(--glass);
   font-size: 11px;
 }
 

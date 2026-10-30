@@ -136,7 +136,7 @@
   height: 74px;
   overflow: hidden;
   border-radius: 10px;
-  background: #eee;
+  background: var(--chip);
 }
 
 .payment .proof img {

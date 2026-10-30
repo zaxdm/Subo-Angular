@@ -27,8 +27,12 @@
   src: url('/fonts/Roboto-Black.ttf') format('truetype');
 }
 
-/* Paleta de Subo: amarillo, tinta y arena, con el petróleo para la ubicación y las caminatas. La misma en la web y en la app. */
-:root {
+/*
+ * Paleta de Subo: amarillo, tinta y arena, con el petróleo para la ubicación y las caminatas. La misma en la web y en la app.
+ * `.keep-light` la conserva dentro de un bloque de marca que se ve igual de noche (la portada amarilla de Nosotros).
+ */
+:root,
+.keep-light {
   --ink: #15171c;
   --ink-soft: #2a2d34;
   --body: #3f434c;
@@ -74,6 +78,130 @@
   --chart-1: #2a78d6;
   --chart-2: #eb6834;
   --shadow: 0 2px 6px rgb(0 0 0 / 22%);
+
+  /*
+   * La tinta hace tres papeles y en oscuro cada uno va por su lado: el texto
+   * (--ink) se aclara, el relleno de insignias, burbujas y menú (--ink-fill)
+   * sigue oscuro pero se separa del fondo, y el botón fuerte (--strong) se
+   * invierte a papel con letra tinta, como en la app.
+   */
+  --ink-fill: #15171c;
+  --on-ink-fill: #fff;
+  --strong: #15171c;
+  --strong-hover: #2a2d34;
+  --on-strong: #fff;
+  /* Sobre el amarillo la letra es siempre tinta, también de noche. */
+  --on-accent: #15171c;
+  /* Lo que va pintado encima del mapa, que sigue claro de noche. */
+  --map-ink: #15171c;
+  --map-bg: #e9e6df;
+  --sidebar: #15171c;
+  --hover: rgb(21 23 28 / 6%);
+  --input-bg: #fffdf8;
+  --placeholder: #a39b85;
+  --tonal-hover: #ffe59a;
+  /* Fondo translúcido de lo que flota (barras fijas, botones sobre el mapa). */
+  --glass: rgb(255 255 255 / 85%);
+  --glass-paper: rgb(245 243 238 / 88%);
+  --info: #1d5aa3;
+  --info-soft: #e6f0fb;
+  --orange: #a6461c;
+  --orange-soft: #fdeee6;
+  --hidden: #945244;
+  --hidden-soft: #f2e5e2;
+  --live: #2e9d5f;
+  --shade-sm: rgb(21 23 28 / 10%);
+  --shade-lg: rgb(21 23 28 / 14%);
+  /* Rellenos sólidos con letra blanca: de noche no se aclaran como su color de texto. */
+  --petrol-fill: #0f4c5c;
+  --success-fill: #15803d;
+  --danger-fill: #b42318;
+  color-scheme: light;
+}
+
+/*
+ * Modo oscuro: los mismos colores de Subo sobre la tinta, con los tonos del
+ * modo noche de la app. El amarillo sí se lee sobre negro, así que también
+ * hace de rótulo. Lo elige `Theme` (core/theme.ts) poniendo data-theme en <html>.
+ */
+:root[data-theme='dark'] {
+  --ink: #f5f3ee;
+  --ink-soft: #e8e5dd;
+  --body: #c9ccd3;
+  --muted: #a5a9b3;
+  --faint: #7d828d;
+  --accent: #ffc629;
+  --accent-dark: #ffd866;
+  --accent-text: #ffc629;
+  --accent-soft: #352a10;
+  --accent-wash: #211b0c;
+  --petrol: #6fc0d1;
+  --petrol-soft: #16343b;
+  --line: #2a2d34;
+  --field-line: #3a3e47;
+  --chip: #22252b;
+  --paper: #0e0f12;
+  --surface: #17191e;
+  --success: #4ade80;
+  --success-soft: #16301f;
+  --warning: #e0ac2a;
+  --warning-soft: #352a10;
+  --danger: #f2837a;
+  --danger-soft: #3d1a1a;
+  --map-blue: #4c8ff0;
+  --alert-traffic: #5b8def;
+  --alert-traffic-soft: #1c2a4a;
+  --alert-accident: #ea6a2e;
+  --alert-accident-soft: #3a2216;
+  --alert-overcharge: #2fa35a;
+  --alert-overcharge-soft: #16301f;
+  --alert-roadwork: #d9a21b;
+  --alert-roadwork-soft: #352a10;
+  --alert-crowded: #9b6bf0;
+  --alert-crowded-soft: #2a1f45;
+  --alert-danger: #e5484d;
+  --alert-danger-soft: #3d1a1a;
+  --alert-other: #8b909c;
+  --alert-other-soft: #2a2c31;
+  --chart-1: #5b9ae8;
+  --chart-2: #f07c4c;
+  --shadow: 0 2px 8px rgb(0 0 0 / 55%);
+
+  --ink-fill: #2a2d34;
+  --strong: #f5f3ee;
+  --strong-hover: #e2dfd6;
+  --on-strong: #15171c;
+  --map-bg: #22252b;
+  --sidebar: #121318;
+  --hover: rgb(255 255 255 / 7%);
+  --input-bg: #121418;
+  --placeholder: #6f7480;
+  --tonal-hover: #4a3b14;
+  --glass: rgb(23 25 30 / 88%);
+  --glass-paper: rgb(14 15 18 / 88%);
+  --info: #7fb2f0;
+  --info-soft: #1a2a42;
+  --orange: #f0915e;
+  --orange-soft: #3a2216;
+  --hidden: #e6a08f;
+  --hidden-soft: #3a2420;
+  --live: #4ade80;
+  --shade-sm: rgb(0 0 0 / 35%);
+  --shade-lg: rgb(0 0 0 / 50%);
+  --petrol-fill: #135e71;
+  --success-fill: #1d7a43;
+  --danger-fill: #c0392f;
+  color-scheme: dark;
+}
+
+/* El bloque que se queda claro vuelve a pintar su texto con la tinta clara. */
+.keep-light {
+  color: var(--ink);
+}
+
+/* El mapa sigue siendo el de la calle, pero de noche se apaga un poco para no deslumbrar. */
+:root[data-theme='dark'] .leaflet-tile-pane {
+  filter: brightness(0.82) contrast(1.05);
 }
 
 *,
@@ -193,8 +321,8 @@ a {
   padding: 14px 24px;
   border: 1px solid transparent;
   border-radius: 16px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--strong);
+  color: var(--on-strong);
   font-size: 15px;
   font-weight: 700;
   line-height: 1.2;
@@ -205,7 +333,7 @@ a {
     opacity 0.15s;
 }
 .btn:hover:not(:disabled) {
-  background: var(--ink-soft);
+  background: var(--strong-hover);
 }
 .btn:disabled {
   opacity: 0.45;
@@ -228,11 +356,11 @@ a {
   font-size: 14px;
 }
 .btn.text:hover:not(:disabled) {
-  background: rgb(21 23 28 / 6%);
+  background: var(--hover);
 }
 .btn.accent {
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 .btn.accent:hover:not(:disabled) {
   background: var(--accent-dark);
@@ -244,10 +372,11 @@ a {
   font-size: 14px;
 }
 .btn.tonal:hover:not(:disabled) {
-  background: #ffe59a;
+  background: var(--tonal-hover);
 }
 .btn.danger {
-  background: var(--danger);
+  background: var(--danger-fill);
+  color: #fff;
 }
 .btn.small-btn {
   padding: 10px 16px;
@@ -269,7 +398,7 @@ a {
   cursor: pointer;
 }
 .icon-btn:hover:not(:disabled) {
-  background: rgb(21 23 28 / 7%);
+  background: var(--hover);
 }
 .icon-btn:disabled {
   opacity: 0.35;
@@ -300,11 +429,11 @@ a {
   padding: 13px 14px;
   border: 1px solid var(--field-line);
   border-radius: 14px;
-  background: #fffdf8;
+  background: var(--input-bg);
   outline: none;
 }
 .input::placeholder {
-  color: #a39b85;
+  color: var(--placeholder);
 }
 .input:focus {
   border-color: var(--ink);
@@ -382,8 +511,8 @@ textarea.input {
   color: var(--alert-other);
 }
 .pill.hidden {
-  background: #f2e5e2;
-  color: #945244;
+  background: var(--hidden-soft);
+  color: var(--hidden);
 }
 
 .divider {
@@ -397,7 +526,7 @@ textarea.input {
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgb(21 23 28 / 18%);
+  border: 2px solid var(--line);
   border-top-color: var(--ink);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -460,7 +589,7 @@ textarea.input {
   aspect-ratio: 4 / 3;
   margin: 0;
   border-radius: 20px;
-  background: linear-gradient(135deg, var(--accent-soft), #f5f3ee);
+  background: linear-gradient(135deg, var(--accent-soft), var(--paper));
   color: var(--accent-text);
   font-size: 13px;
   overflow: hidden;
@@ -503,6 +632,7 @@ textarea.input {
   padding: 24px;
   border-radius: 24px;
   background: var(--paper);
+  border: 1px solid var(--line);
   box-shadow: 0 12px 40px rgb(0 0 0 / 24%);
 }
 .dialog h2 {
@@ -529,15 +659,15 @@ textarea.input {
   padding: 12px 10px 12px 18px;
   transform: translateX(-50%);
   border-radius: 16px;
-  background: var(--success);
+  background: var(--success-fill);
   color: #fff;
   box-shadow: 0 6px 20px rgb(0 0 0 / 30%);
 }
 .toast.error {
-  background: var(--danger);
+  background: var(--danger-fill);
 }
 .toast.plain {
-  background: var(--ink);
+  background: var(--ink-fill);
 }
 .toast p {
   flex: 1;
@@ -550,7 +680,7 @@ textarea.input {
 
 .leaflet-container {
   font: inherit;
-  background: #e9e6df;
+  background: var(--map-bg);
 }
 .mk {
   display: grid;
@@ -613,11 +743,11 @@ textarea.input {
 /* Los paraderos: un círculo blanco con el borde en el color de la ruta; la llegada, el punto amarillo. */
 .mk-stop {
   background: #fff;
-  border: 2.5px solid var(--route, var(--ink));
+  border: 2.5px solid var(--route, var(--map-ink));
 }
 .mk-stop.end {
   background: var(--accent);
-  border: 3px solid var(--ink);
+  border: 3px solid var(--map-ink);
 }
 /* La insignia de la ruta: cuadrito redondeado en su color con la letra en blanco. */
 .mk-letter {
@@ -627,7 +757,7 @@ textarea.input {
   padding: 0 6px;
   border: 2px solid #fff;
   border-radius: 9px;
-  background: var(--route, var(--ink));
+  background: var(--route, var(--map-ink));
   box-shadow: 0 1px 4px rgb(21 23 28 / 25%);
   color: #fff;
   font-size: 13px;
@@ -636,8 +766,8 @@ textarea.input {
 .mk-favorite {
   border-radius: 9px;
   background: var(--accent);
-  border: 1.5px solid var(--ink);
-  color: var(--ink);
+  border: 1.5px solid var(--map-ink);
+  color: var(--on-accent);
   cursor: pointer;
 }
 .mk-me {
@@ -651,9 +781,9 @@ textarea.input {
 }
 .mk-number {
   background: var(--accent);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--map-ink);
   box-shadow: 0 1px 5px rgb(0 0 0 / 20%);
-  color: var(--ink);
+  color: var(--on-accent);
   font-size: 12px;
   font-weight: 700;
   cursor: grab;
@@ -662,7 +792,7 @@ textarea.input {
   padding: 4px 8px;
   border: 0;
   border-radius: 8px;
-  background: var(--ink);
+  background: var(--map-ink);
   box-shadow: none;
   color: #fff;
   font-size: 12px;
@@ -672,9 +802,9 @@ textarea.input {
   display: none;
 }
 .leaflet-control-scale-line {
-  border-color: var(--ink);
+  border-color: var(--map-ink);
   background: rgb(255 255 255 / 70%);
-  color: var(--ink);
+  color: var(--map-ink);
   font-size: 11px;
 }
 
@@ -761,14 +891,14 @@ textarea.input {
   text-align: center;
 }
 .chip-row button.on {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: #fff;
+  border-color: var(--strong);
+  background: var(--strong);
+  color: var(--on-strong);
   font-weight: 700;
 }
 .chip-row button.on .count {
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
 /* Control segmentado: una opción de pocas, p. ej. el periodo. */
@@ -792,7 +922,7 @@ textarea.input {
 .segmented button.on {
   background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 1px 3px rgb(21 23 28 / 14%);
+  box-shadow: 0 1px 3px var(--shade-lg);
 }
 
 /* El encabezado de un bloque dentro de una página. */
@@ -852,7 +982,7 @@ textarea.input {
   height: 38px;
   border-radius: 50%;
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
   font-weight: 800;
 }
 
@@ -871,16 +1001,16 @@ textarea.input {
   font-size: 20px;
 }
 .icon-tile.blue {
-  background: #e6f0fb;
-  color: #1d5aa3;
+  background: var(--info-soft);
+  color: var(--info);
 }
 .icon-tile.green {
   background: var(--success-soft);
   color: var(--success);
 }
 .icon-tile.orange {
-  background: #fdeee6;
-  color: #a6461c;
+  background: var(--orange-soft);
+  color: var(--orange);
 }
 .icon-tile.red {
   background: var(--danger-soft);
@@ -952,7 +1082,7 @@ textarea.input {
   padding: 3px 8px;
   border-radius: 6px;
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.4px;
@@ -970,8 +1100,8 @@ textarea.input {
   height: 38px;
   padding: 0 6px;
   border-radius: 11px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--ink-fill);
+  color: var(--on-ink-fill);
   font-size: 16px;
   font-weight: 800;
 }

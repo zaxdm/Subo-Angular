@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter, map } from 'rxjs';
 
 import { Store } from '../../core/store';
+import { Theme } from '../../core/theme';
 import { SuboMark } from '../../shared/subo-mark/subo-mark';
 
 /** Una sección del panel y su dirección. */
@@ -35,6 +36,7 @@ interface Group {
 })
 export class AdminShell {
   protected readonly store = inject(Store);
+  protected readonly theme = inject(Theme);
   private readonly router = inject(Router);
 
   protected readonly menuOpen = signal(false);

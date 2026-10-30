@@ -59,7 +59,7 @@ h1 {
   height: 29px;
   border-radius: 8px;
   background: var(--accent-soft);
-  color: #8a6100;
+  color: var(--accent-text);
   font-size: 12px;
 }
 
@@ -104,7 +104,7 @@ h1 {
 }
 
 .delete {
-  border-color: #dec2bc;
+  border-color: var(--danger-soft);
   color: var(--danger);
 }
 
@@ -153,7 +153,7 @@ h1 {
   z-index: 1;
   padding: 3px 8px;
   border-radius: 20px;
-  background: rgb(255 255 255 / 85%);
+  background: var(--glass);
   font-size: 10px;
 }
 
@@ -178,6 +178,7 @@ h1 {
   margin: 8px 4px 0 0;
   border-radius: 50%;
   background: var(--accent);
+  color: var(--on-accent);
   font-size: 11px;
   font-weight: 700;
 }

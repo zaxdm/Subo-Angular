@@ -3,7 +3,8 @@
   flex: none;
   overflow: hidden;
   border: 1px solid var(--field-line);
-  background: var(--paper);
+  /* La ficha crema del ícono de la app: la misma también en modo oscuro. */
+  background: #f5f3ee;
 }
 
 svg {

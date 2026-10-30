@@ -59,7 +59,7 @@ a {
 }
 
 a:hover {
-  background: rgb(28 26 20 / 5%);
+  background: var(--hover);
 }
 
 .copyright {

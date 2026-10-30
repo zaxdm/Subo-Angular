@@ -65,7 +65,7 @@
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
-  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+  box-shadow: 0 2px 10px var(--shade-sm);
   cursor: text;
 }
 
@@ -81,7 +81,7 @@
   height: 38px;
   border-radius: 50%;
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
 .search-pill input {
@@ -110,7 +110,7 @@
   border: 1px solid var(--line);
   border-radius: 50%;
   background: var(--surface);
-  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+  box-shadow: 0 2px 10px var(--shade-sm);
   cursor: pointer;
 }
 
@@ -133,7 +133,7 @@
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
-  box-shadow: 0 1px 4px rgb(21 23 28 / 8%);
+  box-shadow: 0 1px 4px var(--shade-sm);
   font-size: 13px;
   font-weight: 600;
 }
@@ -191,7 +191,7 @@ button.chip-main:not(:disabled) {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
-  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+  box-shadow: 0 2px 10px var(--shade-sm);
   font-size: 10px;
   font-weight: 700;
   cursor: pointer;
@@ -213,7 +213,7 @@ button.chip-main:not(:disabled) {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
-  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+  box-shadow: 0 2px 10px var(--shade-sm);
 }
 
 .nearby .small {
@@ -253,7 +253,7 @@ button.chip-main:not(:disabled) {
 .zoom {
   border: 1px solid var(--line);
   background: var(--surface);
-  box-shadow: 0 2px 10px rgb(21 23 28 / 10%);
+  box-shadow: 0 2px 10px var(--shade-sm);
 }
 
 .map-button {
@@ -278,7 +278,7 @@ button.chip-main:not(:disabled) {
 .map-button.locate {
   border-color: var(--accent);
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
 .zoom {
@@ -322,7 +322,7 @@ button.chip-main:not(:disabled) {
   max-width: 60%;
   padding: 3px 8px;
   border-radius: 20px;
-  background: rgb(255 255 255 / 85%);
+  background: var(--glass);
   font-size: 10px;
 }
 
@@ -376,6 +376,7 @@ button.chip-main:not(:disabled) {
 
 .tabs button.active .tab-icon {
   background: var(--accent);
+  color: var(--on-accent);
 }
 
 .tabs button:hover:not(.active) .tab-icon {
@@ -665,7 +666,7 @@ button.chip-main:not(:disabled) {
   padding: 14px;
   border: 0;
   border-radius: 18px;
-  background: var(--petrol);
+  background: var(--petrol-fill);
   color: #fff;
   text-align: left;
   cursor: pointer;
@@ -781,7 +782,7 @@ button.chip-main:not(:disabled) {
   height: 14px;
   border: 2.5px solid var(--route, var(--ink));
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
 }
 
 .timeline .end .stop-dot {
@@ -808,7 +809,7 @@ button.chip-main:not(:disabled) {
   padding: 3px 8px;
   border-radius: 6px;
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.4px;
@@ -874,7 +875,7 @@ button.chip-main:not(:disabled) {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: var(--ink);
+  background: var(--ink-fill);
   color: var(--accent);
 }
 
@@ -916,7 +917,7 @@ button.chip-main:not(:disabled) {
 }
 
 .idea:hover {
-  background: #ffe59a;
+  background: var(--tonal-hover);
 }
 
 .bubble {
@@ -932,9 +933,9 @@ button.chip-main:not(:disabled) {
 
 .bubble.mine {
   align-self: flex-end;
-  border-color: var(--ink);
+  border-color: var(--ink-fill);
   border-radius: 18px 18px 6px 18px;
-  background: var(--ink);
+  background: var(--ink-fill);
   color: #fff;
 }
 
@@ -1000,6 +1001,7 @@ button.chip-main:not(:disabled) {
   border: 0;
   border-radius: 50%;
   background: var(--accent);
+  color: var(--on-accent);
   cursor: pointer;
 }
 
@@ -1019,7 +1021,7 @@ button.chip-main:not(:disabled) {
 }
 
 .microphone.listening {
-  background: var(--ink);
+  background: var(--ink-fill);
   color: var(--accent);
 }
 
@@ -1096,7 +1098,7 @@ button.chip-main:not(:disabled) {
   height: 26px;
   border: 2px solid var(--paper);
   border-radius: 8px;
-  background: var(--success);
+  background: var(--success-fill);
   color: #fff;
 }
 
@@ -1178,7 +1180,7 @@ button.chip-main:not(:disabled) {
   height: 22px;
   border-radius: 7px;
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
 .plus .mi {
@@ -1327,7 +1329,7 @@ button.chip-main:not(:disabled) {
     z-index: 1001;
     border: 0;
     border-radius: 22px 22px 0 0;
-    box-shadow: 0 -2px 12px rgb(21 23 28 / 8%);
+    box-shadow: 0 -2px 12px var(--shade-sm);
   }
 
   /* El asa: la zona que se toca es ancha, aunque la raya sea corta. */
@@ -1496,7 +1498,7 @@ button.chip-main:not(:disabled) {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow: 0 6px 20px rgb(21 23 28 / 14%);
+  box-shadow: 0 6px 20px var(--shade-lg);
   overflow-y: auto;
 }
 
@@ -1801,7 +1803,7 @@ button.chip-main:not(:disabled) {
 }
 
 .step-icon.ride {
-  background: var(--route, var(--ink));
+  background: var(--route, var(--ink-fill));
   color: #fff;
   font-size: 12px;
   font-weight: 800;
@@ -1836,7 +1838,7 @@ button.chip-main:not(:disabled) {
 .chip.chip-main.add,
 .chip.chip-main:not(.saving) {
   background: var(--surface);
-  box-shadow: 0 1px 4px rgb(21 23 28 / 10%);
+  box-shadow: 0 1px 4px var(--shade-sm);
 }
 
 .chip.chip-main.add {

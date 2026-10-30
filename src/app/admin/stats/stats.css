@@ -117,8 +117,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #2e9d5f;
-  box-shadow: 0 0 0 3px rgb(46 157 95 / 18%);
+  background: var(--live);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 18%, transparent);
 }
 
 .today-items {
@@ -174,7 +174,7 @@ a.today-item:hover {
 }
 
 .section-title h2 .mi {
-  color: #2e9d5f;
+  color: var(--live);
 }
 
 .pending {

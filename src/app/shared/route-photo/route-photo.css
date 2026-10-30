@@ -5,12 +5,12 @@
   width: 100%;
   height: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, var(--accent-soft), #f5f3ee);
+  background: linear-gradient(135deg, var(--accent-soft), var(--paper));
   overflow: hidden;
 }
 
 .hint {
-  color: #858a95;
+  color: var(--faint);
   font-size: 12px;
   text-align: center;
 }

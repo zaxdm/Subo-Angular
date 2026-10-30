@@ -64,6 +64,15 @@
       <span class="mi">chevron_right</span>
       <strong>{{ current() }}</strong>
     </p>
+    <button
+      type="button"
+      class="icon-btn"
+      [title]="theme.dark() ? 'Modo claro' : 'Modo oscuro'"
+      [attr.aria-label]="theme.dark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      (click)="theme.toggle()"
+    >
+      <span class="mi">{{ theme.dark() ? 'light_mode' : 'dark_mode' }}</span>
+    </button>
     <!-- Sale del panel a la web de los pasajeros, sin cerrar sesión. -->
     <a class="btn outline web" routerLink="/mapa">
       <span class="mi">open_in_new</span>

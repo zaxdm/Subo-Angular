@@ -56,12 +56,12 @@ main {
 }
 
 .links a:hover {
-  background: rgb(28 26 20 / 5%);
+  background: var(--hover);
 }
 
 .links a.current {
-  background: var(--ink);
-  color: #fff;
+  background: var(--strong);
+  color: var(--on-strong);
   font-weight: 700;
 }
 
@@ -98,7 +98,7 @@ main {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow: 0 8px 28px rgb(21 23 28 / 14%);
+  box-shadow: 0 8px 28px var(--shade-lg);
 }
 
 .menu-items a {
@@ -153,7 +153,7 @@ main {
 }
 
 .bar a:hover {
-  background: rgb(28 26 20 / 5%);
+  background: var(--hover);
 }
 
 @media (max-width: 759px) {

@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { filter, map } from 'rxjs';
 
 import { Store } from '../../core/store';
+import { Theme } from '../../core/theme';
 import { SuboMark } from '../../shared/subo-mark/subo-mark';
 import { SiteFooter } from '../site-footer/site-footer';
 
@@ -27,6 +28,7 @@ interface NavPage {
 })
 export class SiteShell {
   protected readonly store = inject(Store);
+  protected readonly theme = inject(Theme);
   private readonly router = inject(Router);
 
   private readonly url = toSignal(

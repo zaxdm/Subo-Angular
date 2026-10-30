@@ -256,7 +256,7 @@
 
 /* Sobre el negro, el texto va claro. */
 .showcase.dark {
-  background: var(--ink);
+  background: var(--ink-fill);
   color: #fff;
 }
 
@@ -304,11 +304,12 @@
 
 .fare-tag {
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
+/* Sobre la tarjeta tinta, un gris un poco más claro que ella, de día y de noche. */
 .time-tag {
-  background: var(--ink-soft);
+  background: rgb(255 255 255 / 11%);
 }
 
 .notice {
@@ -381,6 +382,7 @@
   margin-bottom: 14px;
   border-radius: 12px;
   background: var(--accent);
+  color: var(--on-accent);
   font-size: 20px;
 }
 
