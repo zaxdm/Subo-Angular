@@ -67,6 +67,91 @@
     </div>
   </section>
 
+  @if (revenue(); as money) {
+    <div class="section-title">
+      <h2><span class="mi">payments</span>Dinero que entra</h2>
+      @if (money.pending.count > 0) {
+        <a class="pending" routerLink="/panel/premium">
+          <span class="mi">hourglass_top</span>
+          {{ money.pending.count }}
+          {{ money.pending.count === 1 ? 'comprobante' : 'comprobantes' }} por confirmar ·
+          {{ formatSoles(money.pending.amount) }}
+          <span class="mi">arrow_forward</span>
+        </a>
+      }
+    </div>
+
+    <section class="metrics money">
+      @for (metric of money.metrics; track metric.label) {
+        <div class="card metric" [title]="metric.hint">
+          <div class="metric-top">
+            <span class="icon-tile" [class]="metric.tone"
+              ><span class="mi">{{ metric.icon }}</span></span
+            >
+            <span
+              class="change"
+              title="Frente al periodo anterior"
+              [class.up]="metric.change.up === true"
+              [class.down]="metric.change.up === false"
+            >
+              @if (metric.change.up !== null) {
+                <span class="mi">{{ metric.change.up ? 'trending_up' : 'trending_down' }}</span>
+              }
+              {{ metric.change.text }}
+            </span>
+          </div>
+          <strong>{{ metric.value }}</strong>
+          <span class="label ellipsis">{{ metric.label }}</span>
+          <span class="hint ellipsis">{{ metric.hint }}</span>
+        </div>
+      }
+    </section>
+
+    <div class="main-row">
+      <section class="card block">
+        <div class="head">
+          <div>
+            <h2>Ingresos por día</h2>
+            <p>Soles de Premium confirmados cada día, de cuentas nuevas y de renovaciones.</p>
+          </div>
+          <a class="btn text more" routerLink="/panel/finanzas">Finanzas<span class="mi">arrow_forward</span></a>
+        </div>
+        <app-day-chart [series]="revenueSeries" [data]="money.points" unit="soles" />
+      </section>
+
+      <section class="card block side">
+        <h2>Por plan</h2>
+        <p>Cuánto dejó cada plan en el periodo.</p>
+        @for (bar of money.plans; track bar.label) {
+          <div class="bar">
+            <span class="ellipsis">{{ bar.label }}</span>
+            <span class="track"><i [style.width.%]="bar.percent"></i></span>
+            <strong>{{ formatSoles(bar.value) }}</strong>
+          </div>
+        } @empty {
+          <p class="muted none">No se confirmó ningún pago en este periodo.</p>
+        }
+
+        <h3 class="sub">Últimos pagos</h3>
+        @for (payment of money.recent; track payment.id) {
+          <div class="person">
+            <span class="avatar-dot">{{ (payment.userName || payment.userEmail).charAt(0).toUpperCase() }}</span>
+            <span class="who">
+              <strong class="ellipsis">{{ payment.userName || payment.userEmail }}</strong>
+              <span class="ellipsis">{{ planLabel(payment.days) }} · {{ payment.newcomer ? 'nuevo' : 'renovó' }}</span>
+            </span>
+            <span class="when">
+              <strong>{{ formatSoles(payment.amount) }}</strong>
+              <small>{{ lastSeen(payment.createdAt.getTime()) }}</small>
+            </span>
+          </div>
+        } @empty {
+          <p class="muted none">Aún no hay pagos que mostrar.</p>
+        }
+      </section>
+    </div>
+  }
+
   <div class="main-row">
     <section class="card block">
       <div class="head">

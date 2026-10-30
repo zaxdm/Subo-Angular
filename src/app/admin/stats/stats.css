@@ -154,6 +154,59 @@ a.today-item:hover {
   background: var(--accent-wash);
 }
 
+/* --- Dinero que entra --- */
+
+.section-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 28px 0 14px;
+}
+
+.section-title h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.section-title h2 .mi {
+  color: #2e9d5f;
+}
+
+.pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--accent-wash);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pending .mi {
+  font-size: 16px;
+}
+
+.pending:hover {
+  background: var(--accent-soft);
+}
+
+.metrics.money {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.when strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
 /* --- Bloques --- */
 
 .main-row {
@@ -411,7 +464,8 @@ a.today-item:hover {
 }
 
 @media (max-width: 1399px) {
-  .metrics {
+  .metrics,
+  .metrics.money {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -435,7 +489,8 @@ a.today-item:hover {
 }
 
 @media (max-width: 479px) {
-  .metrics {
+  .metrics,
+  .metrics.money {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
