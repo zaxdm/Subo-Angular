@@ -2,7 +2,10 @@
   @if (!inApp) {
     <a class="back" routerLink="/perfil"><span class="mi">arrow_back</span> Volver a mi perfil</a>
   }
-  <h1>Pagar Subo Premium</h1>
+  <!-- En la app el título ya va en su barra de arriba. -->
+  @if (!inApp) {
+    <h1>Pagar Subo Premium</h1>
+  }
   <p class="muted">Pagas aquí mismo. Los datos de tu tarjeta los recibe Mercado Pago; Subo no los ve.</p>
 
   @if (error(); as message) {
