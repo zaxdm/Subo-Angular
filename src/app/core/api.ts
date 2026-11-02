@@ -378,6 +378,26 @@ export class Api {
     return url;
   }
 
+  /**
+   * Paga con lo que devolvió el formulario integrado de Mercado Pago (su token,
+   * nunca los datos de la tarjeta). Devuelve cómo quedó el pago.
+   */
+  async payDirect(days: number, payment: Json): Promise<{ status: string; statusDetail: string }> {
+    const data = await this.send('POST', '/api/premium/pay', { body: { days, payment } });
+    return {
+      status: typeof data['status'] === 'string' ? data['status'] : 'rejected',
+      statusDetail: typeof data['statusDetail'] === 'string' ? data['statusDetail'] : '',
+    };
+  }
+
+  /**
+   * Usa una sesión que llegó de la app (al abrir el pago dentro de ella) solo
+   * mientras la página esté abierta: no se guarda en el navegador.
+   */
+  useTemporaryToken(token: string): void {
+    this.token = token;
+  }
+
   /** Al volver de Mercado Pago: confirma el pago por si su aviso aún no llegó. Devuelve su estado. */
   async confirmCheckout(paymentId: string): Promise<string> {
     const status = (await this.send('POST', '/api/premium/mercadopago/confirm', { body: { paymentId } }))['status'];

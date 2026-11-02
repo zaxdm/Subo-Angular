@@ -48,6 +48,8 @@ const lineNeedsSession: CanActivateFn = (route) => {
 };
 
 export const routes: Routes = [
+  // Pagar Premium dentro de Subo. Sin el marco de la web: la app la abre dentro de sí.
+  { path: 'pagar', loadComponent: () => import('./site/pay/pay').then((m) => m.Pay) },
   {
     path: 'panel',
     canActivate: [adminOnly],

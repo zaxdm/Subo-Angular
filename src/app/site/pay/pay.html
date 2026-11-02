@@ -1,0 +1,48 @@
+<main class="pay" [class.in-app]="inApp">
+  @if (!inApp) {
+    <a class="back" routerLink="/perfil"><span class="mi">arrow_back</span> Volver a mi perfil</a>
+  }
+  <h1>Pagar Subo Premium</h1>
+  <p class="muted">Pagas aquí mismo. Los datos de tu tarjeta los recibe Mercado Pago; Subo no los ve.</p>
+
+  @if (error(); as message) {
+    <div class="card notice">
+      <p>{{ message }}</p>
+      <button type="button" class="btn outline" (click)="cancel()">Volver</button>
+    </div>
+  } @else {
+    @if (offer(); as offer) {
+      <div class="plans" role="radiogroup" aria-label="Plan">
+        @for (option of offer.plans; track option.days) {
+          <button
+            type="button"
+            role="radio"
+            class="plan"
+            [class.on]="plan()?.days === option.days"
+            [attr.aria-checked]="plan()?.days === option.days"
+            [disabled]="paying()"
+            (click)="choose(option)"
+          >
+            <strong>{{ option.days }} días</strong>
+            <span>S/ {{ option.price.toFixed(2) }}</span>
+          </button>
+        }
+      </div>
+    }
+
+    @if (rejected(); as message) {
+      <p class="problem"><span class="mi">error</span> {{ message }}</p>
+    }
+
+    @if (loading()) {
+      <div class="loading"><span class="spinner"></span></div>
+    }
+    <!-- Aquí pinta Mercado Pago su formulario. -->
+    <div id="mp-payment" [class.hidden]="paying()"></div>
+    @if (paying()) {
+      <div class="loading"><span class="spinner"></span><span>Procesando el pago…</span></div>
+    }
+
+    <button type="button" class="btn text cancel" [disabled]="paying()" (click)="cancel()">Cancelar</button>
+  }
+</main>

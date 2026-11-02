@@ -130,6 +130,11 @@ export class PremiumPanel implements OnInit {
   protected async payWithMercadoPago(): Promise<void> {
     const plan = this.plan();
     if (plan === null || this.busy()) return;
+    // Con el formulario integrado se paga sin salir de Subo.
+    if (this.offer()?.mpPublicKey) {
+      void this.router.navigate(['/pagar'], { queryParams: { dias: plan.days } });
+      return;
+    }
     this.busy.set(true);
     try {
       // Se va a la página de pago de Mercado Pago; al terminar vuelve aquí.

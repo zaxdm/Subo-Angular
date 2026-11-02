@@ -1,0 +1,95 @@
+:host {
+  display: block;
+  min-height: 100%;
+  background: var(--paper);
+}
+
+.pay {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+}
+
+.pay.in-app {
+  padding-top: 16px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+
+.muted {
+  margin: 0 0 16px;
+  font-size: 13px;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.plan.on {
+  border-color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+}
+
+.problem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+}
+
+.hidden {
+  display: none;
+}
+
+.notice {
+  padding: 16px;
+}
+
+.cancel {
+  display: block;
+  margin: 12px auto 0;
+}

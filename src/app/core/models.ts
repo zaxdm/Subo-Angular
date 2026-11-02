@@ -701,6 +701,8 @@ export function myPaymentFromJson(json: Json): MyPayment {
 export interface PremiumOffer extends PaymentConfig {
   /** Se puede pagar con Mercado Pago. */
   mercadoPago: boolean;
+  /** Clave pública del formulario de pago integrado; `null`: se paga en la página de Mercado Pago. */
+  mpPublicKey: string | null;
   /** Su último comprobante o compra; `null` si nunca pagó. */
   mine: MyPayment | null;
 }
@@ -710,6 +712,7 @@ export function premiumOfferFromJson(json: Json): PremiumOffer {
   return {
     ...paymentConfigFromJson(json),
     mercadoPago: json['mercadoPago'] === true,
+    mpPublicKey: typeof json['mpPublicKey'] === 'string' ? json['mpPublicKey'] : null,
     mine: mine !== null && typeof mine === 'object' ? myPaymentFromJson(mine as Json) : null,
   };
 }
