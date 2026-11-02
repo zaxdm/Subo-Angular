@@ -33,8 +33,18 @@ const plain = (text: string): string =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 
-/** Empresa y letra, sin fijarse en mayúsculas, espacios ni adornos. */
-export const serviceKey = (route: BusRoute): string => `${plain(route.name)}|${plain(route.letter)}`;
+/**
+ * Como [plain], pero el «♡» cuenta: en Trujillo la letra «con corazón» es un
+ * ramal oficial propio (C1♡ no es la vuelta de C1).
+ */
+const lineText = (text: string): string =>
+  text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}♡]+/gu, ' ')
+    .trim();
+
+/** Empresa y letra, sin fijarse en mayúsculas ni espacios (el «♡» sí cuenta). */
+export const serviceKey = (route: BusRoute): string => `${lineText(route.name)}|${lineText(route.letter)}`;
 
 /** Sin trazado dibujado, la línea une los puntos de referencia. */
 const lineOf = (route: BusRoute): GeoPoint[] => (route.path.length >= 2 ? route.path : route.stops);

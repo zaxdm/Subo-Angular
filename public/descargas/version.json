@@ -1,7 +1,7 @@
 {
-  "versionCode": 14,
-  "versionName": "2.3",
+  "versionCode": 15,
+  "versionName": "2.4",
   "url": "subo.apk",
-  "notes": "• Ahora puedes eliminar tu cuenta y tus datos desde el perfil.\n• Si cambias tu contraseña en otro lado, Subo te pide volver a entrar en este teléfono, para cuidar tu cuenta.\n• Te avisamos cuando tu Premium está por vencer, aunque no abras la app.",
-  "notes_en": "• You can now delete your account and your data from your profile.\n• If you change your password elsewhere, Subo asks you to sign in again on this phone, to keep your account safe.\n• We let you know when your Premium is about to expire, even if you don't open the app."
+  "notes": "• Las líneas con letra «con corazón» (como Libertad C1♡) son ramales propios: ya no salen como la vuelta de otra línea.",
+  "notes_en": "• Lines whose letter has a heart (like Libertad C1♡) are their own branches: they no longer show up as another line's return trip."
 }

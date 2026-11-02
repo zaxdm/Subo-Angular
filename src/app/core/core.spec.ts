@@ -175,6 +175,12 @@ describe('groupServices', () => {
   it('una línea con un solo recorrido no lleva sentido', () => {
     expect(groupServices([route()])[0].routes[0].direction).toBe('');
   });
+
+  it('la letra con corazón es otro ramal, no la vuelta', () => {
+    const ida = route();
+    const corazon = { ...duplicateRoute(ida, true), id: 'r2', letter: `${ida.letter}♡`, name: `${ida.name}♡` };
+    expect(groupServices([ida, corazon]).length).toBe(2);
+  });
 });
 
 describe('panel de estadísticas', () => {
