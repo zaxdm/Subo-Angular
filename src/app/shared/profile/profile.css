@@ -149,6 +149,41 @@ h1 {
   margin-top: 16px;
 }
 
+.menu-list.security {
+  margin-top: 0;
+}
+
+.powers {
+  margin-top: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+}
+
+.powers-title {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.powers ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px 12px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.powers li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.powers .mi {
+  color: var(--success);
+  font-size: 16px;
+}
+
 .foot {
   margin-top: 20px;
   color: var(--muted);

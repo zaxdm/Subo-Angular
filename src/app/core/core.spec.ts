@@ -12,6 +12,7 @@ import { lastSeenLabel } from '../admin/users/users';
 import { groupServices } from './directions';
 import { metersToLine } from './nearby';
 import { duplicateRoute, parseStreetPath, streetUrl } from './route-tools';
+import { pagerOf } from '../site/home/home';
 
 const route = (): BusRoute => ({
   ...newRoute(),
@@ -131,8 +132,22 @@ describe('modelos', () => {
     expect(sessionOf({ role: 'super_admin' }, passenger)).toMatchObject({ isAdmin: true, isSuperAdmin: true });
     expect(sessionOf({ role: 'admin' }, passenger)).toMatchObject({ isAdmin: true, isSuperAdmin: false });
     // Lo que el servidor no dice se conserva; una foto quitada, no.
-    expect(sessionOf({}, passenger)).toEqual(passenger);
+    expect(sessionOf({}, passenger)).toEqual({ ...passenger, premiumUntil: null });
     expect(sessionOf({ avatarUrl: null }, passenger).avatarUrl).toBeNull();
+  });
+
+  it('el Premium llega como fecha y sin él la cuenta es gratuita', () => {
+    const passenger = { name: 'Ana', isAdmin: false, isSuperAdmin: false, email: '', avatarUrl: null };
+    expect(sessionOf({ premiumUntil: 1_800_000_000_000 }, passenger).premiumUntil).toEqual(new Date(1_800_000_000_000));
+    expect(sessionOf({ premiumUntil: null }, passenger).premiumUntil).toBeNull();
+  });
+
+  it('las rutas cercanas van de 5 en 5', () => {
+    expect(pagerOf(12, 0)).toEqual({ page: 0, pages: 3, from: 0, to: 5, total: 12 });
+    expect(pagerOf(12, 2)).toMatchObject({ from: 10, to: 12 });
+    // Una página que ya no existe (quedan menos rutas) se queda en la última.
+    expect(pagerOf(7, 5)).toMatchObject({ page: 1, from: 5, to: 7 });
+    expect(pagerOf(0, 0)).toMatchObject({ pages: 1, from: 0, to: 0 });
   });
 });
 

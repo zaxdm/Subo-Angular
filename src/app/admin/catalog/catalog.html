@@ -1,5 +1,10 @@
 @if (store.editing(); as route) {
-  <app-editor [route]="route" />
+  <!-- El editor (con su mapa) se descarga solo al abrir una ruta: el catálogo carga antes. -->
+  @defer {
+    <app-editor [route]="route" />
+  } @placeholder (minimum 200ms) {
+    <div class="empty-state"><span class="spinner"></span><span>Abriendo el editor…</span></div>
+  }
 } @else {
   <header>
     <div>
@@ -97,7 +102,13 @@
     }
   </section>
 
-  @if (visible().length === 0) {
+  @if (store.loadingRoutes() && store.routes().length === 0) {
+    <div class="empty-state">
+      <span class="spinner"></span>
+      <strong>Cargando el catálogo…</strong>
+      <span>Mientras tanto puedes usar las otras secciones del panel.</span>
+    </div>
+  } @else if (visible().length === 0) {
     <div class="empty-state">
       <span class="mi">{{ store.routes().length === 0 ? 'add_road' : 'search_off' }}</span>
       <strong>{{ store.routes().length === 0 ? 'Todavía no hay rutas' : 'Ninguna ruta coincide' }}</strong>

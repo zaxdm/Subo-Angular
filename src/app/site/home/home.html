@@ -126,7 +126,7 @@
       </p>
       @if (near().length > 0) {
         <div class="nearby-lines">
-          @for (route of near(); track route.id) {
+          @for (route of shownNear(); track route.id) {
             <button type="button" class="mini-line" (click)="store.selectLine(route.id)">
               <span class="thumb sm">
                 @if (photoOf(route); as photo) {
@@ -143,6 +143,9 @@
             </button>
           }
         </div>
+        @if (nearPager().pages > 1) {
+          <ng-container *ngTemplateOutlet="pager; context: { $implicit: nearPager(), go: pinPage }"></ng-container>
+        }
       }
     </div>
   }
@@ -526,7 +529,7 @@
               } @else if (searchingPlace()) {
                 <p class="group">Buscando ese lugar en el mapa…</p>
               }
-              @for (row of rows(); track row.route.id) {
+              @for (row of shownRows(); track row.route.id) {
                 <button type="button" class="line" (click)="store.selectLine(row.route.id)">
                   <span class="line-main">
                     <span class="thumb">
@@ -562,6 +565,11 @@
                     </span>
                   }
                 </button>
+              }
+              @if (pagingRows() && rowsPager().pages > 1) {
+                <ng-container
+                  *ngTemplateOutlet="pager; context: { $implicit: rowsPager(), go: nearPage }"
+                ></ng-container>
               }
             </div>
           }
@@ -799,6 +807,15 @@
         </p>
       }
       <label class="field">
+        <span>¿De qué micro? (opcional)</span>
+        <select class="input" name="routeId" [(ngModel)]="reportRoute">
+          <option value="">Ninguno / no sé</option>
+          @for (line of reportLines(); track line.id) {
+            <option [value]="line.id">{{ line.label }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
         <span>Lugar (opcional)</span>
         <input
           class="input"
@@ -821,3 +838,28 @@
     </form>
   </div>
 }
+
+<!-- Flechas para pasar de 5 en 5 por una lista larga de rutas cercanas. -->
+<ng-template #pager let-pager let-go="go">
+  <div class="pager">
+    <button
+      type="button"
+      class="pager-arrow"
+      title="Las 5 anteriores"
+      [disabled]="pager.page === 0"
+      (click)="go.set(pager.page - 1)"
+    >
+      <span class="mi">chevron_left</span>
+    </button>
+    <span>{{ pager.from + 1 }}–{{ pager.to }} de {{ pager.total }}</span>
+    <button
+      type="button"
+      class="pager-arrow"
+      title="Ver las 5 siguientes"
+      [disabled]="pager.page >= pager.pages - 1"
+      (click)="go.set(pager.page + 1)"
+    >
+      <span class="mi">chevron_right</span>
+    </button>
+  </div>
+</ng-template>

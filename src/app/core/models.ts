@@ -41,6 +41,9 @@ export interface Session {
 
   /** La foto de perfil; `null` si no tiene. */
   avatarUrl: string | null;
+
+  /** Hasta cuándo es Premium; `null` si la cuenta es gratuita. */
+  premiumUntil?: Date | null;
 }
 
 /** La sesión de la cuenta que describe el servidor en [user]. Lo que [user] no traiga se toma de [fallback]. */
@@ -52,6 +55,11 @@ export function sessionOf(user: Json, fallback: Session): Session {
     isSuperAdmin: role == null ? fallback.isSuperAdmin : role === 'super_admin',
     email: text(user['email'], fallback.email),
     avatarUrl: 'avatarUrl' in user ? optionalText(user['avatarUrl']) : fallback.avatarUrl,
+    premiumUntil: !('premiumUntil' in user)
+      ? (fallback.premiumUntil ?? null)
+      : typeof user['premiumUntil'] === 'number'
+        ? new Date(user['premiumUntil'])
+        : null,
   };
 }
 
@@ -646,15 +654,78 @@ export function paymentConfigFromJson(json: Json): PaymentConfig {
   };
 }
 
+export type PaymentStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'REFUNDED';
+export type PaymentMethod = 'YAPE' | 'MERCADOPAGO';
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  PENDING: 'En revisión',
+  APPROVED: 'Aprobado',
+  REJECTED: 'Rechazado',
+  REFUNDED: 'Devuelto',
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = { YAPE: 'Yape', MERCADOPAGO: 'Mercado Pago' };
+
+/** Una compra de Premium tal como la ve quien la hizo: su historial. */
+export interface MyPayment {
+  id: string;
+  days: number;
+  amount: number;
+  status: PaymentStatus;
+  /** Por qué se rechazó, si se dijo. */
+  note: string;
+  createdAt: Date;
+  method: PaymentMethod;
+  /** El número del comprobante de compra, solo si se aprobó. */
+  receipt: string | null;
+}
+
+function paymentStatusOf(value: unknown): PaymentStatus {
+  return value === 'APPROVED' || value === 'REJECTED' || value === 'REFUNDED' ? value : 'PENDING';
+}
+
+export function myPaymentFromJson(json: Json): MyPayment {
+  return {
+    id: text(json['id']),
+    days: Number(json['days'] ?? 0),
+    amount: Number(json['amount'] ?? 0),
+    status: paymentStatusOf(json['status']),
+    note: text(json['note']),
+    createdAt: new Date(Number(json['createdAt'] ?? 0)),
+    method: json['method'] === 'MERCADOPAGO' ? 'MERCADOPAGO' : 'YAPE',
+    receipt: typeof json['receipt'] === 'string' ? json['receipt'] : null,
+  };
+}
+
+/** Lo que ve un pasajero para comprar Premium: los planes, cómo pagar y su último pago. */
+export interface PremiumOffer extends PaymentConfig {
+  /** Se puede pagar con Mercado Pago. */
+  mercadoPago: boolean;
+  /** Su último comprobante o compra; `null` si nunca pagó. */
+  mine: MyPayment | null;
+}
+
+export function premiumOfferFromJson(json: Json): PremiumOffer {
+  const mine = json['mine'];
+  return {
+    ...paymentConfigFromJson(json),
+    mercadoPago: json['mercadoPago'] === true,
+    mine: mine !== null && typeof mine === 'object' ? myPaymentFromJson(mine as Json) : null,
+  };
+}
+
 /** El comprobante de un pago de Premium que alguien subió desde la app. */
 export interface PremiumPayment {
   id: string;
   days: number;
   amount: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: PaymentStatus;
   note: string;
   createdAt: Date;
+  /** La captura del Yape; vacía en los pagos de Mercado Pago. */
   imageUrl: string;
+  method: PaymentMethod;
+  receipt: string | null;
   userName: string;
   userEmail: string;
 }
@@ -665,10 +736,12 @@ export function premiumPaymentFromJson(json: Json): PremiumPayment {
     id: text(json['id']),
     days: Number(json['days'] ?? 0),
     amount: Number(json['amount'] ?? 0),
-    status: status === 'APPROVED' || status === 'REJECTED' ? status : 'PENDING',
+    status: paymentStatusOf(status),
     note: text(json['note']),
     createdAt: new Date(Number(json['createdAt'] ?? 0)),
     imageUrl: text(json['imageUrl']),
+    method: json['method'] === 'MERCADOPAGO' ? 'MERCADOPAGO' : 'YAPE',
+    receipt: typeof json['receipt'] === 'string' ? json['receipt'] : null,
     userName: text(json['userName']),
     userEmail: text(json['userEmail']),
   };

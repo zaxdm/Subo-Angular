@@ -1,5 +1,5 @@
 import { GeoPoint } from './models';
-import { SiteInfo } from './site-info';
+import { serverUrl } from './site-info';
 
 /** Un viaje que alguien comparte en vivo desde la app, tal como lo ve quien tiene el enlace. */
 export interface LiveTrip {
@@ -21,8 +21,7 @@ export const TRIP_STALE_MS = 2 * 60_000;
 
 const TIMEOUT_MS = 20_000;
 
-const number = (value: unknown): number | null =>
-  typeof value === 'number' && Number.isFinite(value) ? value : null;
+const number = (value: unknown): number | null => (typeof value === 'number' && Number.isFinite(value) ? value : null);
 
 function point(latitude: unknown, longitude: unknown): GeoPoint | null {
   const lat = number(latitude);
@@ -35,7 +34,7 @@ function point(latitude: unknown, longitude: unknown): GeoPoint | null {
  * Devuelve `null` si ese viaje no existe; lanza un error si no hubo conexión.
  */
 export async function fetchLiveTrip(id: string): Promise<LiveTrip | null> {
-  const response = await fetch(`${SiteInfo.serverUrl}/api/trips/${encodeURIComponent(id)}`, {
+  const response = await fetch(serverUrl(`/api/trips/${encodeURIComponent(id)}`), {
     headers: { Accept: 'application/json' },
     cache: 'no-store',
     signal: AbortSignal.timeout(TIMEOUT_MS),

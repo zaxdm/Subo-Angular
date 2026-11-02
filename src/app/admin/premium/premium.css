@@ -202,3 +202,9 @@
   max-height: 100%;
   border-radius: 12px;
 }
+
+.proof.mp {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}

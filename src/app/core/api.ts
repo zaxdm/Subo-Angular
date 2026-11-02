@@ -25,6 +25,10 @@ import {
   PremiumPayment,
   paymentConfigFromJson,
   premiumPaymentFromJson,
+  MyPayment,
+  myPaymentFromJson,
+  PremiumOffer,
+  premiumOfferFromJson,
   alertFromJson,
   moderationAlertFromJson,
   routeFromJson,
@@ -44,7 +48,7 @@ import {
   financeEntryFromJson,
   financeSummaryFromJson,
 } from './models';
-import { SiteInfo } from './site-info';
+import { SiteInfo, serverUrl } from './site-info';
 import { load, save } from './storage';
 
 type Json = Record<string, unknown>;
@@ -336,6 +340,47 @@ export class Api {
     });
   }
 
+  // --- Comprar Premium (pasajeros) ---
+
+  /** Los planes, cómo se puede pagar y cómo va el último pago de quien mira. */
+  async premiumOffer(): Promise<PremiumOffer> {
+    return premiumOfferFromJson(await this.send('GET', '/api/premium/payment'));
+  }
+
+  /** Las compras de Premium de la cuenta, la más reciente primero. */
+  async myPayments(): Promise<MyPayment[]> {
+    return items((await this.send('GET', '/api/premium/payments/mine'))['payments']).map(myPaymentFromJson);
+  }
+
+  /** Abre el cobro en Mercado Pago y devuelve su página de pago. */
+  async checkout(days: number): Promise<string> {
+    const url = (await this.send('POST', '/api/premium/checkout', { body: { days } }))['url'];
+    if (typeof url !== 'string') throw new ApiError('Mercado Pago no respondió. Inténtalo en un momento.');
+    return url;
+  }
+
+  /** Al volver de Mercado Pago: confirma el pago por si su aviso aún no llegó. Devuelve su estado. */
+  async confirmCheckout(paymentId: string): Promise<string> {
+    const status = (await this.send('POST', '/api/premium/mercadopago/confirm', { body: { paymentId } }))['status'];
+    return typeof status === 'string' ? status : 'unknown';
+  }
+
+  /** Sube la captura del Yape (el servidor revisa que sea un pago) y la manda para el plan elegido. */
+  async sendPaymentProof(days: number, file: Blob, contentType: string): Promise<MyPayment> {
+    const url = this.uploadedUrl(await this.send('POST', '/api/images?purpose=payment', { file, contentType }));
+    return myPaymentFromJson(await this.send('POST', '/api/premium/payments', { body: { days, imageUrl: url } }));
+  }
+
+  /** La sesión al día (para ver el Premium recién activado). */
+  async me(session: Session): Promise<Session> {
+    return sessionOf(await this.send('GET', '/api/me'), session);
+  }
+
+  /** Cambia la contraseña sabiendo la actual. */
+  async changePassword(current: string, next: string): Promise<void> {
+    await this.send('POST', '/api/me/password', { body: { currentPassword: current, newPassword: next } });
+  }
+
   /** Ingresos, gastos y ganancia de los últimos `months` meses, con los movimientos anotados. */
   async finance(months: number): Promise<FinanceSummary> {
     return financeSummaryFromJson(await this.send('GET', `/api/admin/finance?months=${months}`));
@@ -465,8 +510,11 @@ export class Api {
     longitude: number;
     placeName: string | null;
     comment: string | null;
+    /** La línea de micro de la que se habla, si se eligió. */
+    routeId?: string | null;
   }): Promise<CityAlert> {
     const body: Json = { type: alert.type, latitude: alert.latitude, longitude: alert.longitude };
+    if (alert.routeId) body['routeId'] = alert.routeId;
     if (alert.placeName) body['placeName'] = alert.placeName;
     if (alert.comment) body['comment'] = alert.comment;
     return alertFromJson(await this.send('POST', '/api/alerts', { body }));
@@ -498,7 +546,7 @@ export class Api {
     let response: Response;
     let text: string;
     try {
-      response = await fetch(SiteInfo.serverUrl + path, {
+      response = await fetch(serverUrl(path), {
         method,
         headers,
         body,

@@ -1851,3 +1851,31 @@ button.chip-main:not(:disabled) {
   background: var(--accent-soft);
   padding-right: 0;
 }
+
+/* Las flechas de «Cerca de ti»: de 5 en 5. */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pager-arrow {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pager-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

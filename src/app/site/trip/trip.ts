@@ -14,6 +14,7 @@ import { RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 
 import { LiveTrip, TRIP_STALE_MS, ago, fetchLiveTrip } from '../../core/live-trip';
+import { mapTip } from '../../core/map-tip';
 import { GeoPoint, routeTitle } from '../../core/models';
 import { Store } from '../../core/store';
 
@@ -156,7 +157,9 @@ export class Trip implements OnDestroy {
     }
     if (trip.stop) {
       L.marker(latLng(trip.stop), { icon: badge('mk-stop end', 20), keyboard: false })
-        .bindTooltip(trip.stop.name === '' ? 'Aquí se baja' : `Se baja en ${trip.stop.name}`, { direction: 'top' })
+        .bindTooltip(mapTip(trip.stop.name === '' ? 'Aquí se baja' : `Se baja en ${trip.stop.name}`), {
+          direction: 'top',
+        })
         .addTo(this.markerLayer);
     }
     if (trip.position) {

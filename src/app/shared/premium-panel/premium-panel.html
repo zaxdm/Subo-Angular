@@ -1,0 +1,125 @@
+<h2 class="section">Subo Premium</h2>
+
+<!-- Cómo está su Premium: activo hasta tal fecha, por vencer, o cuenta gratuita. -->
+<section class="status card" [class.active]="until()" [class.soon]="endsSoon()">
+  <span class="status-icon"
+    ><span class="mi">{{ endsSoon() ? 'schedule' : until() ? 'workspace_premium' : 'star_outline' }}</span></span
+  >
+  <div class="grow">
+    @if (until(); as until) {
+      <strong>{{ endsSoon() ? 'Tu Premium vence pronto' : 'Premium activo' }}</strong>
+      <span
+        >Hasta el {{ formatDate(until) }} · {{ daysLeft() }} {{ daysLeft() === 1 ? 'día' : 'días' }}
+        {{ daysLeft() === 1 ? 'queda' : 'quedan' }}</span
+      >
+      @if (endsSoon()) {
+        <span class="hint">Renueva ahora: los días se suman a los que te quedan, no pierdes ninguno.</span>
+      }
+    } @else {
+      <strong>Cuenta gratuita</strong>
+      <span>Con Premium: avisos de tus rutas guardadas, viaje en vivo y el asistente sin límite.</span>
+    }
+  </div>
+</section>
+
+@if (loading()) {
+  <div class="loading"><span class="spinner"></span></div>
+} @else if (error(); as message) {
+  <p class="problem">{{ message }}</p>
+} @else if (offer(); as offer) {
+  @if (waiting(); as pending) {
+    <p class="notice">
+      <span class="mi">hourglass_top</span>
+      Tu comprobante de Yape por S/ {{ pending.amount.toFixed(2) }} está en revisión. Te avisamos al confirmarlo.
+    </p>
+  }
+
+  @if (offer.plans.length > 0) {
+    <div class="card buy">
+      <p class="label">{{ until() ? 'Renovar' : 'Elige tu plan' }}</p>
+      <div class="plans" role="radiogroup">
+        @for (option of offer.plans; track option.days) {
+          <button
+            type="button"
+            role="radio"
+            class="plan"
+            [class.on]="plan()?.days === option.days"
+            [attr.aria-checked]="plan()?.days === option.days"
+            (click)="choose(option)"
+          >
+            <strong>{{ option.days }} días</strong>
+            <span>S/ {{ option.price.toFixed(2) }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="pay">
+        @if (offer.mercadoPago) {
+          <button type="button" class="btn accent" [disabled]="busy() || !plan()" (click)="payWithMercadoPago()">
+            <span class="mi">credit_card</span>
+            Pagar con Mercado Pago
+          </button>
+        }
+        @if (offer.qrUrl && !waiting()) {
+          <button type="button" class="btn outline" [disabled]="busy()" (click)="yapeOpen.set(!yapeOpen())">
+            <span class="mi">qr_code_2</span>
+            Pagar con Yape
+          </button>
+        }
+        @if (busy()) {
+          <span class="spinner"></span>
+        }
+      </div>
+      @if (offer.mercadoPago) {
+        <small class="muted">Tarjeta, Yape o saldo de Mercado Pago. Se activa al momento.</small>
+      }
+
+      @if (yapeOpen() && offer.qrUrl; as qr) {
+        <div class="yape">
+          <img [src]="qr" alt="QR de Yape para pagar Subo Premium" />
+          <ol>
+            <li>
+              Yapea <strong>S/ {{ plan()?.price?.toFixed(2) }}</strong> a <strong>{{ offer.holder }}</strong
+              >.
+            </li>
+            <li>Toma una captura de la confirmación del pago.</li>
+            <li>Súbela aquí. Lo confirmamos y te avisamos por correo.</li>
+          </ol>
+          <button type="button" class="btn accent" [disabled]="busy()" (click)="proof.click()">
+            <span class="mi">upload</span>
+            Subir captura del pago
+          </button>
+          <input #proof type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="sendProof(proof)" />
+        </div>
+      }
+    </div>
+  }
+
+  <h2 class="section">Historial de compras</h2>
+  @if (history().length === 0) {
+    <p class="muted empty">Aún no has comprado Premium.</p>
+  } @else {
+    <ul class="card history">
+      @for (payment of history(); track payment.id) {
+        <li>
+          <div class="grow">
+            <strong>Subo Premium · {{ payment.days }} días</strong>
+            <span class="muted"
+              >{{ formatDateTime(payment.createdAt) }} · {{ methodLabels[payment.method] }}
+              @if (payment.receipt) {
+                · Comprobante {{ payment.receipt }}
+              }
+            </span>
+            @if (payment.status === 'REJECTED' && payment.note) {
+              <span class="note">{{ payment.note }}</span>
+            }
+          </div>
+          <div class="right">
+            <strong>S/ {{ payment.amount.toFixed(2) }}</strong>
+            <span class="tag" [class]="payment.status.toLowerCase()">{{ statusLabels[payment.status] }}</span>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+}

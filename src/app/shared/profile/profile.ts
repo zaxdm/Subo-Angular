@@ -5,13 +5,14 @@ import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
 import { ApiError, MAX_IMAGE_BYTES, Session, imageTypeOf } from '../../core/models';
 import { Store } from '../../core/store';
+import { PremiumPanel } from '../premium-panel/premium-panel';
 
 /**
  * Mi perfil: la cuenta con la que se entró, sea de pasajero o de
  * administrador. Deja cambiar el nombre y la foto, y cerrar sesión.
  */
 @Component({
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, PremiumPanel],
   selector: 'app-profile',
   styleUrl: './profile.css',
   templateUrl: './profile.html',
@@ -40,6 +41,48 @@ export class Profile {
     const name = this.store.session()?.name.trim() ?? '';
     return name === '' ? '?' : name[0].toUpperCase();
   });
+
+  /** En el panel de administración: ahí el perfil enseña lo de su rol, no lo de pasajero. */
+  protected readonly inPanel = computed(() => !this.centered() && this.store.isAdmin());
+
+  /** Lo que puede hacer esa cuenta en el panel. */
+  protected readonly powers = computed(() => {
+    const session = this.store.session();
+    if (!session?.isAdmin) return [];
+    const common = ['Crear y editar rutas', 'Moderar alertas y sugerencias', 'Ver estadísticas y usuarios'];
+    return session.isSuperAdmin
+      ? [...common, 'Confirmar pagos de Premium', 'Finanzas', 'Dar o quitar administradores']
+      : common;
+  });
+
+  // --- Cambiar la contraseña ---
+  protected readonly passwordOpen = signal(false);
+  protected readonly currentPassword = signal('');
+  protected readonly newPassword = signal('');
+  protected readonly passwordProblem = signal<string | null>(null);
+
+  protected async savePassword(): Promise<void> {
+    if (this.busy()) return;
+    if (this.newPassword().length < 8) {
+      this.passwordProblem.set('La contraseña nueva necesita al menos 8 caracteres');
+      return;
+    }
+    this.passwordProblem.set(null);
+    this.busy.set(true);
+    this.done.set(null);
+    try {
+      await this.api.changePassword(this.currentPassword(), this.newPassword());
+      this.currentPassword.set('');
+      this.newPassword.set('');
+      this.passwordOpen.set(false);
+      this.done.set('Contraseña cambiada.');
+    } catch (error) {
+      if (error instanceof ApiError && !error.unauthorized) this.passwordProblem.set(error.message);
+      else this.store.onError(error);
+    } finally {
+      this.busy.set(false);
+    }
+  }
 
   protected readonly role = computed(() => {
     const session = this.store.session();

@@ -9,6 +9,13 @@ export const SiteInfo = {
   serverUrl: 'https://ibgbrgeesrtrytmtygtz.supabase.co/functions/v1/server',
 
   /**
+   * Dónde está la base de datos (Canadá). Se le pide a Supabase que el servidor
+   * corra ahí mismo: si corre en otra región, cada consulta cruza el continente
+   * y el panel tarda segundos en cargar.
+   */
+  serverRegion: 'ca-central-1',
+
+  /**
    * El cliente OAuth de tipo Web de Google, el mismo que usa la app. No es un
    * secreto: va en la página. En Google Cloud tiene que tener autorizada la
    * dirección de esta web como «origen de JavaScript».
@@ -81,3 +88,9 @@ export const contactChannels = (): ContactChannel[] => [
   network('Instagram', 'camera_alt', SiteInfo.instagram),
   network('TikTok', 'music_note', SiteInfo.tiktok),
 ];
+
+/** La dirección completa de [path] en el servidor, pidiendo que corra junto a la base de datos. */
+export function serverUrl(path: string): string {
+  const region = `forceFunctionRegion=${SiteInfo.serverRegion}`;
+  return `${SiteInfo.serverUrl}${path}${path.includes('?') ? '&' : '?'}${region}`;
+}

@@ -12,10 +12,12 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
 
 import { Api } from '../../core/api';
+import { mapTip } from '../../core/map-tip';
 import {
   FAVORITE_KINDS,
   FavoriteKind,
@@ -59,6 +61,9 @@ interface LineRow {
 }
 
 /** Los tipos de alerta, en el orden de la app, para filtrar la lista. */
+/** Cuántas rutas cercanas se enseñan a la vez; la flecha pasa a las siguientes. */
+const NEAR_PAGE = 5;
+
 const ALERT_TYPES = ['TRAFFIC', 'ACCIDENT', 'OVERCHARGE', 'ROADWORK', 'CROWDED', 'DANGER', 'OTHER'];
 
 /** El icono de cada tipo de alerta, como en la app. */
@@ -160,7 +165,7 @@ function badge(className: string, text = '', size = 30, color?: string): L.DivIc
  * asistente pide sesión.
  */
 @Component({
-  imports: [FormsModule],
+  imports: [FormsModule, NgTemplateOutlet],
   selector: 'app-home',
   styleUrl: './home.css',
   templateUrl: './home.html',
@@ -248,6 +253,24 @@ export class Home implements OnDestroy {
   protected readonly reportType = signal<string | null>(null);
   protected readonly reportPlace = signal('');
   protected readonly reportComment = signal('');
+
+  /** La línea de micro de la que se habla en la alerta; vacío si ninguna. */
+  protected readonly reportRoute = signal('');
+
+  /**
+   * Las líneas para elegir al reportar: una por línea (no la ida y la vuelta
+   * por separado), en orden natural (C-2 antes que C-10).
+   */
+  protected readonly reportLines = computed(() => {
+    const seen = new Map<string, BusRoute>();
+    for (const route of this.store.lines()) {
+      const key = routeTitle(route).toLowerCase();
+      if (!seen.has(key)) seen.set(key, route);
+    }
+    return [...seen.values()]
+      .map((route) => ({ id: route.id, label: routeTitle(route) }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true, sensitivity: 'base' }));
+  });
   protected readonly sendingReport = signal(false);
   protected readonly question = signal('');
   protected readonly messages = signal<Message[]>([]);
@@ -346,6 +369,39 @@ export class Home implements OnDestroy {
       .map((route) => ({ route, meters: metersToLine(me, this.linePoints().get(route) ?? []) }))
       .filter((row) => row.meters <= NEAR_ME_METERS)
       .sort((a, b) => a.meters - b.meters);
+  });
+
+  /** Con «Cerca de ti» las rutas van de 5 en 5: la página que se ve, empezando en 0. */
+  protected readonly nearPage = signal(0);
+
+  /** Hay que paginar: la lista «Cerca de ti» con más de 5 rutas. */
+  protected readonly pagingRows = computed(() => this.lineFilter() === 'near' && this.me() !== null);
+
+  protected readonly rowsPager = computed(() => pagerOf(this.rows().length, this.nearPage()));
+
+  /** Las filas que se ven: todas, o las 5 de la página con «Cerca de ti». */
+  protected readonly shownRows = computed(() => {
+    if (!this.pagingRows()) return this.rows();
+    const { from, to } = this.rowsPager();
+    return this.rows().slice(from, to);
+  });
+
+  /** Las rutas cerca del sitio marcado, también de 5 en 5. */
+  protected readonly pinPage = signal(0);
+  protected readonly nearPager = computed(() => pagerOf(this.near().length, this.pinPage()));
+  /** Al marcar otro sitio o cambiar de lista se vuelve a las 5 primeras. */
+  private readonly resetPages = effect(() => {
+    this.pin();
+    this.lineFilter();
+    untracked(() => {
+      this.pinPage.set(0);
+      this.nearPage.set(0);
+    });
+  });
+
+  protected readonly shownNear = computed(() => {
+    const { from, to } = this.nearPager();
+    return this.near().slice(from, to);
   });
 
   /** El paradero de la ruta abierta más cercano a quien mira, si se sabe dónde está. */
@@ -751,7 +807,12 @@ export class Home implements OnDestroy {
     // Como en la app: la línea en su color, con un borde blanco que la separa de las calles.
     L.polyline(points, { weight: 10, color: '#fff', opacity: 1, interactive: false }).addTo(this.lineLayer);
     L.polyline(points, { weight: 6, color: this.colorOf(selected), opacity: 1 })
-      .bindTooltip(routeTitle(selected), { sticky: true, className: 'line-tip', direction: 'right', offset: [12, 12] })
+      .bindTooltip(mapTip(routeTitle(selected)), {
+        sticky: true,
+        className: 'line-tip',
+        direction: 'right',
+        offset: [12, 12],
+      })
       .addTo(this.lineLayer);
   }
 
@@ -766,7 +827,7 @@ export class Home implements OnDestroy {
     const line = [me, ...path, board.stop].map(latLng);
     L.polyline(line, { weight: 8, color: '#fff', opacity: 0.9, interactive: false }).addTo(this.walkLayer);
     L.polyline(line, { weight: 5, color: MAP_BLUE, opacity: 1, dashArray: '2 9' })
-      .bindTooltip(`Camina ${walk(this.walkMeters() ?? board.meters)} hasta ${board.stop.name}`, {
+      .bindTooltip(mapTip(`Camina ${walk(this.walkMeters() ?? board.meters)} hasta ${board.stop.name}`), {
         sticky: true,
         className: 'line-tip',
       })
@@ -962,6 +1023,7 @@ export class Home implements OnDestroy {
     this.reportType.set(null);
     this.reportPlace.set('');
     this.reportComment.set('');
+    this.reportRoute.set('');
     this.reporting.set(true);
   }
 
@@ -976,6 +1038,7 @@ export class Home implements OnDestroy {
         ...spot.point,
         placeName: this.reportPlace().trim() || null,
         comment: this.reportComment().trim() || null,
+        routeId: this.reportRoute() || null,
       });
       this.reporting.set(false);
       this.alerts.update((alerts) => [alert, ...alerts.filter((other) => other.id !== alert.id)]);
@@ -1105,4 +1168,12 @@ export class Home implements OnDestroy {
   private say(message: Message): void {
     this.messages.update((messages) => [...messages, message]);
   }
+}
+
+/** Qué parte de una lista larga se ve: de [from] a [to], en la página [page] de [pages]. */
+export function pagerOf(total: number, wanted: number, size = NEAR_PAGE) {
+  const pages = Math.max(1, Math.ceil(total / size));
+  const page = Math.min(Math.max(0, wanted), pages - 1);
+  const from = page * size;
+  return { page, pages, from, to: Math.min(total, from + size), total };
 }

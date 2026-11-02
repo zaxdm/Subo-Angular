@@ -139,7 +139,7 @@ export class Login {
 
   /** Con la sesión abierta, carga lo que le toca ver a esa cuenta y entra. */
   private async enter(session: Session): Promise<void> {
-    const routes = session.isAdmin ? await this.api.routes() : await this.api.publicRoutes();
+    const routes = session.isAdmin ? [] : await this.api.publicRoutes();
     this.password.set('');
     this.store.signedIn(session, routes);
   }

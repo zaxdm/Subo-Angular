@@ -1,0 +1,14 @@
+# Cabeceras de seguridad de toda la web (Cloudflare las aplica a cada archivo).
+# - La CSP solo deja cargar código de esta web y del acceso con Google: aunque
+#   alguien colara HTML en un nombre de ruta, su script no se ejecutaría.
+# - frame-ancestors 'none': nadie puede meter Subo (ni el panel) dentro de otra página.
+# El script del modo oscuro de index.html va permitido por su huella (sha256, con
+#   saltos de línea LF y CRLF): si se cambia ese script, hay que recalcularla.
+# Si se añade un servicio externo nuevo (mapas, fotos, APIs), hay que sumarlo aquí.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-JA0n5sRxn8nrKHK4LNJd/SFbhrGIJO30sNu/3jdoG7Y=' 'sha256-v5TpbfAvIaDQQK1sm239maaEov3LtFov1wRL45GjR10=' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://accounts.google.com/gsi/ https://routing.openstreetmap.de https://photon.komoot.io https://tile.openstreetmap.org https://server.arcgisonline.com; frame-src https://accounts.google.com/gsi/; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(self), geolocation=(self), payment=()
+  Strict-Transport-Security: max-age=31536000

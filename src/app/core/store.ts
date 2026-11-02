@@ -41,6 +41,9 @@ export class Store {
   /** El catálogo completo, con las rutas pendientes y ocultas. */
   readonly routes = signal<BusRoute[]>([]);
 
+  /** El catálogo del panel está llegando: el panel ya se enseña mientras tanto. */
+  readonly loadingRoutes = signal(false);
+
   /** La ruta abierta en el editor; `null` si se ve el catálogo. */
   readonly editing = signal<BusRoute | null>(null);
 
@@ -50,17 +53,24 @@ export class Store {
    */
   async start(): Promise<void> {
     const session = await this.api.restore();
-    if (session?.isAdmin) {
-      try {
-        this.routes.set(await this.api.routes());
-      } catch (error) {
-        this.onError(error);
-      }
-    }
-    // Si la sesión caducó justo ahora, `onError` ya la cerró.
     if (this.api.isSignedIn) this.session.set(session);
+    // El panel se enseña ya y el catálogo, que es lo que más pesa, llega detrás:
+    // las demás secciones del panel no lo necesitan.
+    if (session?.isAdmin) void this.loadAdminRoutes();
     // El administrador carga las líneas al salir del panel a la web.
-    if (!this.isAdmin()) void this.loadLines();
+    else void this.loadLines();
+  }
+
+  /** Pide el catálogo completo del panel. */
+  async loadAdminRoutes(): Promise<void> {
+    this.loadingRoutes.set(true);
+    try {
+      this.routes.set(await this.api.routes());
+    } catch (error) {
+      this.onError(error);
+    } finally {
+      this.loadingRoutes.set(false);
+    }
   }
 
   async loadLines(): Promise<void> {
@@ -75,16 +85,19 @@ export class Store {
     }
   }
 
-  /** Se entró desde la ventana de acceso, con lo que le toca ver a esa cuenta ya cargado. */
+  /**
+   * Se entró desde la ventana de acceso. Al pasajero se le dan las líneas ya
+   * cargadas; el catálogo del administrador se pide después, con el panel ya abierto.
+   */
   signedIn(session: Session, routes: BusRoute[]): void {
     const wanted = this.wantedLine();
     this.session.set(session);
     this.loginOpen.set(false);
     this.wantedLine.set(null);
     if (session.isAdmin) {
-      this.routes.set(routes);
       void this.router.navigate(['/panel']);
-      this.ui.notify('Sesión iniciada. El catálogo está actualizado.');
+      this.ui.notify('Sesión iniciada.');
+      void this.loadAdminRoutes();
       return;
     }
     this.lines.set(routes);
