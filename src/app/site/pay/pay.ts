@@ -169,7 +169,10 @@ export class Pay implements OnInit, OnDestroy {
       const result = await this.api.payDirect(plan.days, formData);
       if (result.status === 'approved') return this.finish('aprobado');
       if (result.status === 'in_process' || result.status === 'pending') return this.finish('pendiente');
-      this.rejected.set(REJECTIONS[result.statusDetail] ?? 'El pago no se aprobó. No se te cobró nada.');
+      this.rejected.set(
+        REJECTIONS[result.statusDetail] ??
+          `El pago no se aprobó. No se te cobró nada.${result.statusDetail ? ` (${result.statusDetail})` : ''}`,
+      );
       await this.mountBrick();
     } catch (error) {
       this.rejected.set(messageOf(error, 'No se pudo completar el pago. Inténtalo de nuevo.'));
