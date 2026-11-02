@@ -38,6 +38,57 @@ export class Login {
   /** El correo que espera su código para terminar de crear la cuenta; `null` si no se está en ese paso. */
   protected readonly confirming = signal<string | null>(null);
 
+  /**
+   * Recuperar la contraseña: 'email' pide el correo; 'code' pide el código
+   * que llegó y la contraseña nueva. `null` fuera de ese camino.
+   */
+  protected readonly resetting = signal<'email' | 'code' | null>(null);
+  protected readonly newPassword = signal('');
+
+  protected startReset(): void {
+    this.resetting.set('email');
+    this.code.set('');
+    this.newPassword.set('');
+    this.error.set(null);
+    this.notice.set(null);
+  }
+
+  protected cancelReset(): void {
+    this.resetting.set(null);
+    this.error.set(null);
+    this.notice.set(null);
+  }
+
+  /** Pide el código al correo. */
+  protected async sendResetCode(): Promise<void> {
+    if (!this.email().trim().includes('@')) {
+      this.error.set('Escribe el correo de tu cuenta');
+      return;
+    }
+    await this.run(async () => {
+      await this.api.forgotPassword(this.email());
+      this.resetting.set('code');
+      this.notice.set('Si ese correo tiene cuenta, te llegó un código de 6 dígitos. Vale 15 minutos.');
+    }, 'No se pudo enviar el código. Inténtalo de nuevo.');
+  }
+
+  /** Con el código, pone la contraseña nueva y entra. */
+  protected async finishReset(): Promise<void> {
+    if (this.code().trim().length !== 6) {
+      this.error.set('Escribe los 6 dígitos del código');
+      return;
+    }
+    if (this.newPassword().length < PASSWORD_MIN_LENGTH) {
+      this.error.set(`La contraseña nueva necesita al menos ${PASSWORD_MIN_LENGTH} caracteres`);
+      return;
+    }
+    await this.run(async () => {
+      const session = await this.api.resetPassword(this.email(), this.code(), this.newPassword());
+      this.resetting.set(null);
+      await this.enter(session);
+    }, 'No se pudo cambiar la contraseña. Inténtalo de nuevo.');
+  }
+
   /** Un aviso que no es un fallo, como que se mandó otro código. */
   protected readonly notice = signal<string | null>(null);
 

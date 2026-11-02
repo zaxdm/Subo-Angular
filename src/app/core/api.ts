@@ -142,6 +142,25 @@ export class Api {
     return this.open('/api/auth/register/verify', { email: email.trim(), code: code.trim() }, email);
   }
 
+  /** Manda al correo un código para poner otra contraseña. Responde igual exista o no la cuenta. */
+  async forgotPassword(email: string): Promise<void> {
+    await this.send('POST', '/api/auth/forgot', { body: { email: email.trim() } });
+  }
+
+  /** Con el código del correo pone la contraseña nueva y entra. Cierra las demás sesiones. */
+  resetPassword(email: string, code: string, password: string): Promise<Session> {
+    return this.open('/api/auth/reset', { email: email.trim(), code: code.trim(), password }, email);
+  }
+
+  /**
+   * Borra la cuenta para siempre. [password] es la actual (vacía si entra
+   * solo con Google) y [confirm] la palabra ELIMINAR.
+   */
+  async deleteAccount(password: string, confirm: string): Promise<void> {
+    await this.send('DELETE', '/api/me', { body: { password, confirm } });
+    this.signOut();
+  }
+
   private async open(path: string, body: Json, email: string): Promise<Session> {
     this.token = null;
     return this.adopt(await this.send('POST', path, { body }), email);
@@ -376,9 +395,19 @@ export class Api {
     return sessionOf(await this.send('GET', '/api/me'), session);
   }
 
-  /** Cambia la contraseña sabiendo la actual. */
+  /**
+   * Cambia la contraseña sabiendo la actual. Las demás sesiones se cierran;
+   * este navegador se queda con el token nuevo que manda el servidor.
+   */
   async changePassword(current: string, next: string): Promise<void> {
-    await this.send('POST', '/api/me/password', { body: { currentPassword: current, newPassword: next } });
+    const opened = await this.send('POST', '/api/me/password', {
+      body: { currentPassword: current, newPassword: next },
+    });
+    const token = opened['token'];
+    if (typeof token === 'string') {
+      this.token = token;
+      save(TOKEN_KEY, token);
+    }
   }
 
   /** Ingresos, gastos y ganancia de los últimos `months` meses, con los movimientos anotados. */

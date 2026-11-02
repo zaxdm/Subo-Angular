@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
 import { ApiError, MAX_IMAGE_BYTES, Session, imageTypeOf } from '../../core/models';
 import { Store } from '../../core/store';
+import { Ui } from '../../core/ui';
 import { PremiumPanel } from '../premium-panel/premium-panel';
 
 /**
@@ -27,6 +28,7 @@ export class Profile {
 
   protected readonly store = inject(Store);
   private readonly api = inject(Api);
+  private readonly ui = inject(Ui);
 
   protected readonly name = signal(this.store.session()?.name ?? '');
   protected readonly busy = signal(false);
@@ -61,6 +63,32 @@ export class Profile {
   protected readonly newPassword = signal('');
   protected readonly passwordProblem = signal<string | null>(null);
 
+  // --- Eliminar la cuenta ---
+  protected readonly deleteOpen = signal(false);
+  protected readonly deletePassword = signal('');
+  protected readonly deleteWord = signal('');
+  protected readonly deleteProblem = signal<string | null>(null);
+
+  protected async deleteAccount(): Promise<void> {
+    if (this.busy()) return;
+    if (this.deleteWord().trim().toUpperCase() !== 'ELIMINAR') {
+      this.deleteProblem.set('Escribe ELIMINAR para confirmar');
+      return;
+    }
+    this.deleteProblem.set(null);
+    this.busy.set(true);
+    try {
+      await this.api.deleteAccount(this.deletePassword(), this.deleteWord());
+      this.store.signOut();
+      this.ui.notify('Tu cuenta y tus datos se eliminaron.');
+    } catch (error) {
+      if (error instanceof ApiError && !error.unauthorized) this.deleteProblem.set(error.message);
+      else this.store.onError(error);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
   protected async savePassword(): Promise<void> {
     if (this.busy()) return;
     if (this.newPassword().length < 8) {
@@ -75,7 +103,7 @@ export class Profile {
       this.currentPassword.set('');
       this.newPassword.set('');
       this.passwordOpen.set(false);
-      this.done.set('Contraseña cambiada.');
+      this.done.set('Contraseña cambiada. Se cerró tu sesión en los demás dispositivos.');
     } catch (error) {
       if (error instanceof ApiError && !error.unauthorized) this.passwordProblem.set(error.message);
       else this.store.onError(error);

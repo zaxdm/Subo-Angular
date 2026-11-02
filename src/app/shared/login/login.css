@@ -125,3 +125,9 @@ h2 {
     padding: 22px;
   }
 }
+
+.forgot {
+  align-self: flex-end;
+  margin-top: -6px;
+  font-size: 13px;
+}
