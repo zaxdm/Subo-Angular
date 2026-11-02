@@ -1,7 +1,7 @@
 {
-  "versionCode": 15,
-  "versionName": "2.4",
+  "versionCode": 16,
+  "versionName": "2.5",
   "url": "subo.apk",
-  "notes": "• Las líneas con letra «con corazón» (como Libertad C1♡) son ramales propios: ya no salen como la vuelta de otra línea.",
-  "notes_en": "• Lines whose letter has a heart (like Libertad C1♡) are their own branches: they no longer show up as another line's return trip."
+  "notes": "• Paga Subo Premium con tarjeta sin salir de la app.\n• En «Cómo llegar», si tomas dos micros, ves la foto de ambos.\n• Arreglos en la lista de rutas cercanas.",
+  "notes_en": "• Pay for Subo Premium by card without leaving the app.\n• In «How to get there», if you take two buses, you see both photos.\n• Fixes in the nearby routes list."
 }
