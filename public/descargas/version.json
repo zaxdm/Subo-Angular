@@ -1,7 +1,7 @@
 {
-  "versionCode": 12,
-  "versionName": "2.1",
+  "versionCode": 13,
+  "versionName": "2.2",
   "url": "subo.apk",
-  "notes": "• El asistente responde rutas, pasajes, horarios y preguntas frecuentes al instante.\n• Si le preguntas cómo llegar, parte desde donde estás.\n• Recuerda lo que le preguntaste antes en la conversación.\n• Puede recomendarte varias rutas a la vez.",
-  "notes_en": "• The assistant instantly answers about routes, fares, schedules and common questions.\n• When you ask how to get somewhere, it starts from where you are.\n• It remembers what you asked earlier in the conversation.\n• It can suggest several routes at once."
+  "notes": "• Paga Subo Premium con Mercado Pago, además de Yape.\n• Mira tu historial de compras con su número de comprobante.\n• Te avisamos cuando tu compra se confirma y cuando tu Premium está por vencer.\n• En la ficha de cada línea, cambia entre la ida y la vuelta.\n• Rutas cercanas de 5 en 5: toca la flecha para ver más.\n• Al reportar, elige el micro más fácil: una línea por micro y en orden.\n• Subo carga más rápido.",
+  "notes_en": "• Pay for Subo Premium with Mercado Pago, as well as Yape.\n• See your purchase history with receipt numbers.\n• Get notified when your purchase is confirmed and when Premium is about to expire.\n• Switch between outbound and return on each line.\n• Nearby routes 5 at a time: tap the arrow to see more.\n• Picking the bus when reporting is easier: one entry per line, in order.\n• Subo loads faster."
 }
