@@ -144,7 +144,13 @@ export class Pay implements OnInit, OnDestroy {
       initialization: { amount: plan.price, payer: { email: this.email } },
       customization: {
         paymentMethods: { creditCard: 'all', debitCard: 'all' },
-        visual: { style: { theme: this.theme.dark() ? 'dark' : 'default' } },
+        visual: {
+          style: {
+            theme: this.theme.dark() ? 'dark' : 'default',
+            // El botón «Pagar» con el amarillo y la letra tinta de Subo.
+            customVariables: { baseColor: '#ffc629', buttonTextColor: '#15171c' },
+          },
+        },
       },
       callbacks: {
         onReady: () => this.loading.set(false),
