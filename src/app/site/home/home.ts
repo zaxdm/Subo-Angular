@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import * as L from 'leaflet';
 
 import { Api } from '../../core/api';
@@ -35,16 +36,19 @@ import {
   BusRoute,
   CityAlert,
   Destination,
-  DestinationLine,
   GeoPoint,
+  formatSoles,
   messageOf,
   routeTitle,
   safeUrl,
 } from '../../core/models';
-import { directionsOf } from '../../core/directions';
+import { groupServices, serviceKey } from '../../core/directions';
+import { RIDERS, Rider, taxiEstimate, totalFare } from '../../core/fares';
+import { Journey, distance, planJourneys } from '../../core/journeys';
 import { metersToLine, spotOnLine } from '../../core/nearby';
 import { PlaceSuggestion, StreetPath, suggestPlaces, walkingPath } from '../../core/street';
 import { load, save } from '../../core/storage';
+import { SiteInfo } from '../../core/site-info';
 import { Store } from '../../core/store';
 import { Ui } from '../../core/ui';
 import { AssistantVoice } from './assistant-voice';
@@ -119,6 +123,14 @@ const SATELLITE: MapBase = {
 
 /** Dónde se recuerda el ancho del panel, y lo mínimo que se deja al panel y al mapa. */
 const PANEL_WIDTH_KEY = 'panel_width';
+/** Dónde se recuerda qué pasaje paga quien mira: el general o un medio pasaje. */
+const RIDER_KEY = 'rider';
+
+/** Una alerta de zona peligrosa a menos de esto del recorrido se avisa en la ficha. */
+const DANGER_NEAR_METERS = 250;
+
+/** Dónde se recuerda que el panel quedó escondido. */
+const PANEL_HIDDEN_KEY = 'panel_hidden';
 const PANEL_MIN_WIDTH = 340;
 const MAP_MIN_WIDTH = 320;
 
@@ -126,6 +138,9 @@ const MAP_MIN_WIDTH = 320;
 const SHEET_MAP_SHARE = { low: 0.72, mid: 0.44, high: 0.14 };
 
 const TRUJILLO: L.LatLngTuple = [-8.112, -79.0288];
+
+/** El zoom con el que se abre el mapa: la ciudad entera, con sus calles. */
+const CITY_ZOOM = 13;
 
 // Más lejos que el mínimo ya no se distingue la ciudad.
 const MIN_ZOOM = 10;
@@ -137,9 +152,6 @@ const SEARCH_PAUSE_MS = 400;
 /** Una distancia a pie, como se dice: «250 m» o «1,4 km». */
 const walk = (meters: number): string =>
   meters < 1000 ? `${Math.round(meters / 10) * 10} m` : `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
-
-/** Hasta dónde se anda, más o menos, para coger un micro. */
-const NEAR_METERS = 300;
 
 /** Un color por línea, para distinguirlas en el mapa. */
 const LINE_COLORS = ['#0f766e', '#c2410c', '#1d4ed8', '#a21caf', '#15803d', '#6d28d9', '#8a6100', '#0f4c5c'];
@@ -177,6 +189,7 @@ export class Home implements OnDestroy {
   protected readonly store = inject(Store);
   private readonly api = inject(Api);
   private readonly ui = inject(Ui);
+  private readonly sanitizer = inject(DomSanitizer);
 
   private readonly mapElement = viewChild.required<ElementRef<HTMLElement>>('map');
 
@@ -193,7 +206,6 @@ export class Home implements OnDestroy {
     '¿Cuál es el pasaje más barato?',
     '¿Qué línea pasa por el centro?',
   ];
-  protected readonly nearMeters = NEAR_METERS;
   protected readonly maxFavorites = MAX_FAVORITES;
   protected readonly routeTitle = routeTitle;
   protected readonly favoriteLabel = favoriteLabel;
@@ -203,7 +215,25 @@ export class Home implements OnDestroy {
    * «Ida» o «Vuelta» de cada línea: las dos llevan el mismo nombre y la misma
    * foto, y sin esto parecen repetidas.
    */
-  protected readonly directions = computed(() => directionsOf(this.store.lines()));
+  private readonly services = computed(() => groupServices(this.store.lines()));
+  protected readonly directions = computed(
+    () => new Map(this.services().flatMap((line) => line.routes.map((item) => [item.route, item.direction]))),
+  );
+
+  /** Los recorridos de la línea de cada ruta: su ida, su vuelta y sus variantes. */
+  private readonly siblings = computed(
+    () => new Map(this.services().flatMap((line) => line.routes.map((item) => [item.route, line.routes]))),
+  );
+
+  /** Para cambiar de sentido en la ficha: los recorridos de la línea abierta, si tiene más de uno. */
+  protected readonly ways = computed(() => {
+    const route = this.selected();
+    const routes = route ? (this.siblings().get(route) ?? []) : [];
+    return routes.length > 1 ? routes : [];
+  });
+
+  /** La ruta tiene ida y vuelta: en la lista sale una sola vez. */
+  protected readonly roundTrip = (route: BusRoute): boolean => (this.siblings().get(route)?.length ?? 0) > 1;
   protected readonly safeUrl = safeUrl;
 
   /**
@@ -310,9 +340,13 @@ export class Home implements OnDestroy {
 
   protected readonly base = computed(() => (this.satellite() ? SATELLITE : STREETS));
 
+  /** Se sabe dónde está quien mira: sin eso no se abre ninguna ruta. */
+  private readonly located = computed(() => this.me() !== null);
+
   protected readonly selected = computed(() => {
     const id = this.id();
-    return id === undefined ? null : (this.store.lines().find((route) => route.id === id) ?? null);
+    if (id === undefined || !this.located()) return null;
+    return this.store.lines().find((route) => route.id === id) ?? null;
   });
 
   private readonly colors = computed(
@@ -353,23 +387,31 @@ export class Home implements OnDestroy {
       );
   });
 
-  /** Las líneas que llevan al sitio buscado, la mejor primero. */
-  protected readonly reaching = computed(() =>
-    (this.destination()?.lines ?? []).flatMap((line: DestinationLine) => {
-      const route = this.store.lines().find((candidate) => candidate.id === line.routeId);
-      return route === undefined ? [] : [{ ...line, route }];
-    }),
-  );
-
-  /** Las rutas de la lista elegida: con «Cerca de ti», solo las que pasan cerca, la más cercana primero. */
+  /**
+   * Las rutas de la lista elegida, una por línea: la ida y la vuelta son el
+   * mismo micro. Con «Cerca de ti», solo las que pasan cerca, la más cercana
+   * primero, y de cada línea el sentido que pasa más cerca.
+   */
   protected readonly rows = computed<LineRow[]>(() => {
     const me = this.me();
-    if (this.lineFilter() === 'all' || me === null) return this.visible().map((route) => ({ route, meters: null }));
-    return this.visible()
-      .map((route) => ({ route, meters: metersToLine(me, this.linePoints().get(route) ?? []) }))
-      .filter((row) => row.meters <= NEAR_ME_METERS)
-      .sort((a, b) => a.meters - b.meters);
+    const all =
+      this.lineFilter() === 'all' || me === null
+        ? this.visible().map((route): LineRow => ({ route, meters: null }))
+        : this.visible()
+            .map((route) => ({ route, meters: metersToLine(me, this.linePoints().get(route) ?? []) }))
+            .filter((row) => row.meters <= NEAR_ME_METERS)
+            .sort((a, b) => a.meters - b.meters);
+    const seen = new Set<string>();
+    return all.filter((row) => {
+      const key = serviceKey(row.route);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   });
+
+  /** Cuántas líneas hay con lo escrito en el buscador, contando la ida y la vuelta como una. */
+  protected readonly lineCount = computed(() => new Set(this.visible().map(serviceKey)).size);
 
   /** Con «Cerca de ti» las rutas van de 5 en 5: la página que se ve, empezando en 0. */
   protected readonly nearPage = signal(0);
@@ -386,22 +428,10 @@ export class Home implements OnDestroy {
     return this.rows().slice(from, to);
   });
 
-  /** Las rutas cerca del sitio marcado, también de 5 en 5. */
-  protected readonly pinPage = signal(0);
-  protected readonly nearPager = computed(() => pagerOf(this.near().length, this.pinPage()));
-  /** Al marcar otro sitio o cambiar de lista se vuelve a las 5 primeras. */
+  /** Al cambiar de lista se vuelve a las 5 primeras. */
   private readonly resetPages = effect(() => {
-    this.pin();
     this.lineFilter();
-    untracked(() => {
-      this.pinPage.set(0);
-      this.nearPage.set(0);
-    });
-  });
-
-  protected readonly shownNear = computed(() => {
-    const { from, to } = this.nearPager();
-    return this.near().slice(from, to);
+    untracked(() => this.nearPage.set(0));
   });
 
   /** El paradero de la ruta abierta más cercano a quien mira, si se sabe dónde está. */
@@ -423,16 +453,16 @@ export class Home implements OnDestroy {
     return type === null ? this.alerts() : this.alerts().filter((alert) => alert.type === type);
   });
 
-  /** Las líneas que pasan cerca del sitio marcado, la más cercana primero. */
-  protected readonly near = computed(() => {
+  /**
+   * A dónde quiere llegar quien mira: el sitio buscado o, si no buscó nada, el
+   * punto que marcó en el mapa. Mientras se busca un sitio no hay ninguno.
+   */
+  protected readonly target = computed<(GeoPoint & { name: string }) | null>(() => {
+    const place = this.destination();
+    if (place !== null) return place;
     const pin = this.pin();
-    if (pin === null) return [];
-    return this.store
-      .lines()
-      .map((route) => ({ route, meters: metersToLine(pin, this.linePoints().get(route) ?? []) }))
-      .filter((entry) => entry.meters <= NEAR_METERS)
-      .sort((a, b) => a.meters - b.meters)
-      .map((entry) => entry.route);
+    if (pin === null || this.searchingPlace()) return null;
+    return { latitude: pin.latitude, longitude: pin.longitude, name: 'el punto marcado' };
   });
 
   protected readonly pinIsDestination = computed(() => {
@@ -454,6 +484,118 @@ export class Home implements OnDestroy {
     const used = new Set(this.favorites().map((place) => place.kind));
     return FAVORITE_KINDS.filter((kind) => kind === OTHER_KIND || !used.has(kind));
   });
+
+  // --- Cómo llegar con transbordo y cuánto cuesta ---
+
+  protected readonly riders = RIDERS;
+  protected readonly formatSoles = formatSoles;
+
+  /** El pasaje que paga quien mira: el general, el universitario o el escolar. Se recuerda en este navegador. */
+  protected readonly rider = signal<Rider>(RIDERS.find((item) => item.code === load(RIDER_KEY))?.code ?? 'general');
+
+  protected chooseRider(rider: Rider): void {
+    this.rider.set(rider);
+    save(RIDER_KEY, rider === 'general' ? null : rider);
+  }
+
+  /** Lo que cuestan los micros de un viaje con el pasaje elegido. */
+  protected fareOf(routes: BusRoute[]): number {
+    return totalFare(routes, this.rider());
+  }
+
+  /**
+   * Las formas de llegar desde donde está quien mira hasta el sitio elegido,
+   * con uno o con dos micros, la más rápida primero.
+   */
+  protected readonly trips = computed<Journey[]>(() => {
+    const place = this.target();
+    const me = this.me();
+    if (place === null || me === null) return [];
+    // La ida y la vuelta de una línea pueden dar el mismo viaje: se enseña una vez.
+    const seen = new Set<string>();
+    return planJourneys(me, place, this.store.lines()).filter((trip) => {
+      const key = trip.rides.map((ride) => `${serviceKey(ride.route)}>${ride.from.name}>${ride.to.name}`).join('|');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  });
+
+  /** El nombre de un paradero para leerlo: sin «Salida:», «Llegada:» ni el número de los repetidos. */
+  protected stopLabel(name: string): string {
+    return name.replace(/^(Salida|Llegada): /, '').replace(/ \(\d+\)$/, '');
+  }
+
+  /** El viaje elegido, que es lo único que se ve en el mapa: los tramos que se van en micro y lo que se camina. */
+  protected readonly chosenJourney = signal<Journey | null>(null);
+
+  /** Lo que costaría ir en taxi desde donde está quien mira hasta el sitio buscado. */
+  protected readonly taxi = computed(() => {
+    const me = this.me();
+    const place = this.target();
+    return me === null || place === null ? null : taxiEstimate(distance(me, place));
+  });
+
+  protected routesOf(journey: Journey): BusRoute[] {
+    return journey.rides.map((ride) => ride.route);
+  }
+
+  /** Dibuja el viaje en el mapa y lo encuadra entero. */
+  protected showJourney(journey: Journey): void {
+    // Con una ruta abierta se vería su recorrido entero: se cierra.
+    if (this.id() !== undefined) this.store.selectLine(null);
+    this.chosenJourney.set(journey);
+    const points = [this.me(), this.target(), ...journey.rides.flatMap((ride) => ride.line)].filter(
+      (point): point is GeoPoint => point !== null,
+    );
+    if (this.map === undefined || points.length < 2) return;
+    this.map.flyToBounds(L.latLngBounds(points.map(latLng)), { padding: [60, 60], duration: 0.45 });
+  }
+
+  // --- Por dónde pasa ---
+
+  /** Cuántos puntos del recorrido se ven antes de desplegar la lista. */
+  protected readonly stopsShown = 8;
+
+  /** La lista de «Por dónde pasa» está desplegada entera. Se pliega al abrir otra ruta. */
+  protected readonly stopsOpen = signal(false);
+  private readonly foldStops = effect(() => {
+    this.selected();
+    this.stopsOpen.set(false);
+  });
+
+  protected readonly shownStops = computed(() => {
+    const stops = this.selected()?.stops ?? [];
+    return this.stopsOpen() ? stops : stops.slice(0, this.stopsShown);
+  });
+
+  // --- Viajar más seguro ---
+
+  /** La placa del micro, para mandarla junto con la ruta. */
+  protected readonly plate = signal('');
+
+  /** Las alertas de zona peligrosa que caen sobre el recorrido de la ruta abierta. */
+  protected readonly dangerOnRoute = computed(() => {
+    const route = this.selected();
+    if (route === null) return [];
+    const line = this.linePoints().get(route) ?? [];
+    return this.alerts().filter((alert) => alert.type === 'DANGER' && metersToLine(alert, line) <= DANGER_NEAR_METERS);
+  });
+
+  /** Manda por WhatsApp a quien se elija qué micro se tomó, su placa y dónde se está. */
+  protected shareTrip(route: BusRoute): void {
+    const way = this.directions().get(route);
+    const plate = this.plate().trim().toUpperCase();
+    const me = this.me();
+    const lines = [
+      `Voy en el micro ${routeTitle(route)}${way ? ` (${way.toLowerCase()})` : ''}: ${route.origin} → ${route.destination}.`,
+      plate ? `Placa: ${plate}.` : '',
+      me ? `Estoy aquí: https://maps.google.com/?q=${me.latitude.toFixed(6)},${me.longitude.toFixed(6)}` : '',
+      route.id ? `Ruta: ${location.origin}/ruta/${route.id}` : '',
+    ];
+    const text = lines.filter(Boolean).join('\n');
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+  }
 
   protected readonly greeting = computed(() => {
     const name = this.store.session()?.name.trim().split(' ')[0] ?? '';
@@ -558,6 +700,33 @@ export class Home implements OnDestroy {
     save(PANEL_WIDTH_KEY, null);
   }
 
+  /** En la computadora el panel se esconde para ver el mapa entero. Se recuerda en este navegador. */
+  protected readonly panelHidden = signal(load(PANEL_HIDDEN_KEY) === '1');
+
+  /** Con la vista de calle abierta, el mapa le deja la mitad de su sitio. */
+  @HostBinding('class.street-open')
+  protected get streetOpen(): boolean {
+    return this.streetPoint() !== null;
+  }
+
+  @HostBinding('class.panel-hidden')
+  protected get panelHiddenClass(): boolean {
+    return this.panelHidden();
+  }
+
+  protected togglePanel(): void {
+    this.panelHidden.set(!this.panelHidden());
+    save(PANEL_HIDDEN_KEY, this.panelHidden() ? '1' : null);
+  }
+
+  /** Abrir una ruta o buscar un sitio vuelve a mostrar el panel: ahí sale la respuesta. */
+  private readonly revealPanel = effect(() => {
+    if (this.selected() || this.destination() || this.searchingPlace()) {
+      this.panelHidden.set(false);
+      save(PANEL_HIDDEN_KEY, null);
+    }
+  });
+
   /** La altura del mapa en el celular, que lee el CSS. */
   @HostBinding('style.--map-h')
   protected get mapHeight(): string {
@@ -650,7 +819,7 @@ export class Home implements OnDestroy {
     afterNextRender(() => {
       const map = L.map(this.mapElement().nativeElement, {
         center: TRUJILLO,
-        zoom: 12.5,
+        zoom: CITY_ZOOM,
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
         zoomSnap: 0.5,
@@ -687,6 +856,18 @@ export class Home implements OnDestroy {
       if (this.ready()) this.drawLines();
     });
 
+    // Otro sitio buscado o marcado, o quien mira se movió: el viaje que se veía ya no vale.
+    effect(() => {
+      this.trips();
+      this.chosenJourney.set(null);
+    });
+
+    // Para decir cómo llegar hay que saber desde dónde: al elegir un sitio se pide la ubicación.
+    effect(() => {
+      if (this.target() === null || this.located()) return;
+      untracked(() => void this.whereAmI());
+    });
+
     effect(() => {
       if (this.ready()) this.drawMarkers();
     });
@@ -696,11 +877,18 @@ export class Home implements OnDestroy {
     });
 
     // Al abrir o cerrar una línea, o al llegar el catálogo, el mapa la encuadra.
+    // Sin línea abierta se ve la ciudad: con todas, el mapa quedaría muy lejos.
     effect(() => {
       this.id();
       this.store.lines();
+      this.located();
       if (!this.ready()) return;
-      untracked(() => this.frame(this.framed));
+      untracked(() => {
+        if (this.selected() !== null) this.frame(this.framed);
+        else if (this.framed) this.map?.flyTo(TRUJILLO, CITY_ZOOM, { duration: 0.45 });
+        else this.map?.setView(TRUJILLO, CITY_ZOOM, { animate: false });
+        this.framed = true;
+      });
     });
 
     // Abrir una línea enseña su ficha, salvo desde el asistente: ahí la
@@ -711,6 +899,14 @@ export class Home implements OnDestroy {
         if (!this.keepChat) this.tab.set('lines');
         this.keepChat = false;
       });
+    });
+
+    // Una ruta solo se enseña sabiendo dónde está quien mira: si no se sabe,
+    // se le pide su ubicación y, si no la da, se vuelve al mapa.
+    effect(() => {
+      const id = this.id();
+      if (id === undefined || this.located()) return;
+      untracked(() => void this.askLocationFor(id));
     });
 
     // Mientras se escribe en el buscador del mapa se sugieren lugares, como en
@@ -801,13 +997,44 @@ export class Home implements OnDestroy {
   private drawLines(): void {
     const selected = this.selected();
     this.lineLayer.clearLayers();
+    // Sin línea abierta, el viaje con transbordo elegido: cada micro en su color.
+    const journey = this.chosenJourney();
+    if (selected === null && journey !== null) {
+      for (const ride of journey.rides) this.drawLine(ride.route, ride.line.map(latLng));
+      // Lo que se camina: hasta el primer micro, entre micros y desde el último hasta el sitio.
+      const stops = [this.me(), ...journey.rides.flatMap((ride) => [ride.from, ride.to]), this.target()];
+      for (let i = 0; i + 1 < stops.length; i += 2) {
+        const [from, to] = [stops[i], stops[i + 1]];
+        if (from === null || to === null || distance(from, to) < 10) continue;
+        const line = [latLng(from), latLng(to)];
+        L.polyline(line, { weight: 8, color: '#fff', opacity: 0.9, interactive: false }).addTo(this.lineLayer);
+        L.polyline(line, { weight: 5, color: MAP_BLUE, opacity: 1, dashArray: '2 9' })
+          .bindTooltip(mapTip(`Camina ${walk(distance(from, to))}`), { sticky: true, className: 'line-tip' })
+          .addTo(this.lineLayer);
+      }
+      return;
+    }
     if (selected === null) return;
-    const points = (this.linePoints().get(selected) ?? []).map(latLng);
+    // Las zonas peligrosas reportadas sobre el recorrido, en rojo debajo de la línea.
+    for (const alert of this.dangerOnRoute()) {
+      L.circle(latLng(alert), {
+        radius: DANGER_NEAR_METERS,
+        color: '#d93025',
+        weight: 1,
+        opacity: 0.6,
+        fillOpacity: 0.15,
+        interactive: false,
+      }).addTo(this.lineLayer);
+    }
+    this.drawLine(selected, (this.linePoints().get(selected) ?? []).map(latLng));
+  }
+
+  private drawLine(route: BusRoute, points: L.LatLngTuple[]): void {
     if (points.length < 2) return;
     // Como en la app: la línea en su color, con un borde blanco que la separa de las calles.
     L.polyline(points, { weight: 10, color: '#fff', opacity: 1, interactive: false }).addTo(this.lineLayer);
-    L.polyline(points, { weight: 6, color: this.colorOf(selected), opacity: 1 })
-      .bindTooltip(mapTip(routeTitle(selected)), {
+    L.polyline(points, { weight: 6, color: this.colorOf(route), opacity: 1 })
+      .bindTooltip(mapTip(routeTitle(route)), {
         sticky: true,
         className: 'line-tip',
         direction: 'right',
@@ -876,6 +1103,15 @@ export class Home implements OnDestroy {
         else if (index === last) add(stop, badge('mk-stop end', '', 20), stop.name);
         else add(stop, badge('mk-stop', '', 16, color), stop.name);
       });
+    }
+    const journey = this.chosenJourney();
+    if (selected === null && journey !== null) {
+      // Dónde se sube a cada micro, con su letra, y dónde se baja.
+      for (const ride of journey.rides) {
+        const color = this.colorOf(ride.route);
+        add(ride.from, badge('mk-letter', ride.route.letter || '·', 30, color), `Sube aquí: ${this.stopLabel(ride.from.name)}`);
+        add(ride.to, badge('mk-stop', '', 16, color), `Baja aquí: ${this.stopLabel(ride.to.name)}`);
+      }
     }
     for (const place of this.favorites()) {
       add(place, badge('mk-favorite mi', place.kind.icon), favoriteLabel(place), () => this.showFavorite(place));
@@ -947,16 +1183,43 @@ export class Home implements OnDestroy {
    * Abre la vista de calle de Google Maps en el sitio marcado o, sin marca, en
    * el centro del mapa. Es un enlace: no pide clave ni cuenta de Google.
    */
+  /**
+   * El sitio cuya calle se ve en el panel de al lado del mapa, como en la app;
+   * `null` con el panel cerrado. Mientras está abierto, tocar el mapa lo cambia.
+   */
+  protected readonly streetPoint = signal<GeoPoint | null>(null);
+
+  /**
+   * La vista de calle de Google en su versión para insertar: no pide clave ni
+   * cuenta. La página normal de Google Maps no se deja meter en otra web.
+   */
+  protected readonly streetUrl = computed<SafeResourceUrl | null>(() => {
+    const point = this.streetPoint();
+    if (point === null) return null;
+    const spot = `${point.latitude.toFixed(6)},${point.longitude.toFixed(6)}`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://maps.google.com/maps?q=&layer=c&cbll=${spot}&cbp=11,0,0,0,0&output=svembed`,
+    );
+  });
+
   protected openStreetView(): void {
     const center = this.map?.getCenter();
     const point = this.pin() ?? (center ? { latitude: center.lat, longitude: center.lng } : null);
     if (point === null) return;
-    const query = new URLSearchParams({
-      api: '1',
-      map_action: 'pano',
-      viewpoint: `${point.latitude},${point.longitude}`,
-    });
-    window.open(`https://www.google.com/maps/@?${query}`, '_blank', 'noopener');
+    this.pin.set(point);
+    void this.showStreet(point);
+  }
+
+  /**
+   * Enseña la calle de [point]. Si se sabe que ahí no hay fotos, lo dice en un
+   * aviso y no abre (ni cambia) el recuadro de la calle.
+   */
+  private async showStreet(point: GeoPoint): Promise<void> {
+    if (!(await hasStreetPhotos(point))) {
+      this.ui.notify('No hay fotos de la calle en este punto. Prueba tocando otra calle.', 'plain');
+      return;
+    }
+    this.streetPoint.set(point);
   }
 
   // --- El buscador del mapa ---
@@ -996,6 +1259,28 @@ export class Home implements OnDestroy {
     this.destination.set(destination);
     if (destination === null) this.ui.notify('No se encontró ese lugar en el mapa. Prueba con otro nombre.', 'plain');
     return destination;
+  }
+
+  /** Pide la ubicación para enseñar la ruta [id]; sin ella, cierra la ruta y explica por qué. */
+  private async askLocationFor(id: string): Promise<void> {
+    if (this.locating()) return;
+    this.locating.set(true);
+    const fix = await currentLocation();
+    this.locating.set(false);
+    if (fix !== null) {
+      this.me.set(fix);
+      return;
+    }
+    // Mientras se preguntaba, se cerró o se cambió de ruta.
+    if (this.id() !== id) return;
+    this.ui.notify('Para ver la ruta, permite que el navegador use tu ubicación.', 'plain');
+    this.store.selectLine(null);
+  }
+
+  /** Quita el sitio al que se quería llegar: el buscado o el punto marcado. */
+  protected clearTarget(): void {
+    if (this.destination() !== null || this.searchingPlace()) this.clearSearch();
+    else this.pin.set(null);
   }
 
   /** Vacía el buscador del mapa y quita el lugar buscado. */
@@ -1077,6 +1362,7 @@ export class Home implements OnDestroy {
   private onMapClick(point: GeoPoint): void {
     const kind = this.savingKind();
     this.pin.set(point);
+    if (this.streetPoint() !== null) void this.showStreet(point);
     if (kind === null) return;
     this.savingKind.set(null);
     if (kind === OTHER_KIND) {
@@ -1176,4 +1462,25 @@ export function pagerOf(total: number, wanted: number, size = NEAR_PAGE) {
   const page = Math.min(Math.max(0, wanted), pages - 1);
   const from = page * size;
   return { page, pages, from, to: Math.min(total, from + size), total };
+}
+
+/**
+ * Si Google tiene fotos de la calle cerca de [point]. Sin clave, o si la
+ * consulta falla, se da por hecho que sí: Google lo dice en su recuadro.
+ */
+async function hasStreetPhotos(point: GeoPoint): Promise<boolean> {
+  if (SiteInfo.streetViewKey === '') return true;
+  const query = new URLSearchParams({
+    location: `${point.latitude},${point.longitude}`,
+    radius: '50',
+    source: 'outdoor',
+    key: SiteInfo.streetViewKey,
+  });
+  try {
+    const response = await fetch(`https://maps.googleapis.com/maps/api/streetview/metadata?${query}`);
+    const data = (await response.json()) as { status?: string };
+    return data.status !== 'ZERO_RESULTS';
+  } catch {
+    return true;
+  }
 }

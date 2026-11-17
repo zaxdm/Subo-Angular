@@ -62,7 +62,7 @@
     </div>
 
     <div class="pair">
-      <div class="card block">
+      <!-- <div class="card block">
         <h3>En qué se gasta</h3>
         @for (row of costsByCategory(); track row.category) {
           <div class="share">
@@ -72,7 +72,7 @@
         } @empty {
           <p class="muted">Sin gastos en este periodo.</p>
         }
-      </div>
+      </div> -->
       <div class="card block">
         <h3>De dónde entra</h3>
         @for (row of incomeByCategory(); track row.category) {
@@ -86,7 +86,7 @@
       </div>
     </div>
 
-    <div class="section-head">
+    <!-- <div class="section-head">
       <h2>{{ editing() === null ? 'Anotar un movimiento' : 'Corregir el movimiento' }}</h2>
       <p>Lo mensual se repite cada mes sin volver a anotarlo, como el servidor o el dominio.</p>
     </div>
@@ -169,9 +169,9 @@
           {{ editing() === null ? 'Anotar' : 'Guardar' }}
         </button>
       </div>
-    </form>
+    </form> 
 
-    <div class="section-head">
+   <div class="section-head">
       <h2>Movimientos anotados</h2>
       <p>{{ summary.entries.length }} {{ summary.entries.length === 1 ? 'movimiento' : 'movimientos' }}</p>
     </div>
@@ -197,6 +197,6 @@
       } @empty {
         <p class="muted">Todavía no anotaste ningún gasto ni ingreso.</p>
       }
-    </div>
+    </div> -->
   }
 </app-page-frame>

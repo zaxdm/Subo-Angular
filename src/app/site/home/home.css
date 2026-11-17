@@ -27,11 +27,89 @@
   overflow: hidden;
 }
 
+/* En la computadora el panel se puede esconder: el mapa ocupa todo el ancho. */
+:host(.panel-hidden) .panel {
+  display: none;
+}
+
+/* La pestaña que lo esconde: pegada al borde del panel, arriba a la derecha del mapa. */
+.panel-toggle {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 52px;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px var(--shade-sm);
+  cursor: pointer;
+}
+
+.panel-toggle:hover {
+  background: var(--hover);
+}
+
+.panel-toggle .mi {
+  font-size: 22px;
+}
+
+/* La vista de calle: en el sitio del panel de rutas, que se esconde, y a medias con el mapa. */
+.street-pane {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: 50%;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+
+:host(.street-open) .panel,
+:host(.street-open) .panel-toggle,
+:host(.street-open) .map-button:not(.locate) {
+  display: none;
+}
+
+.street-pane {
+  position: relative;
+}
+
+/* Al lado del botón de ampliar de Google (arriba a la derecha, 40 px), con su mismo aspecto. */
+.street-close {
+  position: absolute;
+  top: 10px;
+  right: 58px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 2px;
+  background: rgb(34 34 34 / 80%);
+  color: #fff;
+  cursor: pointer;
+}
+
+.street-close:hover {
+  background: rgb(34 34 34 / 95%);
+}
+
+.street-pane iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--chip);
+}
+
 /* --- Lo que flota sobre el mapa --- */
 
 .map-top,
 .street-view,
-.nearby,
 .map-buttons,
 .credit {
   position: absolute;
@@ -202,45 +280,6 @@ button.chip-main:not(:disabled) {
   color: var(--accent-text);
 }
 
-/* Entre el botón de la calle y los del mapa. */
-.nearby {
-  left: 84px;
-  right: 66px;
-  bottom: 30px;
-  max-width: 460px;
-  margin: 0 auto;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface);
-  box-shadow: 0 2px 10px var(--shade-sm);
-}
-
-.nearby .small {
-  font-weight: 600;
-}
-
-.nearby-lines {
-  display: flex;
-  gap: 6px;
-  padding-top: 6px;
-  overflow-x: auto;
-}
-
-.mini-line {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  gap: 8px;
-  padding: 4px 12px 4px 4px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .map-buttons {
   right: 12px;
   bottom: 30px;
@@ -316,14 +355,25 @@ button.chip-main:not(:disabled) {
   background: var(--accent-dark);
 }
 
+/* Subo primero y, aparte, a quién son las imágenes del mapa. */
 .credit {
   left: 6px;
   bottom: 6px;
+  display: flex;
+  gap: 6px;
   max-width: 60%;
+}
+
+.credit > span {
+  min-width: 0;
   padding: 3px 8px;
   border-radius: 20px;
   background: var(--glass);
   font-size: 10px;
+}
+
+.credit > span:first-child {
+  flex: none;
 }
 
 /* --- La hoja --- */
@@ -489,6 +539,12 @@ button.chip-main:not(:disabled) {
   flex-wrap: nowrap;
   gap: 8px;
   padding: 14px 16px 4px;
+}
+
+/* En la ficha, para cambiar entre la ida y la vuelta. */
+.pills.ways {
+  flex-wrap: wrap;
+  padding: 0 0 14px;
 }
 
 .pills.scroll-x {
@@ -1307,7 +1363,6 @@ button.chip-main:not(:disabled) {
   /* Con la hoja arriba queda una franja de mapa: solo el buscador. */
   :host(.sheet-high) .street-view,
   :host(.sheet-high) .map-buttons,
-  :host(.sheet-high) .nearby,
   :host(.sheet-high) .credit,
   :host(.sheet-high) .favorites {
     display: none;
@@ -1318,8 +1373,27 @@ button.chip-main:not(:disabled) {
     transition: none;
   }
 
-  .panel-resizer {
+  /* En el celular el mapa va arriba y la calle debajo, en el sitio de la hoja. */
+  .street-pane {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  :host(.street-open) .panel {
     display: none;
+  }
+
+  /* En el celular la hoja ya sube y baja: no se esconde. */
+  .panel-resizer,
+  .panel-toggle {
+    display: none;
+  }
+
+  :host(.panel-hidden:not(.street-open)) .panel {
+    display: flex;
   }
 
   .panel {
@@ -1363,7 +1437,6 @@ button.chip-main:not(:disabled) {
   }
 
   .street-view,
-  .nearby,
   .map-buttons {
     bottom: 50px;
   }
@@ -1441,26 +1514,6 @@ button.chip-main:not(:disabled) {
   border: 0;
   border-radius: 12px;
   font-size: 16px;
-}
-
-.thumb.sm {
-  width: 52px;
-  height: 38px;
-  border-radius: 10px;
-}
-
-.mini-line .mini-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  max-width: 180px;
-  min-width: 0;
-}
-
-.mini-line {
-  padding: 4px 12px 4px 4px;
-  border-radius: 14px;
 }
 
 /* --- El buscador del mapa y sus sugerencias --- */
@@ -1878,4 +1931,112 @@ button.chip-main:not(:disabled) {
 .pager-arrow:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+/* --- Cómo llegar con transbordo y cuánto cuesta --- */
+
+/* El pasaje elegido, dentro de la lista: sin el margen de las pastillas de arriba. */
+.pills.fares {
+  padding: 0;
+}
+
+.journey.chosen {
+  border: 2px solid var(--ink);
+}
+
+/* Con dos micros, la cabecera va mitad y mitad en el color de cada uno. */
+.journey-head.split {
+  background: linear-gradient(110deg, var(--first) 50%, var(--second) 50%);
+}
+
+.journey-head.split::after {
+  background: linear-gradient(180deg, rgb(0 0 0 / 5%), rgb(0 0 0 / 45%));
+}
+
+.badges {
+  display: flex;
+  gap: 6px;
+}
+
+/* El pasaje y, si se sabe desde dónde se sale, lo que se ahorra frente al taxi. */
+.journey-cost {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.journey-cost .mi {
+  flex: none;
+  font-size: 17px;
+}
+
+.journey-cost strong {
+  color: var(--ink);
+}
+
+.journey-cost .saving {
+  color: var(--live);
+}
+
+/* --- Viajar más seguro --- */
+
+.danger-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, #d93025 35%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, #d93025 8%, var(--surface));
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.danger-note .mi {
+  flex: none;
+  color: #d93025;
+  font-size: 20px;
+}
+
+.safe-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.safe-row .input {
+  flex: 1;
+  min-width: 0;
+  text-transform: uppercase;
+}
+
+.safe-row .btn {
+  flex: none;
+}
+
+/* La flecha que despliega todos los puntos de «Por dónde pasa». */
+.more-stops {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.more-stops:hover {
+  background: var(--hover);
+}
+
+.more-stops .mi {
+  font-size: 20px;
 }

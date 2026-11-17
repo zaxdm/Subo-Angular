@@ -27,6 +27,9 @@ const principalOnly: CanActivateFn = () =>
 
 const signedIn: CanActivateFn = () => inject(Store).session() !== null || inject(Router).createUrlTree(['/']);
 
+/** El perfil de pasajero es solo para pasajeros: el administrador tiene el suyo en el panel. */
+const passengerOnly: CanActivateFn = () => !inject(Store).isAdmin() || inject(Router).createUrlTree(['/panel/perfil']);
+
 /** Un administrador que abre la web empieza en su panel; desde ahí sale a verla. */
 const panelFirst: CanActivateFn = () => {
   const router = inject(Router);
@@ -108,7 +111,7 @@ export const routes: Routes = [
       { path: 'contacto', loadComponent: () => import('./site/contact/contact').then((m) => m.Contact) },
       {
         path: 'perfil',
-        canActivate: [signedIn],
+        canActivate: [signedIn, passengerOnly],
         data: { centered: true },
         loadComponent: () => import('./shared/profile/profile').then((m) => m.Profile),
       },

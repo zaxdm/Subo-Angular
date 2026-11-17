@@ -2,11 +2,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Api } from '../../core/api';
-import { Compared, Dashboard, PremiumPayment, alertLabel, formatSoles } from '../../core/models';
+import { Compared, Dashboard, PremiumPayment, formatSoles } from '../../core/models';
 import { Store } from '../../core/store';
 import { PageFrame } from '../../shared/page-frame/page-frame';
 import { DayChart, DayPoint, DaySeries, shortDay } from '../day-chart/day-chart';
-import { lastSeenLabel } from '../users/users';
 
 /** Una barra horizontal con su etiqueta y su número. */
 interface Bar {
@@ -31,11 +30,7 @@ function change(compared: Compared): { text: string; up: boolean | null } {
   return { text: `${percent > 0 ? '+' : ''}${percent} %`, up: percent > 0 };
 }
 
-const DEVICES: Record<string, string> = { android: 'Android', ios: 'iPhone', computadora: 'Computadora' };
-
 export const PERIODS = [7, 30, 90] as const;
-
-const PLANS: Record<number, string> = { 30: '1 mes', 90: '3 meses', 180: '6 meses', 365: '1 año' };
 
 /** El día de un momento en hora de Perú, como "2026-10-19", igual que los días del tablero. */
 const limaDay = new Intl.DateTimeFormat('en-CA', {
@@ -56,9 +51,9 @@ const total = (payments: { amount: number }[]): number =>
   Math.round(payments.reduce((sum, payment) => sum + payment.amount, 0) * 100) / 100;
 
 /**
- * El tablero del panel: quién entra (Android o web), cuántos se registran y
- * descargan la app, qué se reporta y qué rutas se miran, en un periodo
- * comparado con el anterior.
+ * El tablero del panel, solo con lo principal: quién entra (Android o web),
+ * cuántos se registran y descargan la app, cuánto se reporta, el dinero de
+ * Premium y qué rutas se miran, en un periodo comparado con el anterior.
  */
 @Component({
   imports: [PageFrame, DayChart, RouterLink],
@@ -78,7 +73,6 @@ export class Stats {
   protected readonly loading = signal(false);
   protected readonly failed = signal(false);
 
-  protected readonly lastSeen = lastSeenLabel;
   protected readonly formatSoles = formatSoles;
 
   /** El dinero solo lo ve el administrador principal, como Premium y Finanzas. */
@@ -91,11 +85,6 @@ export class Stats {
     { key: 'android', label: 'App Android', color: 'var(--chart-1)' },
     { key: 'web', label: 'Web', color: 'var(--chart-2)' },
   ];
-  protected readonly signupSeries: DaySeries[] = [
-    { key: 'newUsers', label: 'Cuentas nuevas', color: 'var(--chart-1)' },
-  ];
-  protected readonly downloadSeries: DaySeries[] = [{ key: 'downloads', label: 'Descargas', color: 'var(--chart-1)' }];
-  protected readonly alertSeries: DaySeries[] = [{ key: 'alerts', label: 'Alertas', color: 'var(--chart-1)' }];
   protected readonly revenueSeries: DaySeries[] = [
     { key: 'newcomers', label: 'Premium nuevos', color: 'var(--chart-1)' },
     { key: 'renewals', label: 'Renovaciones', color: 'var(--chart-2)' },
@@ -121,14 +110,6 @@ export class Stats {
         change: tracked(totals.dailyVisitors),
       },
       {
-        label: 'Cuentas activas',
-        icon: 'how_to_reg',
-        tone: 'green',
-        hint: 'Cuentas que entraron en el periodo',
-        value: totals.activeAccounts.value,
-        change: tracked(totals.activeAccounts),
-      },
-      {
         label: 'Cuentas nuevas',
         icon: 'person_add',
         tone: 'yellow',
@@ -152,14 +133,6 @@ export class Stats {
         value: totals.alerts.value,
         change: change(totals.alerts),
       },
-      {
-        label: 'Preguntas al asistente',
-        icon: 'smart_toy',
-        tone: 'gray',
-        hint: 'Consultas a «Subo»',
-        value: totals.assistantQuestions.value,
-        change: change(totals.assistantQuestions),
-      },
     ];
   });
 
@@ -168,13 +141,10 @@ export class Stats {
     const totals = this.data()?.totals;
     if (!totals) return [];
     return [
-      { label: 'Visitantes hoy', icon: 'visibility', value: totals.visitorsToday, link: null },
       { label: 'Cuentas en total', icon: 'group', value: totals.users, link: '/panel/usuarios' },
       { label: 'Premium activos', icon: 'workspace_premium', value: totals.premium, link: null },
-      { label: 'Rutas publicadas', icon: 'directions_bus', value: totals.publishedRoutes, link: '/panel' },
       { label: 'Rutas por aprobar', icon: 'pending_actions', value: totals.pendingRoutes, link: '/panel' },
       { label: 'Sugerencias nuevas', icon: 'forum', value: totals.newFeedback, link: '/panel/sugerencias' },
-      { label: 'Calificaciones', icon: 'star', value: totals.ratings, link: null },
     ];
   });
 
@@ -187,34 +157,11 @@ export class Stats {
     return { android, web: 100 - android };
   });
 
-  protected readonly devices = computed(() =>
-    bars(
-      Object.entries(this.data()?.downloadsByDevice ?? {})
-        .sort((a, b) => b[1] - a[1])
-        .map(([device, value]) => ({ label: DEVICES[device] ?? device, value })),
-    ),
-  );
-
   protected readonly topRoutes = computed(() =>
     bars(
       (this.data()?.topRoutes ?? []).map((route) => ({ label: `${route.letter} · ${route.name}`, value: route.views })),
     ),
   );
-
-  protected readonly byType = computed(() =>
-    bars(
-      Object.entries(this.data()?.alertsByType ?? {})
-        .sort((a, b) => b[1] - a[1])
-        .map(([type, value]) => ({ label: alertLabel(type, type), value })),
-    ),
-  );
-
-  /** Las 24 horas del día como columnas: cuanto más alta, más alertas a esa hora. */
-  protected readonly hours = computed(() =>
-    bars((this.data()?.alertsByHour ?? []).map((value, hour) => ({ label: String(hour), value }))),
-  );
-
-  protected readonly anyHour = computed(() => this.hours().some((hour) => hour.value > 0));
 
   /**
    * El dinero que entra por Premium en el periodo: los pagos por Yape ya
@@ -248,7 +195,6 @@ export class Stats {
       value: current.filter((payment) => payment.newcomer).length,
       previous: previous.filter((payment) => payment.newcomer).length,
     };
-    const renewals = { value: current.length - newcomers.value, previous: previous.length - newcomers.previous };
 
     const metrics = [
       {
@@ -260,36 +206,12 @@ export class Stats {
         change: change(income),
       },
       {
-        label: 'Pagos confirmados',
-        icon: 'receipt_long',
-        tone: 'blue',
-        hint: 'Comprobantes de Yape aprobados',
-        value: String(current.length),
-        change: change({ value: current.length, previous: previous.length }),
-      },
-      {
         label: 'Premium nuevos',
         icon: 'workspace_premium',
         tone: 'yellow',
         hint: 'Cuentas que pagaron por primera vez',
         value: String(newcomers.value),
         change: change(newcomers),
-      },
-      {
-        label: 'Renovaciones',
-        icon: 'autorenew',
-        tone: 'orange',
-        hint: 'Cuentas que volvieron a pagar',
-        value: String(renewals.value),
-        change: change(renewals),
-      },
-      {
-        label: 'Pago medio',
-        icon: 'sell',
-        tone: 'gray',
-        hint: 'Lo que deja cada pago',
-        value: current.length > 0 ? formatSoles(income.value / current.length) : '—',
-        change: { text: `${series.length} días`, up: null },
       },
     ];
 
@@ -307,27 +229,13 @@ export class Stats {
       renewals: round(byDay.get(point.day)?.renewals ?? 0),
     }));
 
-    const byPlan = new Map<number, number>();
-    for (const payment of current) byPlan.set(payment.days, (byPlan.get(payment.days) ?? 0) + payment.amount);
-    const plans = bars(
-      [...byPlan.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([days, value]) => ({ label: this.planLabel(days), value: round(value) })),
-    );
-
     const pending = payments.filter((payment) => payment.status === 'PENDING');
     return {
       metrics,
       points,
-      plans,
-      recent: [...current].reverse().slice(0, 6),
       pending: { count: pending.length, amount: total(pending) },
     };
   });
-
-  protected planLabel(days: number): string {
-    return PLANS[days] ?? `${days} días`;
-  }
 
   /** Aviso de desde cuándo hay registro de visitas, si empieza dentro del periodo. */
   protected readonly trackingNote = computed(() => {

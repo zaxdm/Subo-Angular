@@ -3,7 +3,23 @@ import { Router } from '@angular/router';
 
 import { Api } from './api';
 import { ApiError, BusRoute, Session, messageOf } from './models';
+import { load, save } from './storage';
 import { Ui } from './ui';
+
+/**
+ * Dónde se guardan en este navegador las últimas líneas que llegaron: con
+ * pocos datos o sin señal, el mapa las enseña igual.
+ */
+const LINES_KEY = 'lines_cache';
+
+function cachedLines(): BusRoute[] {
+  try {
+    const lines: unknown = JSON.parse(load(LINES_KEY) ?? '[]');
+    return Array.isArray(lines) ? (lines as BusRoute[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 /**
  * Lo que comparten todas las pantallas: quién entró, las líneas publicadas y
@@ -76,10 +92,15 @@ export class Store {
   async loadLines(): Promise<void> {
     this.loadingLines.set(true);
     this.linesError.set(null);
+    // Las guardadas se ven ya; las del servidor las reemplazan al llegar.
+    if (this.lines().length === 0) this.lines.set(cachedLines());
     try {
-      this.lines.set(await this.api.publicRoutes());
+      const lines = await this.api.publicRoutes();
+      this.lines.set(lines);
+      save(LINES_KEY, JSON.stringify(lines));
     } catch (error) {
-      this.linesError.set(messageOf(error, 'No se pudieron cargar las líneas.'));
+      if (this.lines().length > 0) this.ui.notify('Sin conexión: ves las rutas guardadas en este navegador.', 'plain');
+      else this.linesError.set(messageOf(error, 'No se pudieron cargar las líneas.'));
     } finally {
       this.loadingLines.set(false);
     }

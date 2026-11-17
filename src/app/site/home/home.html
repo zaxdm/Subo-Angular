@@ -101,53 +101,19 @@
     </div>
   </div>
 
-  <!-- El cuadradito que lleva a la vista de calle, como el de Google Maps. -->
-  <button type="button" class="street-view" title="Ver la calle en Google Street View" (click)="openStreetView()">
-    <span class="mi">streetview</span>
-    Ver calle
-  </button>
-
-  <!-- Las líneas que pasan cerca del sitio marcado, para abrirlas desde ahí. -->
-  <!-- Si la marca es el sitio buscado (o se está buscando), sus líneas van en la lista de la derecha. -->
-  @if (pin() && !pinIsDestination() && !searchingPlace()) {
-    <div class="nearby">
-      <p class="small">
-        @switch (near().length) {
-          @case (0) {
-            Ninguna ruta pasa a menos de {{ nearMeters }} m de aquí.
-          }
-          @case (1) {
-            Una ruta pasa cerca de aquí
-          }
-          @default {
-            {{ near().length }} rutas pasan cerca de aquí
-          }
-        }
-      </p>
-      @if (near().length > 0) {
-        <div class="nearby-lines">
-          @for (route of shownNear(); track route.id) {
-            <button type="button" class="mini-line" (click)="store.selectLine(route.id)">
-              <span class="thumb sm">
-                @if (photoOf(route); as photo) {
-                  <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
-                }
-                <span class="route-badge" [style.background]="colorOf(route)">{{ route.letter || '·' }}</span>
-              </span>
-              <span class="mini-text">
-                <strong class="ellipsis">{{ route.name }}</strong>
-                @if (directions().get(route); as way) {
-                  <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
-                }
-              </span>
-            </button>
-          }
-        </div>
-        @if (nearPager().pages > 1) {
-          <ng-container *ngTemplateOutlet="pager; context: { $implicit: nearPager(), go: pinPage }"></ng-container>
-        }
-      }
-    </div>
+  <!-- El cuadradito que lleva a la vista de calle, como el de Google Maps: solo con un lugar marcado. -->
+  <!-- Con la calle abierta, el mismo botón la cierra. -->
+  @if (pin() || streetPoint()) {
+    <button
+      type="button"
+      class="street-view"
+      [class.active]="streetPoint()"
+      [title]="streetPoint() ? 'Cerrar la vista de calle' : 'Ver la calle en Google Street View'"
+      (click)="streetPoint() ? streetPoint.set(null) : openStreetView()"
+    >
+      <span class="mi">{{ streetPoint() ? 'close' : 'streetview' }}</span>
+      {{ streetPoint() ? 'Cerrar calle' : 'Ver calle' }}
+    </button>
   }
 
   <div class="map-buttons">
@@ -193,9 +159,35 @@
     </div>
   </div>
 
+  <!-- En la computadora, la pestaña pegada al panel lo esconde o lo vuelve a mostrar. -->
+  <button
+    type="button"
+    class="panel-toggle"
+    [title]="panelHidden() ? 'Mostrar el panel de rutas' : 'Esconder el panel de rutas'"
+    [attr.aria-label]="panelHidden() ? 'Mostrar el panel de rutas' : 'Esconder el panel de rutas'"
+    [attr.aria-expanded]="!panelHidden()"
+    (click)="togglePanel()"
+  >
+    <span class="mi">{{ panelHidden() ? 'chevron_left' : 'chevron_right' }}</span>
+  </button>
+
   <!-- Las licencias de las imágenes piden nombrar a sus dueños a la vista. -->
-  <span class="credit ellipsis">{{ base().credit }}</span>
+  <div class="credit">
+    <span>© 2026 Subo</span>
+    <span class="ellipsis">{{ base().credit }}</span>
+  </div>
 </section>
+
+<!-- La vista de calle ocupa el sitio del panel de rutas: solo quedan el mapa y la calle. Tocar el mapa cambia de sitio. -->
+@if (streetUrl(); as url) {
+  <aside class="street-pane" aria-label="Vista de calle">
+    <!-- La X flota sobre la calle, junto al botón de ampliar de Google y con su mismo aspecto. -->
+    <button type="button" class="street-close" title="Cerrar la vista de calle" (click)="streetPoint.set(null)">
+      <span class="mi">close</span>
+    </button>
+    <iframe [src]="url" title="Vista de calle de Google" allowfullscreen loading="lazy"></iframe>
+  </aside>
+}
 
 <aside class="panel">
   <!-- En la computadora, el borde izquierdo se arrastra para ensanchar o estrechar el panel. Doble clic: ancho normal. -->
@@ -260,6 +252,17 @@
             </button>
           </div>
 
+          <!-- La ida y la vuelta son el mismo micro: aquí se cambia de sentido. -->
+          @if (ways().length > 0) {
+            <div class="chip-row pills ways" role="group" aria-label="Sentido">
+              @for (item of ways(); track item.route.id) {
+                <button type="button" [class.on]="item.route === route" (click)="store.selectLine(item.route.id)">
+                  {{ item.direction }}
+                </button>
+              }
+            </div>
+          }
+
           <!-- Las tres casillas de la ficha: el pasaje va en el amarillo suave. -->
           <div class="facts">
             <div>
@@ -310,6 +313,37 @@
             </button>
           </div>
 
+          <!-- Viajar más seguro: lo reportado en el camino y avisar a alguien qué micro se tomó. -->
+          @if (dangerOnRoute(); as dangers) {
+            @if (dangers.length > 0) {
+              <div class="danger-note">
+                <span class="mi">warning</span>
+                <p>
+                  {{ dangers.length === 1 ? 'Hay un reporte' : 'Hay ' + dangers.length + ' reportes' }} de zona peligrosa
+                  en este recorrido{{ dangers[0].placeName ? ', como en ' + dangers[0].placeName : '' }}. Van en rojo en
+                  el mapa.
+                </p>
+              </div>
+            }
+          }
+          <section class="box safe-trip">
+            <h3>¿Vas en este micro?</h3>
+            <p class="note">Avisa por WhatsApp a alguien de confianza qué micro tomaste y dónde estás.</p>
+            <div class="safe-row">
+              <input
+                class="input"
+                placeholder="Placa (opcional)"
+                maxlength="10"
+                aria-label="Placa del micro"
+                [(ngModel)]="plate"
+              />
+              <button type="button" class="btn" (click)="shareTrip(route)">
+                <span class="mi">send</span>
+                Avisar
+              </button>
+            </div>
+          </section>
+
           @if (photoOf(route); as photo) {
             <img class="detail-photo" [src]="photo" alt="" (error)="hide($event)" />
           }
@@ -325,9 +359,13 @@
               }}
             </p>
             <div class="timeline">
-              @for (stop of route.stops; track $index) {
+              @for (stop of shownStops(); track $index) {
                 <!-- Tocar un paradero lleva el mapa hasta él. -->
-                <button type="button" [class.end]="$last || boarding()?.index === $index" (click)="glideTo(stop, 17)">
+                <button
+                  type="button"
+                  [class.end]="(stopsOpen() && $last) || boarding()?.index === $index"
+                  (click)="glideTo(stop, 17)"
+                >
                   <span class="stop-dot"></span>
                   <span class="stop-name">{{ stop.name }}</span>
                   @if (boarding()?.index === $index) {
@@ -336,6 +374,13 @@
                 </button>
               }
             </div>
+            <!-- Con muchos paraderos se ven los primeros; la flecha despliega el resto. -->
+            @if (route.stops.length > stopsShown) {
+              <button type="button" class="more-stops" (click)="stopsOpen.set(!stopsOpen())">
+                {{ stopsOpen() ? 'Ver menos' : 'Ver los ' + route.stops.length + ' puntos del recorrido' }}
+                <span class="mi">{{ stopsOpen() ? 'expand_less' : 'expand_more' }}</span>
+              </button>
+            }
           </section>
 
           <h3 class="section">Tarifas</h3>
@@ -399,7 +444,7 @@
               <p class="note">{{ rows().length }} opciones a menos de {{ walk(nearMeMeters) }}</p>
             } @else {
               <h2>Rutas</h2>
-              <p class="note">{{ greeting() }}{{ visible().length }} opciones en el mapa</p>
+              <p class="note">{{ greeting() }}{{ lineCount() }} rutas en el mapa</p>
             }
           </div>
 
@@ -434,11 +479,11 @@
               {{ lineFilter() === 'near' && me() ? 'Cerca de ti (' + rows().length + ')' : 'Cerca de ti' }}
             </button>
             <button type="button" [class.on]="lineFilter() === 'all'" (click)="lineFilter.set('all')">
-              Todas ({{ visible().length }})
+              Todas ({{ lineCount() }})
             </button>
           </div>
 
-          @if (rows().length === 0 && !destination() && !searchingPlace()) {
+          @if (rows().length === 0 && !target() && !searchingPlace()) {
             <div class="empty">
               <span class="empty-icon"><span class="mi">search_off</span></span>
               <strong>Nada por aquí</strong>
@@ -456,72 +501,111 @@
             </div>
           } @else {
             <div class="lines">
-              <!-- Lo escrito también se busca como un sitio: primero, las rutas que llevan hasta él. -->
-              @if (destination(); as place) {
+              <!-- El sitio buscado o marcado: cómo llegar desde donde está quien mira, con uno o dos micros. -->
+              @if (target(); as place) {
                 <div class="group group-row">
-                  <span>
-                    {{ place.far ? 'Ninguna ruta deja cerca de ' : 'Para llegar a ' }}{{ place.name
-                    }}{{ place.far ? '. Las que más se acercan:' : '' }}
-                  </span>
-                  <button type="button" class="link-btn" (click)="clearSearch()">Quitar</button>
+                  <span>Para llegar a {{ place.name }}</span>
+                  <button type="button" class="link-btn" (click)="clearTarget()">Quitar</button>
                 </div>
-                <!-- Cada forma de llegar, como en la app: la foto del micro en la cabecera y los pasos debajo. -->
-                @for (item of reaching(); track item.route.id) {
-                  <button type="button" class="journey" (click)="store.selectLine(item.route.id)">
-                    <span class="journey-head" [style.background]="colorOf(item.route)">
-                      @if (photoOf(item.route); as photo) {
-                        <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
-                      }
-                      <span class="journey-top">
-                        <span class="route-badge sm">{{ item.route.letter || '·' }}</span>
-                        @if (item.route.durationMinutes > 0) {
-                          <span class="journey-pill"
-                            ><span class="mi">schedule</span> {{ item.route.durationMinutes }} min</span
-                          >
+                @if (me() === null) {
+                  <div class="sign-in-note">
+                    <span class="tile"><span class="mi">my_location</span></span>
+                    <p>Para decirte qué micro tomar y dónde subir, permite que Subo use tu ubicación.</p>
+                    <button type="button" class="btn small-btn" [disabled]="locating()" (click)="locate()">
+                      Usar mi ubicación
+                    </button>
+                  </div>
+                } @else {
+                  <!-- Qué pasaje se paga: con el medio pasaje, cada forma de llegar suma lo suyo. -->
+                  <div class="chip-row pills wrap fares" role="group" aria-label="Pasaje">
+                    @for (item of riders; track item.code) {
+                      <button type="button" [class.on]="rider() === item.code" (click)="chooseRider(item.code)">
+                        {{ item.label }}
+                      </button>
+                    }
+                  </div>
+                  @if (trips().length === 0) {
+                    <p class="group">No encontramos cómo llegar en micro desde donde estás.</p>
+                  }
+                  <!-- Cada forma de llegar: los micros en su color arriba y los pasos debajo. Tocarla la enseña en el mapa. -->
+                  @for (trip of trips(); track $index) {
+                    <button
+                      type="button"
+                      class="journey"
+                      [class.chosen]="chosenJourney() === trip"
+                      (click)="showJourney(trip)"
+                    >
+                      <span
+                        class="journey-head split"
+                        [style.--first]="colorOf(trip.rides[0].route)"
+                        [style.--second]="colorOf(trip.rides[trip.rides.length - 1].route)"
+                      >
+                        @if (trip.rides.length === 1 && photoOf(trip.rides[0].route); as photo) {
+                          <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
                         }
-                      </span>
-                      <span class="journey-name">
-                        <strong>{{ item.route.name }}</strong>
-                        <span class="journey-sub">
-                          <span class="ellipsis">
-                            <span class="mi">directions_walk</span>
-                            {{ walk((item.boardMeters ?? 0) + item.alightMeters) }} a pie
+                        <span class="journey-top">
+                          <span class="badges">
+                            @for (ride of trip.rides; track $index) {
+                              <span class="route-badge sm">{{ ride.route.letter || '·' }}</span>
+                            }
                           </span>
-                          <strong>S/ {{ item.route.fare.toFixed(2) }}</strong>
+                          <span class="journey-pill"
+                            ><span class="mi">schedule</span> {{ trip.totalMinutes }} min</span
+                          >
+                        </span>
+                        <span class="journey-name">
+                          <strong>
+                            @if (trip.rides.length === 1) {
+                              {{ trip.rides[0].route.name }}
+                            } @else {
+                              {{ trip.rides.length }} micros · {{ trip.rides.length - 1 }} transbordo
+                            }
+                          </strong>
+                          <span class="journey-sub">
+                            <span class="ellipsis">
+                              <span class="mi">directions_walk</span>
+                              {{ walk(trip.walkMeters) }} a pie
+                            </span>
+                            <strong>{{ formatSoles(fareOf(routesOf(trip))) }}</strong>
+                          </span>
                         </span>
                       </span>
-                    </span>
-                    <span class="journey-steps" [style.--route]="colorOf(item.route)">
-                      @if (item.boardMeters !== null) {
+                      <span class="journey-steps">
+                        @for (leg of trip.legs; track $index) {
+                          @if (leg.kind === 'walk') {
+                            <span class="step">
+                              <span class="step-icon"><span class="mi">directions_walk</span></span>
+                              <span class="step-text">Camina {{ walk(leg.meters) }}</span>
+                              <span class="step-min">{{ leg.minutes }} min</span>
+                            </span>
+                          }
+                          @if (leg.kind === 'ride') {
+                            <span class="step" [style.--route]="colorOf(leg.route)">
+                              <span class="step-icon ride">{{ leg.route.letter || '·' }}</span>
+                              <span class="step-text">
+                                Toma {{ leg.route.name }}
+                                @if (directions().get(leg.route); as way) {
+                                  <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
+                                }
+                                <small>
+                                  Sube {{ leg.from.near ? 'en' : 'cerca de' }} {{ stopLabel(leg.from.name) }} · baja
+                                  {{ leg.to.near ? 'en' : 'cerca de' }} {{ stopLabel(leg.to.name) }}
+                                </small>
+                              </span>
+                              <span class="step-min">{{ leg.minutes }} min</span>
+                            </span>
+                          }
+                        }
                         <span class="step">
-                          <span class="step-icon"><span class="mi">directions_walk</span></span>
-                          <span class="step-text">Camina {{ walk(item.boardMeters) }} hasta el paradero</span>
-                          <span class="step-min">{{ walkMinutes(item.boardMeters) }} min</span>
-                        </span>
-                      }
-                      <span class="step">
-                        <span class="step-icon ride">{{ item.route.letter || '·' }}</span>
-                        <span class="step-text">
-                          Toma {{ item.route.name }}
-                          @if (directions().get(item.route); as way) {
-                            <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
-                          }
-                          @if (item.wrongWay) {
-                            <small>Da toda la vuelta antes de llegar</small>
-                          }
+                          <span class="step-icon end"><span class="mi">location_on</span></span>
+                          <span class="step-text">Llegas a {{ place.name }}</span>
                         </span>
                       </span>
-                      <span class="step">
-                        <span class="step-icon"><span class="mi">directions_walk</span></span>
-                        <span class="step-text">Baja y camina {{ walk(item.alightMeters) }}</span>
-                        <span class="step-min">{{ walkMinutes(item.alightMeters) }} min</span>
-                      </span>
-                      <span class="step">
-                        <span class="step-icon end"><span class="mi">location_on</span></span>
-                        <span class="step-text">Llegas a {{ destination()?.name }}</span>
-                      </span>
-                    </span>
-                  </button>
+                      <ng-container
+                        *ngTemplateOutlet="cost; context: { $implicit: fareOf(routesOf(trip)) }"
+                      ></ng-container>
+                    </button>
+                  }
                 }
                 @if (rows().length > 0) {
                   <p class="group">Todas las rutas</p>
@@ -530,37 +614,37 @@
                 <p class="group">Buscando ese lugar en el mapa…</p>
               }
               @for (row of shownRows(); track row.route.id) {
-                <button type="button" class="line" (click)="store.selectLine(row.route.id)">
-                  <span class="line-main">
-                    <span class="thumb">
-                      @if (photoOf(row.route); as photo) {
-                        <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
-                      }
-                      <span class="route-badge" [style.background]="colorOf(row.route)">{{
-                        row.route.letter || '·'
-                      }}</span>
-                    </span>
-                    <span class="line-text">
-                      <strong class="ellipsis">{{ row.route.name }}</strong>
-                      <span class="ellipsis">
-                        @if (directions().get(row.route); as way) {
-                          <span class="way" [class.return]="way.startsWith('Vuelta')">{{ way }}</span>
-                        }
-                        {{ row.route.origin }} — {{ row.route.destination }}
-                      </span>
-                    </span>
-                    <span class="line-fare">
-                      <strong>S/ {{ row.route.fare.toFixed(2) }}</strong>
+                <!-- Cada micro como en «Para llegar a»: la foto en la cabecera con su letra, su tiempo y su pasaje. -->
+                <button type="button" class="journey" (click)="store.selectLine(row.route.id)">
+                  <span class="journey-head" [style.background]="colorOf(row.route)">
+                    @if (photoOf(row.route); as photo) {
+                      <img [src]="photo" alt="" loading="lazy" (error)="hide($event)" />
+                    }
+                    <span class="journey-top">
+                      <span class="route-badge sm">{{ row.route.letter || '·' }}</span>
                       @if (row.route.durationMinutes > 0) {
-                        <span>{{ row.route.durationMinutes }} min</span>
+                        <span class="journey-pill"
+                          ><span class="mi">schedule</span> {{ row.route.durationMinutes }} min</span
+                        >
                       }
+                    </span>
+                    <span class="journey-name">
+                      <strong>{{ row.route.name }}</strong>
+                      <!-- Una fila por micro: el sentido se elige al abrirla o lo dice la búsqueda. -->
+                      <span class="journey-sub">
+                        <span class="ellipsis">
+                          {{ row.route.origin }} {{ roundTrip(row.route) ? '⇄' : '→' }} {{ row.route.destination }}
+                        </span>
+                        <strong>{{ formatSoles(fareOf([row.route])) }}</strong>
+                      </span>
                     </span>
                   </span>
                   @if (row.meters !== null) {
-                    <span class="walk-strip">
-                      <span class="mi">directions_walk</span>
-                      <span class="ellipsis">
-                        {{ walkMinutes(row.meters) }} min caminando · {{ walk(row.meters) }} hasta la ruta
+                    <span class="journey-steps">
+                      <span class="step">
+                        <span class="step-icon"><span class="mi">directions_walk</span></span>
+                        <span class="step-text">Camina {{ walk(row.meters) }} hasta la ruta</span>
+                        <span class="step-min">{{ walkMinutes(row.meters) }} min</span>
                       </span>
                     </span>
                   }
@@ -840,6 +924,21 @@
 }
 
 <!-- Flechas para pasar de 5 en 5 por una lista larga de rutas cercanas. -->
+<!-- Lo que cuesta un viaje con el pasaje elegido y lo que costaría en taxi. -->
+<ng-template #cost let-fare>
+  <span class="journey-cost">
+    <span class="mi">payments</span>
+    <span class="ellipsis">
+      Pasaje <strong>{{ formatSoles(fare) }}</strong>
+      @if (taxi(); as cab) {
+        @if (cab > fare) {
+          · en taxi ~{{ formatSoles(cab) }}: <strong class="saving">ahorras {{ formatSoles(cab - fare) }}</strong>
+        }
+      }
+    </span>
+  </span>
+</ng-template>
+
 <ng-template #pager let-pager let-go="go">
   <div class="pager">
     <button

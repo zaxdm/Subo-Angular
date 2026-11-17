@@ -86,10 +86,10 @@ export class AdminShell {
           : []),
       ],
     },
-    {
-      title: 'Cuenta',
-      sections: [{ label: 'Mi perfil', icon: 'person', path: '/panel/perfil' }],
-    },
+    // {
+    //   title: 'Cuenta',
+    //   sections: [{ label: 'Mi perfil', icon: 'person', path: '/panel/perfil' }],
+    // },
   ]);
 
   /** El nombre de la sección abierta, para la cabecera. */

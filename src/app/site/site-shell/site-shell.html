@@ -59,15 +59,7 @@
   <router-outlet />
 </main>
 
-@if (onMap()) {
-  <footer class="bar">
-    <span class="copyright">© 2026 Subo · Hecho en Trujillo, Perú</span>
-    <nav>
-      @for (page of barPages; track page.path) {
-        <a [routerLink]="page.path">{{ page.label }}</a>
-      }
-    </nav>
-  </footer>
-} @else if (!onProfile()) {
+<!-- En el mapa no hay pie: el «© 2026 Subo» va en la esquina del mapa. -->
+@if (!onMap() && !onProfile()) {
   <app-site-footer />
 }

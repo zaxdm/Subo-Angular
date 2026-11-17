@@ -126,36 +126,6 @@ main {
 .menu-items a:hover:not(.current) {
   background: var(--chip);
 }
-
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: none;
-  padding: 8px 28px;
-  border-top: 1px solid var(--line);
-  background: var(--paper);
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.bar nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.bar a {
-  padding: 8px 10px;
-  border-radius: 999px;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.bar a:hover {
-  background: var(--hover);
-}
-
 @media (max-width: 759px) {
   .navbar {
     padding: 0 14px;
@@ -170,10 +140,5 @@ main {
 
   .menu {
     display: block;
-  }
-
-  /* Como en la app, la hoja del mapa llega hasta abajo: los enlaces del pie están en el menú. */
-  .bar {
-    display: none;
   }
 }

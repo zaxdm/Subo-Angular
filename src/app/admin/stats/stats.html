@@ -107,49 +107,16 @@
       }
     </section>
 
-    <div class="main-row">
-      <section class="card block">
-        <div class="head">
-          <div>
-            <h2>Ingresos por día</h2>
-            <p>Soles de Premium confirmados cada día, de cuentas nuevas y de renovaciones.</p>
-          </div>
-          <a class="btn text more" routerLink="/panel/finanzas">Finanzas<span class="mi">arrow_forward</span></a>
+    <section class="card block solo">
+      <div class="head">
+        <div>
+          <h2>Ingresos por día</h2>
+          <p>Soles de Premium confirmados cada día, de cuentas nuevas y de renovaciones.</p>
         </div>
-        <app-day-chart [series]="revenueSeries" [data]="money.points" unit="soles" />
-      </section>
-
-      <section class="card block side">
-        <h2>Por plan</h2>
-        <p>Cuánto dejó cada plan en el periodo.</p>
-        @for (bar of money.plans; track bar.label) {
-          <div class="bar">
-            <span class="ellipsis">{{ bar.label }}</span>
-            <span class="track"><i [style.width.%]="bar.percent"></i></span>
-            <strong>{{ formatSoles(bar.value) }}</strong>
-          </div>
-        } @empty {
-          <p class="muted none">No se confirmó ningún pago en este periodo.</p>
-        }
-
-        <h3 class="sub">Últimos pagos</h3>
-        @for (payment of money.recent; track payment.id) {
-          <div class="person">
-            <span class="avatar-dot">{{ (payment.userName || payment.userEmail).charAt(0).toUpperCase() }}</span>
-            <span class="who">
-              <strong class="ellipsis">{{ payment.userName || payment.userEmail }}</strong>
-              <span class="ellipsis">{{ planLabel(payment.days) }} · {{ payment.newcomer ? 'nuevo' : 'renovó' }}</span>
-            </span>
-            <span class="when">
-              <strong>{{ formatSoles(payment.amount) }}</strong>
-              <small>{{ lastSeen(payment.createdAt.getTime()) }}</small>
-            </span>
-          </div>
-        } @empty {
-          <p class="muted none">Aún no hay pagos que mostrar.</p>
-        }
-      </section>
-    </div>
+        <a class="btn text more" routerLink="/panel/finanzas">Finanzas<span class="mi">arrow_forward</span></a>
+      </div>
+      <app-day-chart [series]="revenueSeries" [data]="money.points" unit="soles" />
+    </section>
   }
 
   <div class="main-row">
@@ -191,111 +158,21 @@
         <p class="muted none">Aún no hay visitas en este periodo.</p>
       }
 
-      <h3 class="sub">Descargas por aparato</h3>
-      @for (bar of devices(); track bar.label) {
-        <div class="bar">
-          <span class="ellipsis">{{ bar.label }}</span>
-          <span class="track"><i [style.width.%]="bar.percent"></i></span>
-          <strong>{{ bar.value }}</strong>
-        </div>
-      } @empty {
-        <p class="muted none">Nadie descargó la app en este periodo.</p>
-      }
     </section>
   </div>
 
-  <div class="pair">
-    <section class="card block">
-      <h2>Cuentas nuevas</h2>
-      <p>Registros por día.</p>
-      <app-day-chart [series]="signupSeries" [data]="points()" unit="cuentas" />
-    </section>
-    <section class="card block">
-      <h2>Descargas de la app</h2>
-      <p>Veces que se pulsó «Descargar» en la web.</p>
-      <app-day-chart [series]="downloadSeries" [data]="points()" unit="descargas" />
-    </section>
-  </div>
-
-  <div class="pair">
-    <section class="card block">
-      <div class="head">
-        <div>
-          <h2>Últimas cuentas</h2>
-          <p>Las 8 más recientes.</p>
-        </div>
-        <a class="btn text more" routerLink="/panel/usuarios">Ver todas<span class="mi">arrow_forward</span></a>
+  <section class="card block solo">
+    <h2>Rutas más consultadas</h2>
+    <p>Veces que se abrió su ficha en el periodo.</p>
+    @for (bar of topRoutes(); track $index) {
+      <div class="bar">
+        <span class="rank">{{ $index + 1 }}</span>
+        <span class="ellipsis">{{ bar.label }}</span>
+        <span class="track"><i [style.width.%]="bar.percent"></i></span>
+        <strong>{{ bar.value }}</strong>
       </div>
-      @for (user of data()?.recentUsers ?? []; track user.id) {
-        <div class="person">
-          <span class="avatar-dot">{{ (user.name || user.email).charAt(0).toUpperCase() }}</span>
-          <span class="who">
-            <strong class="ellipsis">{{ user.name }}</strong>
-            <span class="ellipsis">{{ user.email }}</span>
-          </span>
-          <span class="when">
-            <span>{{ lastSeen(user.createdAt) }}</span>
-            <small>{{ user.lastSeenAt === null ? 'sin visitas' : 'visto ' + lastSeen(user.lastSeenAt) }}</small>
-          </span>
-        </div>
-      } @empty {
-        <p class="muted none">Todavía no hay cuentas.</p>
-      }
-    </section>
-
-    <section class="card block">
-      <h2>Rutas más consultadas</h2>
-      <p>Veces que se abrió su ficha en el periodo.</p>
-      @for (bar of topRoutes(); track $index) {
-        <div class="bar">
-          <span class="rank">{{ $index + 1 }}</span>
-          <span class="ellipsis">{{ bar.label }}</span>
-          <span class="track"><i [style.width.%]="bar.percent"></i></span>
-          <strong>{{ bar.value }}</strong>
-        </div>
-      } @empty {
-        <p class="muted none">Nadie abrió la ficha de una ruta en este periodo.</p>
-      }
-    </section>
-  </div>
-
-  <div class="trio">
-    <section class="card block">
-      <h2>Alertas por tipo</h2>
-      <p>Publicadas en el periodo.</p>
-      @for (bar of byType(); track bar.label) {
-        <div class="bar">
-          <span class="ellipsis">{{ bar.label }}</span>
-          <span class="track"><i [style.width.%]="bar.percent"></i></span>
-          <strong>{{ bar.value }}</strong>
-        </div>
-      } @empty {
-        <p class="muted none">No se publicó ninguna alerta en este periodo.</p>
-      }
-    </section>
-
-    <section class="card block">
-      <h2>Alertas por día</h2>
-      <p>Cuántas se publicaron cada día.</p>
-      <app-day-chart [series]="alertSeries" [data]="points()" unit="alertas" />
-    </section>
-
-    <section class="card block">
-      <h2>A qué hora se reporta</h2>
-      <p>Por hora del día (hora de Perú).</p>
-      @if (anyHour()) {
-        <div class="hours">
-          @for (hour of hours(); track $index) {
-            <div [title]="$index + ':00 · ' + hour.value + ' alertas'">
-              <i [style.height.%]="hour.percent"></i>
-              <!-- Una de cada seis, para que quepan. -->
-              <span>{{ $index % 6 === 0 ? $index + 'h' : '' }}</span>
-            </div>
-          }
-        </div>
-      } @else {
-        <p class="muted none">Aún no hay alertas que contar.</p>
-      }
-    </section>
-  </div>
+    } @empty {
+      <p class="muted none">Nadie abrió la ficha de una ruta en este periodo.</p>
+    }
+  </section>
 </app-page-frame>

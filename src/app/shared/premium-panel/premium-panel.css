@@ -132,26 +132,68 @@
   margin: 14px 0 6px;
 }
 
+/* La ventana del pago con Yape. */
 .yape {
   display: grid;
-  justify-items: start;
-  gap: 10px;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-  font-size: 13px;
+  justify-items: center;
+  gap: 14px;
+  max-width: 380px;
+  font-size: 14px;
 }
 
-.yape img {
-  width: 200px;
+.yape-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.yape-head h2 {
+  margin: 0;
+}
+
+.yape .qr {
+  width: 220px;
   max-width: 100%;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #fff;
 }
 
 .yape ol {
+  justify-self: stretch;
   margin: 0;
-  padding-left: 18px;
+  padding-left: 20px;
+  line-height: 1.5;
+}
+
+.yape .wide {
+  justify-self: stretch;
+  justify-content: center;
+}
+
+/* La captura elegida: se ve antes de enviarla y se toca para cambiarla. */
+.proof {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: stretch;
+  min-width: 0;
+  padding: 8px;
+  border: 1px dashed var(--field-line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.proof img {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
 .empty {

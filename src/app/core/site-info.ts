@@ -22,6 +22,15 @@ export const SiteInfo = {
    */
   googleClientId: '608487070231-84hnjf4mr3rollfpdat0ev4vqa5ud6ot.apps.googleusercontent.com',
 
+  /**
+   * Clave de Google Maps con la «Street View Static API» activada, solo para
+   * preguntar si un punto tiene fotos de la calle (esa consulta es gratis).
+   * Va en la página: en Google Cloud se limita a la dirección de esta web.
+   * Vacía, la vista de calle se abre sin preguntar y, donde no hay fotos,
+   * Google lo dice en su recuadro.
+   */
+  streetViewKey: 'AIzaSyDWGPrqArgl5B-CAg-rKBBG-x1FCdKNFwg',
+
   /** Correo al que escribe la gente. */
   email: '',
 

@@ -61,7 +61,7 @@
           </button>
         }
         @if (offer.qrUrl && !waiting()) {
-          <button type="button" class="btn outline" [disabled]="busy()" (click)="yapeOpen.set(!yapeOpen())">
+          <button type="button" class="btn outline" [disabled]="busy()" (click)="openYape()">
             <span class="mi">qr_code_2</span>
             Pagar con Yape
           </button>
@@ -74,22 +74,49 @@
         <small class="muted">Tarjeta, Yape o saldo de Mercado Pago. Se activa al momento.</small>
       }
 
+      <!-- El pago con Yape, en una ventana: el QR, los pasos y la captura del pago. -->
       @if (yapeOpen() && offer.qrUrl; as qr) {
-        <div class="yape">
-          <img [src]="qr" alt="QR de Yape para pagar Subo Premium" />
-          <ol>
-            <li>
-              Yapea <strong>S/ {{ plan()?.price?.toFixed(2) }}</strong> a <strong>{{ offer.holder }}</strong
-              >.
-            </li>
-            <li>Toma una captura de la confirmación del pago.</li>
-            <li>Súbela aquí. Lo confirmamos y te avisamos por correo.</li>
-          </ol>
-          <button type="button" class="btn accent" [disabled]="busy()" (click)="proof.click()">
-            <span class="mi">upload</span>
-            Subir captura del pago
-          </button>
-          <input #proof type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="sendProof(proof)" />
+        <div class="overlay" (click)="closeYape()">
+          <div class="dialog yape" role="dialog" aria-modal="true" aria-label="Pagar con Yape" (click)="$event.stopPropagation()">
+            <div class="yape-head">
+              <h2>Pagar con Yape</h2>
+              <button type="button" class="icon-btn" title="Cerrar" [disabled]="busy()" (click)="closeYape()">
+                <span class="mi">close</span>
+              </button>
+            </div>
+            <img class="qr" [src]="qr" alt="QR de Yape para pagar Subo Premium" />
+            <ol>
+              <li>
+                Yapea <strong>S/ {{ plan()?.price?.toFixed(2) }}</strong> a <strong>{{ offer.holder }}</strong
+                >.
+              </li>
+              <li>Toma una captura de la confirmación del pago.</li>
+              <li>Súbela aquí. Lo confirmamos y te avisamos por correo.</li>
+            </ol>
+
+            <!-- La captura elegida se ve antes de enviarla; tocarla deja cambiarla. -->
+            @if (proofPreview(); as preview) {
+              <button type="button" class="proof" title="Cambiar la captura" [disabled]="busy()" (click)="proof.click()">
+                <img [src]="preview" alt="Captura del pago elegida" />
+                <span class="ellipsis">{{ proofFile()?.name }} · cambiar</span>
+              </button>
+              <button type="button" class="btn accent wide" [disabled]="busy()" (click)="sendProof()">
+                @if (busy()) {
+                  <span class="spinner"></span>
+                  Enviando…
+                } @else {
+                  <span class="mi">send</span>
+                  Enviar comprobante
+                }
+              </button>
+            } @else {
+              <button type="button" class="btn accent wide" [disabled]="busy()" (click)="proof.click()">
+                <span class="mi">upload</span>
+                Subir captura del pago
+              </button>
+            }
+            <input #proof type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="pickProof(proof)" />
+          </div>
         </div>
       }
     </div>

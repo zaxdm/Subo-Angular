@@ -46,6 +46,10 @@ export class PremiumPanel implements OnInit {
   protected readonly plan = signal<PaymentPlan | null>(null);
   /** Se abrió el pago con Yape: el QR y subir la captura. */
   protected readonly yapeOpen = signal(false);
+
+  /** La captura del pago elegida, todavía sin enviar, y su vista previa. */
+  protected readonly proofFile = signal<File | null>(null);
+  protected readonly proofPreview = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
 
   protected readonly statusLabels = PAYMENT_STATUS_LABELS;
@@ -145,19 +149,45 @@ export class PremiumPanel implements OnInit {
     }
   }
 
-  protected async sendProof(input: HTMLInputElement): Promise<void> {
+  protected openYape(): void {
+    this.setProof(null);
+    this.yapeOpen.set(true);
+  }
+
+  protected closeYape(): void {
+    if (this.busy()) return;
+    this.setProof(null);
+    this.yapeOpen.set(false);
+  }
+
+  /** Guarda la captura elegida para enseñarla antes de enviarla. */
+  protected pickProof(input: HTMLInputElement): void {
     const file = input.files?.[0];
     input.value = '';
-    const plan = this.plan();
-    if (file === undefined || plan === null) return;
-    const contentType = imageTypeOf(file);
-    if (contentType === null || file.size > MAX_IMAGE_BYTES) {
+    if (file === undefined) return;
+    if (imageTypeOf(file) === null || file.size > MAX_IMAGE_BYTES) {
       this.store.onError(new ApiError('Usa una captura JPG, PNG o WebP de hasta 5 MB.'));
       return;
     }
+    this.setProof(file);
+  }
+
+  private setProof(file: File | null): void {
+    const old = this.proofPreview();
+    if (old !== null) URL.revokeObjectURL(old);
+    this.proofFile.set(file);
+    this.proofPreview.set(file === null ? null : URL.createObjectURL(file));
+  }
+
+  protected async sendProof(): Promise<void> {
+    const file = this.proofFile();
+    const plan = this.plan();
+    const contentType = file === null ? null : imageTypeOf(file);
+    if (file === null || contentType === null || plan === null || this.busy()) return;
     this.busy.set(true);
     try {
       await this.api.sendPaymentProof(plan.days, file, contentType);
+      this.setProof(null);
       this.yapeOpen.set(false);
       this.ui.notify('Recibimos tu comprobante. Te avisamos al confirmarlo.');
       await this.load();

@@ -52,16 +52,9 @@ export class SiteShell {
     { label: 'Mapa', path: '/mapa' },
     { label: 'Descargar app', path: '/descargar' },
     { label: 'Contacto', path: '/contacto' },
-    ...(this.store.session() === null ? [] : [{ label: 'Mi perfil', path: '/perfil' }]),
+    // El administrador no tiene perfil de pasajero: el suyo está en el panel.
+    ...(this.store.session() === null || this.store.isAdmin() ? [] : [{ label: 'Mi perfil', path: '/perfil' }]),
   ]);
-
-  protected readonly barPages: NavPage[] = [
-    { label: 'Inicio', path: '/' },
-    { label: 'Descargar app', path: '/descargar' },
-    { label: 'Privacidad', path: '/privacidad' },
-    { label: 'Términos', path: '/terminos' },
-    { label: 'Contacto', path: '/contacto' },
-  ];
 
   /** El menú de las pantallas estrechas está desplegado. */
   protected readonly menuOpen = signal(false);

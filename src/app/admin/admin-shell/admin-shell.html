@@ -1,10 +1,13 @@
 <aside class="sidebar" [class.open]="menuOpen()">
   <div class="brand">
-    <app-subo-mark [size]="38" />
-    <div>
-      <strong>Subo</strong>
-      <span>Panel de control</span>
-    </div>
+    <!-- El logo sale del panel a la web de los pasajeros, sin cerrar sesión. -->
+    <a class="home" routerLink="/mapa" title="Ver la web">
+      <app-subo-mark [size]="38" />
+      <div>
+        <strong>Subo</strong>
+        <span>Panel de control</span>
+      </div>
+    </a>
     <button type="button" class="icon-btn close" aria-label="Cerrar menú" (click)="menuOpen.set(false)">
       <span class="mi">close</span>
     </button>
@@ -73,11 +76,6 @@
     >
       <span class="mi">{{ theme.dark() ? 'light_mode' : 'dark_mode' }}</span>
     </button>
-    <!-- Sale del panel a la web de los pasajeros, sin cerrar sesión. -->
-    <a class="btn outline web" routerLink="/mapa">
-      <span class="mi">open_in_new</span>
-      <span class="label">Ver la web</span>
-    </a>
   </header>
   <main class="admin-area">
     <router-outlet />
