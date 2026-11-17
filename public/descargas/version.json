@@ -1,7 +1,7 @@
 {
-  "versionCode": 16,
-  "versionName": "2.5",
+  "versionCode": 17,
+  "versionName": "2.6",
   "url": "subo.apk",
-  "notes": "• Paga Subo Premium con tarjeta sin salir de la app.\n• En «Cómo llegar», si tomas dos micros, ves la foto de ambos.\n• Arreglos en la lista de rutas cercanas.",
-  "notes_en": "• Pay for Subo Premium by card without leaving the app.\n• In «How to get there», if you take two buses, you see both photos.\n• Fixes in the nearby routes list."
+  "notes": "• Las rutas se abren desde donde estás: si falta tu ubicación, te la pedimos.\n• Paraderos con nombres más claros en tus viajes.\n• Aviso cuando una calle no tiene fotos, en vez de la pantalla negra.",
+  "notes_en": "• Routes open from where you are: if your location is missing, we ask for it.\n• Clearer stop names in your trips.\n• A notice when a street has no photos, instead of a black screen."
 }
